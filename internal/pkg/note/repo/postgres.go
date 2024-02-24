@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT * FROM notes WHERE owner_id==$1 LIMIT $2 OFFSET $3"
+	getAllNotes = "SELECT (data, create_time, update_time, owner_id) FROM notes WHERE owner_id==$1 LIMIT $2 OFFSET $3"
 )
 
 type NotesRepo struct {
@@ -21,10 +21,6 @@ func CreateNotesRepo(db pgxtype.Querier) *NotesRepo {
 	return &NotesRepo{db: db}
 }
 
-// уточнить, как передавать uuid
-// какую именно инфу о заметках хотим тут возвращать?
-// может стоит распарсить json и забрать,допустим, только заголовок оттуда?
-// для отрисовки списка нужны название и первая строка содержимого заметки
 func (repo *NotesRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) (result []models.Note, err error) {
 
 	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset)
