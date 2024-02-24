@@ -39,4 +39,4 @@ func (repo *UsersRepo) GetUser(ctx context.Context, credentials models.JWTPayloa
 	}
 
 	return password, nil
-}
+} //ff
