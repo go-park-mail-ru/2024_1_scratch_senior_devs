@@ -3,10 +3,12 @@ package models
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 type Note struct {
-	Id         int             `json:"id"`
+	Id         uuid.UUID       `json:"id"`
 	Data       json.RawMessage `json:"data,omitempty"`
 	CreateTime time.Time       `json:"create_time"`
 	UpdateTime time.Time       `json:"update_time,omitempty"`
