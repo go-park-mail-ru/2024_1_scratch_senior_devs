@@ -2,12 +2,13 @@ package authmw
 
 import (
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/golang-jwt/jwt"
-	"github.com/satori/uuid"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/satori/uuid"
 )
 
 const secret = "Только не кому не говори..."
@@ -19,7 +20,7 @@ type authService struct {
 	secret   string
 }
 
-func (service *authService) GenToken(user *models.User, lifeTime time.Duration) (string, error) {
+func GenToken(user *models.User, lifeTime time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":  user.Id,
 		"usr": user.Username,
@@ -56,7 +57,12 @@ func jwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if claims.Claims["exp"] < time.Now().Unix() {
+		timeExp, err := claims.Claims.GetExpirationTime() //получаем из токена время просрока
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		if timeExp.Before(time.Now().UTC()) { //если токен просрочен
 			// ...
 		}
 
