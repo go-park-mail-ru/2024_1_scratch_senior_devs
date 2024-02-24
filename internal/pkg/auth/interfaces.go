@@ -6,5 +6,5 @@ import (
 )
 
 type AuthUsecase interface {
-	SignUp(context.Context, *models.SignUpForm) (*models.User, error)
+	SignUp(context.Context, *models.UserFormData) (*models.User, error)
 }

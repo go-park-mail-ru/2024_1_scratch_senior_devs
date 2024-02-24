@@ -1,18 +1,20 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type JWTPayload struct {
-	Username       string        `json:"sub"`
-	ExpirationTime time.Duration `json:"exp"`
+	username  string
+	lifeTime  time.Duration
+	secretKey string
 }
 
-type SignUpForm struct {
+func (payload *JWTPayload) GenJWT() {
+	// expTime := time.Now().Add(payload.lifeTime)
+}
+
+type UserFormData struct {
 	Username string `json:"username"`
 	Password string `json:"-"`
-}
-
-type Credentials struct {
-	Password string `json:"password"`
-	Username string `json:"username"`
 }

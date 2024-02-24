@@ -20,7 +20,7 @@ func CreateAuthUsecase(repo user.UsersRepo) *AuthUsecase {
 	}
 }
 
-func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.SignUpForm) (*models.User, error) {
+func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*models.User, error) {
 	newUser := &models.User{
 		Id:           uuid.New(),
 		Username:     data.Username,
