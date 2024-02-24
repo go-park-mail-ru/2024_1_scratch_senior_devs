@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	createUser = "INSERT INTO users(id, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5);"
+	createUser      = "INSERT INTO users(id, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5);"
+	getUserPassword = "SELECT password_hash FROM users WHERE username = $1"
 )
 
 type UsersRepo struct {
@@ -28,4 +29,14 @@ func (repo *UsersRepo) CreateUser(ctx context.Context, user *models.User) error 
 	}
 
 	return nil
+}
+
+func (repo *UsersRepo) GetUser(ctx context.Context, credentials models.JWTPayload) (string, error) {
+	var password string
+	err := repo.db.QueryRow(ctx, getUserPassword, credentials.Username).Scan(&password)
+	if err != nil {
+		return "", fmt.Errorf("error getting user's password: %w", err)
+	}
+
+	return password, nil
 }

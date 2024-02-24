@@ -11,3 +11,8 @@ type SignUpForm struct {
 	Username string `json:"username"`
 	Password string `json:"-"`
 }
+
+type Credentials struct {
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
