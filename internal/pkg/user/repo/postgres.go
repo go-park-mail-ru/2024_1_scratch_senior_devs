@@ -1,10 +1,11 @@
 package repo
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/jackc/pgtype/pgxtype"
 )
 
 const (
@@ -12,15 +13,15 @@ const (
 )
 
 type UsersRepo struct {
-	db *sql.DB
+	db pgxtype.Querier
 }
 
-func CreateProfileRepo(db *sql.DB) *UsersRepo {
+func CreateProfileRepo(db pgxtype.Querier) *UsersRepo {
 	return &UsersRepo{db: db}
 }
 
-func (repo *UsersRepo) CreateUser(user *models.User) error {
-	_, err := repo.db.Exec(createUser, user.Id, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
+func (repo *UsersRepo) CreateUser(ctx context.Context, user *models.User) error {
+	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
 
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)
