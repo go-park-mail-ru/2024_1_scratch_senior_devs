@@ -11,6 +11,12 @@ import (
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	user "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
+)
+
+const (
+	JWTLifeTime      = 24 * time.Hour
+	defaultImagePath = "default.jpg"
 )
 
 type AuthUsecase struct {
@@ -30,20 +36,26 @@ func getHash(data string) string {
 	return hex.EncodeToString(hashBytes)
 }
 
-func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*models.User, error) {
+func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*models.User, string, error) {
 	newUser := &models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
 		PasswordHash: getHash(data.Password),
-		ImagePath:    "default.jpg",
+		ImagePath:    defaultImagePath,
 		CreateTime:   time.Now().UTC(),
 	}
 
 	err := uc.repo.CreateUser(ctx, newUser)
 	if err != nil {
 		err = fmt.Errorf("error creating user: %w", err)
-		return &models.User{}, err
+		return &models.User{}, "", err
 	}
 
-	return newUser, nil
+	token, err := authmw.GenToken(newUser, JWTLifeTime)
+	if err != nil {
+		err = fmt.Errorf("error generating jwt: %w", err)
+		return newUser, "", err
+	}
+
+	return newUser, token, nil
 }
