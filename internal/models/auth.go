@@ -5,9 +5,8 @@ import (
 )
 
 type JWTPayload struct {
-	username  string
-	lifeTime  time.Duration
-	secretKey string
+	username string
+	lifeTime time.Duration
 }
 
 func (payload *JWTPayload) GenJWT() {

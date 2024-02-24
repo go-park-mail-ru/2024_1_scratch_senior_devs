@@ -12,5 +12,5 @@ type Note struct {
 	Data       json.RawMessage `json:"data,omitempty"`
 	CreateTime time.Time       `json:"create_time"`
 	UpdateTime time.Time       `json:"update_time,omitempty"`
-	OwnerId    int             `json:"owner_id"`
+	OwnerId    uuid.UUID       `json:"owner_id"`
 }
