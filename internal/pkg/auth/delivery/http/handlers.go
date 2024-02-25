@@ -41,16 +41,6 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *AuthHandler) SignIn(w http.ResponseWriter, r http.Request) {
-	user := models.UserFormData{}
-	utils.GetRequestData(w, &r, models.UserFormData)
-}
-
-func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, utils.GenTokenCookie("", time.Now()))
-	w.WriteHeader(http.StatusOK)
-}
-
 func (h *AuthHandler) CheckUser(w http.ResponseWriter, r http.Request) {
 	userId := r.Context().Value("payload").(models.JwtPayload).Id
 	currentUser, err := h.uc.CheckUser(r.Context(), userId)
@@ -61,4 +51,33 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r http.Request) {
 
 	utils.WriteResponseData(w, currentUser)
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, utils.GenTokenCookie("", time.Now()))
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
+	userData := models.UserFormData{}
+	err := utils.GetRequestData(r, &userData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("incorrect user data format"))
+		return
+	}
+	user, token, exp, err := h.uc.SignIn(r.Context(), &userData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = utils.WriteResponseData(w, user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Authorization", token)
+	http.SetCookie(w, utils.GenTokenCookie(token, exp))
+	w.WriteHeader(http.StatusOK)
+
 }
