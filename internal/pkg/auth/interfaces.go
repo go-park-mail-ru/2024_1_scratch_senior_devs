@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 
@@ -9,8 +10,8 @@ import (
 )
 
 type AuthUsecase interface {
-	SignUp(context.Context, *models.UserFormData) (*models.User, string, error)
-	SignIn(context.Context, *models.UserFormData) (*models.User, string, error)
+	SignUp(context.Context, *models.UserFormData) (*models.User, string, time.Time, error)
+	SignIn(context.Context, *models.UserFormData) (*models.User, string, time.Time, error)
 	CheckUser(context.Context, uuid.UUID) (*models.User, error)
 }
 

@@ -6,7 +6,7 @@ import (
 
 type UserFormData struct {
 	Username string `json:"username"`
-	Password string `json:"-"`
+	Password string `json:"password"`
 }
 
 type JwtPayload struct {

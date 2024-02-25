@@ -36,42 +36,49 @@ func getHash(data string) string {
 	return hex.EncodeToString(hashBytes)
 }
 
-func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*models.User, string, error) {
+func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*models.User, string, time.Time, error) {
+	currentTime := time.Now().UTC()
+	expTime := currentTime.Add(JWTLifeTime)
+
 	newUser := &models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
 		PasswordHash: getHash(data.Password),
 		ImagePath:    defaultImagePath,
-		CreateTime:   time.Now().UTC(),
+		CreateTime:   currentTime,
 	}
 
 	err := uc.repo.CreateUser(ctx, newUser)
 	if err != nil {
 		err = fmt.Errorf("error creating user: %w", err)
-		return &models.User{}, "", err
+		return &models.User{}, "", currentTime, err
 	}
 
 	token, err := authmw.GenToken(newUser, JWTLifeTime)
 	if err != nil {
 		err = fmt.Errorf("error generating jwt: %w", err)
-		return newUser, "", err
+		return newUser, "", currentTime, err
 	}
 
-	return newUser, token, nil
+	return newUser, token, expTime, nil
 }
 
-func (uc *AuthUsecase) SignIn(ctx context.Context, data *models.UserFormData) (*models.User, string, error) {
+func (uc *AuthUsecase) SignIn(ctx context.Context, data *models.UserFormData) (*models.User, string, time.Time, error) {
+	currentTime := time.Now().UTC()
+	expTime := currentTime.Add(JWTLifeTime)
+
 	user, err := uc.repo.CheckUserCredentials(ctx, data.Username, getHash(data.Password))
 	if err != nil {
-		return &models.User{}, "", fmt.Errorf("%w", err)
+		return &models.User{}, "", currentTime, fmt.Errorf("%w", err)
 	}
+
 	token, err := authmw.GenToken(user, JWTLifeTime)
 	if err != nil {
 		err = fmt.Errorf("error jenerating jwt: %w", err)
-		return user, "", err
+		return user, "", currentTime, err
 	}
-	return user, token, nil
 
+	return user, token, expTime, nil
 }
 
 func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (*models.User, error) {
