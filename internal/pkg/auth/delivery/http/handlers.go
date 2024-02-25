@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
@@ -32,8 +33,10 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, utils.GenTokenCookie(token, expTime))
 
 	err = utils.WriteResponseData(w, newUser)
+	w.Header().Set("Authorization", token)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	w.WriteHeader(http.StatusCreated)
 }
@@ -41,4 +44,21 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r http.Request) {
 	user := models.UserFormData{}
 	utils.GetRequestData(w, &r, models.UserFormData)
+}
+
+func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, utils.GenTokenCookie("", time.Now()))
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *AuthHandler) CheckUser(w http.ResponseWriter, r http.Request) {
+	userId := r.Context().Value("payload").(models.JwtPayload).Id
+	currentUser, err := h.uc.CheckUser(r.Context(), userId)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	utils.WriteResponseData(w, currentUser)
+	w.WriteHeader(http.StatusOK)
 }
