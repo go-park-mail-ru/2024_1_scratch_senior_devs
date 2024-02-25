@@ -1,6 +1,7 @@
 package authmw
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,13 +12,14 @@ import (
 	"github.com/satori/uuid"
 )
 
-const secret = "Только не кому не говори..."
+const (
+	secret    = "Только никому не говори..."
+	JwtCookie = "YouNoteJWT"
+)
 
-type authService struct {
+type JwtPayload struct {
 	Id       uuid.UUID
 	Username string
-	LifeTime time.Duration
-	secret   string
 }
 
 func GenToken(user *models.User, lifeTime time.Duration) (string, error) {
@@ -42,30 +44,46 @@ func jwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 		if header == "" {
-			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		headerParts := strings.Split(header, " ")
 		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		token := headerParts[1]
+
+		cookie, err := r.Cookie(JwtCookie)
+		if err != nil || cookie.Value != token {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
 		claims, err := parseToken(token)
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		timeExp, err := claims.Claims.GetExpirationTime() //получаем из токена время просрока
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		if timeExp.Before(time.Now().UTC()) { //если токен просрочен
-			w.WriteHeader(http.StatusForbidden)
+
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+
+		payloadMap := claims.Claims.(jwt.MapClaims)
+		payload := JwtPayload{
+			Id:       payloadMap["id"].(uuid.UUID),
+			Username: payloadMap["usr"].(string),
+		}
+		ctx := context.WithValue(r.Context(), JwtCookie, payload)
+		r = r.WithContext(ctx)
+
 		next.ServeHTTP(w, r)
 	})
 }
