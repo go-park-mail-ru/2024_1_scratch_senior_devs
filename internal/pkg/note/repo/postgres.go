@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT (data, create_time, update_time, owner_id) FROM notes WHERE owner_id==$1 LIMIT $2 OFFSET $3"
+	getAllNotes = "SELECT (data, create_time, update_time, owner_id) FROM notes WHERE owner_id==$1 LIMIT $2 OFFSET $3;"
 )
 
 type NotesRepo struct {

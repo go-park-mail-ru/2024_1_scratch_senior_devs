@@ -14,6 +14,7 @@ const (
 	createUser        = "INSERT INTO users(id, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5);"
 	getUserById       = "SELECT (username, password_hash, create_time, image_path) FROM users WHERE id = $1;"
 	getUserByUsername = "SELECT (id, password_hash, create_time, image_path) FROM users WHERE username = $1;"
+	//getPasswordByUsername = "SELECT (password_hash) FROM users WHERE username = $1;"
 )
 
 type AuthRepo struct {
@@ -66,4 +67,17 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (*
 	}
 
 	return resultUser, nil
+}
+
+// returns user model if credentials are fine and returns error if not
+func (repo *AuthRepo) CheckUserCredentials(ctx context.Context, username string, password string) (*models.User, error) {
+	user, err := repo.GetUserByUsername(ctx, username)
+	if err != nil {
+		return &models.User{}, fmt.Errorf("wrong credentials")
+	}
+	if user.PasswordHash != password {
+		return &models.User{}, fmt.Errorf("wrong credentials")
+	}
+	return user, nil
+
 }

@@ -59,3 +59,17 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*
 
 	return newUser, token, nil
 }
+
+func (uc *AuthUsecase) SignIn(ctx context.Context, data *models.UserFormData) (*models.User, string, error) {
+	user, err := uc.repo.CheckUserCredentials(ctx, data.Username, getHash(data.Password))
+	if err != nil {
+		return &models.User{}, "", fmt.Errorf("%w", err)
+	}
+	token, err := authmw.GenToken(user, JWTLifeTime)
+	if err != nil {
+		err = fmt.Errorf("error jenerating jwt: %w", err)
+		return user, "", err
+	}
+	return user, token, nil
+
+}
