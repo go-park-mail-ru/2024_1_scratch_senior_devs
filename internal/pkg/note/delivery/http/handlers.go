@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 )
 
@@ -27,8 +28,8 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r http.Request) {
 	if offset == 0 {
 		offset = 10
 	}
-
-	data, err := h.uc.GetAllNotes(r.Context(), r.Context().Value("payload"), int64(count), int64(offset))
+	payload = r.Context().Value("payload").(models.JwtPayload)
+	data, err := h.uc.GetAllNotes(r.Context(), r.Context().Value("payload").(JwtPayload), int64(count), int64(offset))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
