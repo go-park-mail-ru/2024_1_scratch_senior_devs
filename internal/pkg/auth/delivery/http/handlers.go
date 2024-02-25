@@ -1,10 +1,11 @@
 package http
 
 import (
-	"context"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 )
 
 type AuthHandler struct {
@@ -17,6 +18,7 @@ func NewAuthHandler(uc auth.AuthUsecase) *AuthHandler {
 	}
 }
 
-func (h *AuthHandler) SignIn(ctx context.Context, w http.ResponseWriter, r http.Request) {
-
+func (h *AuthHandler) SignIn(w http.ResponseWriter, r http.Request) {
+	user := models.UserFormData{}
+	utils.GetRequestData(w, &r, models.UserFormData)
 }
