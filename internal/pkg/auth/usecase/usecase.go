@@ -73,3 +73,12 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data *models.UserFormData) (*
 	return user, token, nil
 
 }
+
+func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	userData, err := uc.repo.GetUserById(ctx, id)
+	if err != nil {
+		return &models.User{}, err
+	}
+
+	return userData, nil
+}

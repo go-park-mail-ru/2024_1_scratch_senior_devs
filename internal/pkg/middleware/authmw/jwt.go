@@ -17,11 +17,6 @@ const (
 	JwtCookie = "YouNoteJWT"
 )
 
-type JwtPayload struct {
-	Id       uuid.UUID
-	Username string
-}
-
 func GenToken(user *models.User, lifeTime time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":  user.Id,
@@ -77,11 +72,11 @@ func jwtMiddleware(next http.Handler) http.Handler {
 		}
 
 		payloadMap := claims.Claims.(jwt.MapClaims)
-		payload := JwtPayload{
+		payload := models.JwtPayload{
 			Id:       payloadMap["id"].(uuid.UUID),
 			Username: payloadMap["usr"].(string),
 		}
-		ctx := context.WithValue(r.Context(), JwtCookie, payload)
+		ctx := context.WithValue(r.Context(), "payload", payload)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)

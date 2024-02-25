@@ -9,11 +9,14 @@ import (
 )
 
 type AuthUsecase interface {
-	SignUp(context.Context, *models.UserFormData) (*models.User, error)
+	SignUp(context.Context, *models.UserFormData) (*models.User, string, error)
+	SignIn(context.Context, *models.UserFormData) (*models.User, string, error)
+	CheckUser(context.Context, uuid.UUID) (*models.User, error)
 }
 
 type AuthRepo interface {
 	CreateUser(context.Context, *models.User) error
-	GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error)
-	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
+	GetUserById(context.Context, uuid.UUID) (*models.User, error)
+	GetUserByUsername(context.Context, string) (*models.User, error)
+	CheckUserCredentials(context.Context, string, string) (*models.User, error)
 }
