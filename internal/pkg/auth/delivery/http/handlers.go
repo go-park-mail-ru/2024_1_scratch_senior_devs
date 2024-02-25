@@ -29,6 +29,11 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser, token, expTime, err := h.uc.SignUp(r.Context(), &userData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("user exists"))
+		return
+	}
 
 	http.SetCookie(w, utils.GenTokenCookie(token, expTime))
 
