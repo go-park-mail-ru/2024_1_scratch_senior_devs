@@ -63,9 +63,9 @@ func jwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		if timeExp.Before(time.Now().UTC()) { //если токен просрочен
-			// ...
+			w.WriteHeader(http.StatusForbidden)
+			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }

@@ -4,15 +4,24 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
 	"github.com/gofrs/uuid"
 )
 
-type NoteUsecase interface {
-	GetAllNotes(context.Context, uuid.UUID, int64, int64) ([]models.Note, error) //здесь передаем айди юзера
-	GetNote(context.Context, uuid.UUID) (models.Note, error)                     //здесь передаем айди заметки
+type NotesUsecase struct {
+	repo repo.NotesRepo
 }
 
-type NoteRepo interface {
-	ReadAllNotes(context.Context, uuid.UUID, int64, int64) ([]models.Note, error) //тут айди юзера передаем
-	ReadNote(context.Context, uuid.UUID) (models.Note, error)                     //тут айди заметки передаем
+func NewNotesUsecase(repo repo.NotesRepo) *NotesUsecase {
+	return &NotesUsecase{
+		repo: repo,
+	}
+}
+
+func (uc *NotesUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
+	res, err := uc.repo.ReadAllNotes(ctx, userId, count, offset)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
