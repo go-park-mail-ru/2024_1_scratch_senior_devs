@@ -13,7 +13,7 @@ type AuthHandler struct {
 	uc auth.AuthUsecase
 }
 
-func NewAuthHandler(uc auth.AuthUsecase) *AuthHandler {
+func CreateAuthHandler(uc auth.AuthUsecase) *AuthHandler {
 	return &AuthHandler{
 		uc: uc,
 	}
@@ -46,7 +46,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *AuthHandler) CheckUser(w http.ResponseWriter, r http.Request) {
+func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("payload").(models.JwtPayload).Id
 	currentUser, err := h.uc.CheckUser(r.Context(), userId)
 	if err != nil {
@@ -60,6 +60,7 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r http.Request) {
 
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, utils.GenTokenCookie("", time.Now()))
+	w.Header().Del("Authorization")
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -71,11 +72,13 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("incorrect user data format"))
 		return
 	}
+
 	user, token, exp, err := h.uc.SignIn(r.Context(), &userData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	err = utils.WriteResponseData(w, user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -84,5 +87,4 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Authorization", token)
 	http.SetCookie(w, utils.GenTokenCookie(token, exp))
 	w.WriteHeader(http.StatusOK)
-
 }

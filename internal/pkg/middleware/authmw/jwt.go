@@ -3,13 +3,13 @@ package authmw
 import (
 	"context"
 	"fmt"
+	"github.com/satori/uuid"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/satori/uuid"
 )
 
 const (
@@ -35,10 +35,11 @@ func parseToken(token string) (*jwt.Token, error) {
 	})
 }
 
-func jwtMiddleware(next http.Handler) http.Handler {
+func JwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 		if header == "" {
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 		headerParts := strings.Split(header, " ")
@@ -49,6 +50,7 @@ func jwtMiddleware(next http.Handler) http.Handler {
 		token := headerParts[1]
 
 		cookie, err := r.Cookie(JwtCookie)
+		fmt.Println("JwtMiddleware:", "header -", token, "cookie -", cookie)
 		if err != nil || cookie.Value != token {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -60,24 +62,26 @@ func jwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		timeExp, err := claims.Claims.GetExpirationTime() //получаем из токена время просрока
+		timeExp, err := claims.Claims.GetExpirationTime()
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		if timeExp.Before(time.Now().UTC()) { //если токен просрочен
-
+		if timeExp.Before(time.Now().UTC()) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		payloadMap := claims.Claims.(jwt.MapClaims)
+		userId, _ := uuid.FromString(payloadMap["id"].(string))
 		payload := models.JwtPayload{
-			Id:       payloadMap["id"].(uuid.UUID),
+			Id:       userId,
 			Username: payloadMap["usr"].(string),
 		}
 		ctx := context.WithValue(r.Context(), "payload", payload)
 		r = r.WithContext(ctx)
+
+		fmt.Println("JWT middleware complete")
 
 		next.ServeHTTP(w, r)
 	})
