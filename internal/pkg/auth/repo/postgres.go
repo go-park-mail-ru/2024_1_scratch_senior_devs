@@ -27,7 +27,7 @@ func CreateAuthRepo(db pgxtype.Querier) *AuthRepo {
 }
 
 func (repo *AuthRepo) CreateUser(ctx context.Context, user *models.User) error {
-	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
+	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
 
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)

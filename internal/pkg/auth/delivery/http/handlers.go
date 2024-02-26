@@ -37,8 +37,8 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, utils.GenTokenCookie(token, expTime))
 
+	w.Header().Set("Authorization", "Bearer "+token)
 	err = utils.WriteResponseData(w, newUser)
-	w.Header().Set("Authorization", token)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -84,7 +84,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Authorization", token)
+	w.Header().Set("Authorization", "Bearer "+token)
 	http.SetCookie(w, utils.GenTokenCookie(token, exp))
 	w.WriteHeader(http.StatusOK)
 }

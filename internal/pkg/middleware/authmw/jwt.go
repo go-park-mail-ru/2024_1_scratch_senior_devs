@@ -73,6 +73,7 @@ func JwtMiddleware(next http.Handler) http.Handler {
 
 		payloadMap := claims.Claims.(jwt.MapClaims)
 		userId, _ := uuid.FromString(payloadMap["id"].(string))
+		// abcd, flag := payloadMap["usr"].(string)
 		payload := models.JwtPayload{
 			Id:       userId,
 			Username: payloadMap["usr"].(string),

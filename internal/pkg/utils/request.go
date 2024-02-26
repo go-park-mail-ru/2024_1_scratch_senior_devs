@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 	"io"
 	"net/http"
 	"strconv"
@@ -42,9 +43,10 @@ func WriteResponseData(w http.ResponseWriter, responseData interface{}) error {
 
 func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 	return &http.Cookie{
-		Secure:   true,
+		Name:     authmw.JwtCookie,
+		Secure:   false,
 		Value:    token,
-		HttpOnly: true,
+		HttpOnly: false,
 		Expires:  expTime,
 	}
 }

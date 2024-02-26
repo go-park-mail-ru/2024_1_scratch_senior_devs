@@ -4,7 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -16,13 +20,7 @@ import (
 )
 
 func main() {
-	db, err := pgxpool.Connect(context.Background(), fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
-		"", // database username
-		"", // postgres password
-		"", // postgres host
-		"", // postgres port
-		"", // database name
-	))
+	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -49,6 +47,9 @@ func main() {
 
 	http.Handle("/", r)
 
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
+
 	srv := http.Server{
 		Handler:           r,
 		Addr:              "127.0.0.1:8080",
@@ -57,5 +58,24 @@ func main() {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	srv.ListenAndServe()
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			fmt.Println("error starting server")
+		}
+	}()
+
+	// Ловим сигнал
+	sig := <-signalCh
+	log.Printf("Received signal: %v\n", sig)
+
+	// Дальше начинаем обратный отсчёт
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Гасим сервер с обязательством закончить за 30 секунд всю работу
+	// time.Sleep(time.Second * 5)
+	log.Println("i am here")
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server shutdown failed: %v\n", err)
+	}
 }
