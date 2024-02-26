@@ -5,14 +5,14 @@ import (
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
-	"github.com/gofrs/uuid"
+	"github.com/satori/uuid"
 )
 
 type NotesUsecase struct {
 	repo repo.NotesRepo
 }
 
-func NewNotesUsecase(repo repo.NotesRepo) *NotesUsecase {
+func CreateNotesUsecase(repo repo.NotesRepo) *NotesUsecase {
 	return &NotesUsecase{
 		repo: repo,
 	}

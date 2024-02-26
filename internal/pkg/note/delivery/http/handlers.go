@@ -6,15 +6,14 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
-	"github.com/gofrs/uuid"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
 )
 
 type NoteHandler struct {
-	uc note.NoteUsecase
+	uc usecase.NotesUsecase
 }
 
-func NewNoteHandler(uc note.NoteUsecase) *NoteHandler {
+func CreateNotesHandler(uc usecase.NotesUsecase) *NoteHandler {
 	return &NoteHandler{
 		uc: uc,
 	}
@@ -29,11 +28,15 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	if offset == 0 {
 		offset = 10
 	}
-	payload := r.Context().Value("payload").(models.JwtPayload)
-	data, err := h.uc.GetAllNotes(r.Context(), uuid.UUID(payload.Id), int64(count), int64(offset))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	var data []models.Note
+	var err error
+	payload := r.Context().Value("payload")
+	if castedPayload, ok := payload.(models.JwtPayload); ok {
+		data, err = h.uc.GetAllNotes(r.Context(), castedPayload.Id, int64(count), int64(offset))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 	marshaledData, err := json.Marshal(data)
 	if err != nil {

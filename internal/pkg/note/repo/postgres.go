@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/gofrs/uuid"
 	"github.com/jackc/pgtype/pgxtype"
+	"github.com/satori/uuid"
 )
 
 const (
-	getAllNotes = "SELECT (data, create_time, update_time, owner_id) FROM notes WHERE owner_id==$1 LIMIT $2 OFFSET $3;"
+	getAllNotes = "SELECT data, create_time, update_time, owner_id FROM notes WHERE owner_id= $1 LIMIT $2 OFFSET $3;"
 )
 
 type NotesRepo struct {
