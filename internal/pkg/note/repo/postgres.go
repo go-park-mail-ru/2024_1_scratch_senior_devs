@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT data, create_time, update_time, owner_id FROM notes WHERE owner_id= $1 LIMIT $2 OFFSET $3;"
+	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id= $1 LIMIT $2 OFFSET $3;"
 )
 
 type NotesRepo struct {
@@ -29,7 +29,7 @@ func (repo *NotesRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count
 	}
 	for query.Next() {
 		var note models.Note
-		err := query.Scan(&note)
+		err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId)
 		if err != nil {
 			return result, fmt.Errorf("error occured while scanning notes:%w", err)
 		}

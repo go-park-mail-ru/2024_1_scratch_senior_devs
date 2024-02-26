@@ -12,8 +12,6 @@ import (
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
-
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 
@@ -27,6 +25,11 @@ import (
 )
 
 func main() {
+	/*err := godotenv.Load()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}*/
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println(err)
@@ -80,6 +83,7 @@ func main() {
 			fmt.Println("error starting server")
 		}
 	}()
+	fmt.Println("Server started")
 
 	// Ловим сигнал
 	sig := <-signalCh

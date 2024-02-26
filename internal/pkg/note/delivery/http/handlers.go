@@ -26,7 +26,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		count = 10
 	}
 	if offset == 0 {
-		offset = 10
+		offset = 0
 	}
 	var data []models.Note
 	var err error
