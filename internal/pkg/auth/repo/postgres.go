@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	createUser        = "INSERT INTO users (id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
+	createUser        = "INSERT INTO users(id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
 	getUserById       = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
 	getUserByUsername = "SELECT id, description, password_hash, create_time, image_path FROM users WHERE username = $1;"
 	//getPasswordByUsername = "SELECT (password_hash) FROM users WHERE username = $1;"
@@ -27,7 +27,7 @@ func CreateAuthRepo(db pgxtype.Querier) *AuthRepo {
 }
 
 func (repo *AuthRepo) CreateUser(ctx context.Context, user *models.User) error {
-	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
+	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
 
 	if err != nil {
 		return fmt.Errorf("error creating user: %w", err)
