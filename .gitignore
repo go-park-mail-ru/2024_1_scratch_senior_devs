@@ -20,3 +20,6 @@
 # Go workspace file
 go.work
 .idea
+
+.vscode
+cmd/main/__debug_bin3171543303
