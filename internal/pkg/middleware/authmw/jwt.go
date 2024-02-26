@@ -50,7 +50,6 @@ func JwtMiddleware(next http.Handler) http.Handler {
 		token := headerParts[1]
 
 		cookie, err := r.Cookie(JwtCookie)
-		fmt.Println("JwtMiddleware:", "header -", token, "cookie -", cookie)
 		if err != nil || cookie.Value != token {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -80,8 +79,6 @@ func JwtMiddleware(next http.Handler) http.Handler {
 		}
 		ctx := context.WithValue(r.Context(), "payload", payload)
 		r = r.WithContext(ctx)
-
-		fmt.Println("JWT middleware complete")
 
 		next.ServeHTTP(w, r)
 	})
