@@ -61,7 +61,7 @@ func DelTokenCookie() *http.Cookie {
 	}
 }
 
-func WriteIncorrectFormatError(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusBadRequest)
-	_, _ = w.Write([]byte(`{"message":"incorrect request body format"}`))
+func WriteErrorMessage(w http.ResponseWriter, statusCode int, message string) {
+	w.WriteHeader(statusCode)
+	_, _ = fmt.Fprintf(w, `{"message":"%s"}`, message)
 }

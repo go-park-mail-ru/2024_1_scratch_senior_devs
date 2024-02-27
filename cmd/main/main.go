@@ -15,6 +15,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
@@ -50,7 +51,7 @@ func main() {
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Not Found", http.StatusNotFound)
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "endpoint not found")
 	})
 
 	auth := r.PathPrefix("/auth").Subrouter()

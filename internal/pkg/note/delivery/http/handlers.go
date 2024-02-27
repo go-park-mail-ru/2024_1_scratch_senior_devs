@@ -35,7 +35,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 
 	data, err := h.uc.GetAllNotes(r.Context(), payload.Id, int64(count), int64(offset))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

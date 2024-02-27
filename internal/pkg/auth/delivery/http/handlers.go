@@ -23,7 +23,12 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	userData := models.UserFormData{}
 	err := utils.GetRequestData(r, &userData)
 	if err != nil {
-		utils.WriteIncorrectFormatError(w)
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		return
+	}
+
+	if err := userData.Validate(); err != nil {
+		utils.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -77,14 +82,14 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	userData := models.UserFormData{}
 	err := utils.GetRequestData(r, &userData)
 	if err != nil {
-		utils.WriteIncorrectFormatError(w)
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
 
 	user, token, exp, err := h.uc.SignIn(r.Context(), &userData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(`{"message":"incorrect username or password"}`))
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect username or password")
 		return
 	}
 
