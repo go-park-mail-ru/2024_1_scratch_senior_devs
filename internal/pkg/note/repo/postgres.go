@@ -14,15 +14,15 @@ const (
 	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id= $1 LIMIT $2 OFFSET $3;"
 )
 
-type NotesRepo struct {
+type NoteRepo struct {
 	db pgxtype.Querier
 }
 
-func CreateNotesRepo(db pgxtype.Querier) *NotesRepo {
-	return &NotesRepo{db: db}
+func CreateNoteRepo(db pgxtype.Querier) *NoteRepo {
+	return &NoteRepo{db: db}
 }
 
-func (repo *NotesRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) (result []models.Note, err error) {
+func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) (result []models.Note, err error) {
 	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset)
 	if err != nil {
 		return result, fmt.Errorf("error occured while getting notes: %w", err)

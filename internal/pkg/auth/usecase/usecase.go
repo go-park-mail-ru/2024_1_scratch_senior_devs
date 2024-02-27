@@ -9,7 +9,7 @@ import (
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	user "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 )
 
@@ -19,10 +19,10 @@ const (
 )
 
 type AuthUsecase struct {
-	repo user.AuthRepo
+	repo auth.AuthRepo
 }
 
-func CreateAuthUsecase(repo user.AuthRepo) *AuthUsecase {
+func CreateAuthUsecase(repo auth.AuthRepo) *AuthUsecase {
 	return &AuthUsecase{
 		repo: repo,
 	}

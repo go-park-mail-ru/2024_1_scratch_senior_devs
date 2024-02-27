@@ -6,15 +6,15 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 )
 
 type NoteHandler struct {
-	uc usecase.NotesUsecase
+	uc note.NoteUsecase
 }
 
-func CreateNotesHandler(uc usecase.NotesUsecase) *NoteHandler {
+func CreateNotesHandler(uc note.NoteUsecase) *NoteHandler {
 	return &NoteHandler{
 		uc: uc,
 	}

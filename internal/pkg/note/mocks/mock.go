@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	models "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	uuid "github.com/gofrs/uuid"
 	gomock "github.com/golang/mock/gomock"
+	uuid "github.com/satori/uuid"
 )
 
 // MockNoteUsecase is a mock of NoteUsecase interface.

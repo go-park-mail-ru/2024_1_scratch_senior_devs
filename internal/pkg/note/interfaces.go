@@ -3,7 +3,7 @@ package note
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
+	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
