@@ -2,11 +2,13 @@ package utils
 
 import (
 	"encoding/json"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 )
 
 func GetRequestData(r *http.Request, requestData interface{}) error {
@@ -24,19 +26,17 @@ func GetRequestData(r *http.Request, requestData interface{}) error {
 	return nil
 }
 
-func WriteResponseData(w http.ResponseWriter, responseData interface{}) error {
+func WriteResponseData(w http.ResponseWriter, responseData interface{}, successStatusCode int) error {
 	body, err := json.Marshal(responseData)
 	if err != nil {
-		return err
+		return fmt.Errorf("error in marshalling response body: %w", err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 
-	_, err = w.Write(body)
-	if err != nil {
-		return err
-	}
+	w.WriteHeader(successStatusCode)
+	_, _ = w.Write(body)
 
 	return nil
 }
@@ -49,4 +49,17 @@ func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 		HttpOnly: false,
 		Expires:  expTime,
 	}
+}
+
+func DelTokenCookie() *http.Cookie {
+	return &http.Cookie{
+		Name:   authmw.JwtCookie,
+		Value:  "",
+		MaxAge: -1,
+	}
+}
+
+func WriteIncorrectFormatError(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusBadRequest)
+	_, _ = w.Write([]byte(`{"message":"incorrect request body format"}`))
 }

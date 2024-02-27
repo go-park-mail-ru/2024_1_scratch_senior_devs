@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"time"
 
 	"github.com/satori/uuid"
@@ -50,15 +49,10 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*
 
 	err := uc.repo.CreateUser(ctx, newUser)
 	if err != nil {
-		err = fmt.Errorf("error creating user: %w", err)
 		return &models.User{}, "", currentTime, err
 	}
 
-	token, err := authmw.GenToken(newUser, JWTLifeTime)
-	if err != nil {
-		err = fmt.Errorf("error generating jwt: %w", err)
-		return newUser, "", currentTime, err
-	}
+	token, _ := authmw.GenToken(newUser, JWTLifeTime)
 
 	return newUser, token, expTime, nil
 }
@@ -69,14 +63,10 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data *models.UserFormData) (*
 
 	user, err := uc.repo.CheckUserCredentials(ctx, data.Username, getHash(data.Password))
 	if err != nil {
-		return &models.User{}, "", currentTime, fmt.Errorf("%w", err)
+		return &models.User{}, "", currentTime, err
 	}
 
-	token, err := authmw.GenToken(user, JWTLifeTime)
-	if err != nil {
-		err = fmt.Errorf("error jenerating jwt: %w", err)
-		return user, "", currentTime, err
-	}
+	token, _ := authmw.GenToken(user, JWTLifeTime)
 
 	return user, token, expTime, nil
 }

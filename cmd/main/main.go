@@ -14,6 +14,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
@@ -25,11 +26,12 @@ import (
 )
 
 func main() {
-	/*err := godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
 		fmt.Println(err)
 		return
-	}*/
+	}
+
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println(err)
@@ -40,6 +42,10 @@ func main() {
 	AuthRepo := authRepo.CreateAuthRepo(db)
 	AuthUsecase := authUsecase.CreateAuthUsecase(*AuthRepo)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase)
+
+	NoteRepo := noteRepo.CreateNotesRepo(db)
+	NoteUsecase := noteUsecase.CreateNotesUsecase(*NoteRepo)
+	NoteDelivery := noteDelivery.CreateNotesHandler(*NoteUsecase)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
@@ -54,15 +60,11 @@ func main() {
 		auth.Handle("/logout", authmw.JwtMiddleware(http.HandlerFunc(AuthDelivery.LogOut))).Methods(http.MethodPost, http.MethodOptions)
 		auth.Handle("/check_user", authmw.JwtMiddleware(http.HandlerFunc(AuthDelivery.CheckUser))).Methods(http.MethodPost, http.MethodOptions)
 	}
-	NoteRepo := noteRepo.CreateNotesRepo(db)
-	NoteUsecase := noteUsecase.CreateNotesUsecase(*NoteRepo)
-	NoteDelivery := noteDelivery.CreateNotesHandler(*NoteUsecase)
 
 	note := r.PathPrefix("/note").Subrouter()
 	note.Use(authmw.JwtMiddleware)
 	{
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
-
 	}
 
 	http.Handle("/", r)
@@ -85,16 +87,12 @@ func main() {
 	}()
 	fmt.Println("Server started")
 
-	// Ловим сигнал
 	sig := <-signalCh
 	log.Printf("Received signal: %v\n", sig)
 
-	// Дальше начинаем обратный отсчёт
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Гасим сервер с обязательством закончить за 30 секунд всю работу
-	// time.Sleep(time.Second * 5)
 	log.Println("i am here")
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Server shutdown failed: %v\n", err)

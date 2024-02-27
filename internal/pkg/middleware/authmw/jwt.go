@@ -2,9 +2,11 @@ package authmw
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/satori/uuid"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -13,7 +15,6 @@ import (
 )
 
 const (
-	secret    = "Только никому не говори..."
 	JwtCookie = "YouNoteJWT"
 )
 
@@ -23,7 +24,7 @@ func GenToken(user *models.User, lifeTime time.Duration) (string, error) {
 		"usr": user.Username,
 		"exp": time.Now().Add(lifeTime).Unix(),
 	})
-	return token.SignedString([]byte(secret))
+	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
 
 func parseToken(token string) (*jwt.Token, error) {
@@ -31,8 +32,32 @@ func parseToken(token string) (*jwt.Token, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(secret), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
+}
+
+func parseJwtPayloadFromClaims(claims *jwt.Token) (models.JwtPayload, error) {
+	payloadMap, ok := claims.Claims.(jwt.MapClaims)
+	if !ok {
+		return models.JwtPayload{}, errors.New("invalid format (claims)")
+	}
+	stringUserId, ok := payloadMap["id"].(string)
+	if !ok {
+		return models.JwtPayload{}, errors.New("invalid format (id)")
+	}
+	username, ok := payloadMap["usr"].(string)
+	if !ok {
+		return models.JwtPayload{}, errors.New("invalid format (usr)")
+	}
+	userId, err := uuid.FromString(stringUserId)
+	if err != nil {
+		return models.JwtPayload{}, errors.New("invalid format (id)")
+	}
+
+	return models.JwtPayload{
+		Id:       userId,
+		Username: username,
+	}, nil
 }
 
 func JwtMiddleware(next http.Handler) http.Handler {
@@ -71,13 +96,12 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		payloadMap := claims.Claims.(jwt.MapClaims)
-		userId, _ := uuid.FromString(payloadMap["id"].(string))
-		// abcd, flag := payloadMap["usr"].(string)
-		payload := models.JwtPayload{
-			Id:       userId,
-			Username: payloadMap["usr"].(string),
+		payload, err := parseJwtPayloadFromClaims(claims)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
 		}
+
 		ctx := context.WithValue(r.Context(), "payload", payload)
 		r = r.WithContext(ctx)
 

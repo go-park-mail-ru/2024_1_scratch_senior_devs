@@ -3,8 +3,6 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"fmt"
-
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 
 	"github.com/jackc/pgtype/pgxtype"
@@ -28,12 +26,7 @@ func CreateAuthRepo(db pgxtype.Querier) *AuthRepo {
 
 func (repo *AuthRepo) CreateUser(ctx context.Context, user *models.User) error {
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
-
-	if err != nil {
-		return fmt.Errorf("error creating user: %w", err)
-	}
-
-	return nil
+	return err
 }
 
 func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error) {
@@ -51,7 +44,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.Us
 	if description.Valid {
 		resultUser.Description = description.String
 	} else if err != nil {
-		return &models.User{}, fmt.Errorf("error getting user: %w", err)
+		return &models.User{}, err
 	}
 
 	return resultUser, nil
@@ -72,21 +65,21 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (*
 	if description.Valid {
 		resultUser.Description = description.String
 	} else if err != nil {
-		return &models.User{}, fmt.Errorf("error getting user: %w", err)
+		return &models.User{}, err
 	}
 
 	return resultUser, nil
 }
 
-// returns user model if credentials are fine and returns error if not
-func (repo *AuthRepo) CheckUserCredentials(ctx context.Context, username string, password string) (*models.User, error) {
+func (repo *AuthRepo) CheckUserCredentials(ctx context.Context, username string, passwordHash string) (*models.User, error) {
 	user, err := repo.GetUserByUsername(ctx, username)
 	if err != nil {
 		return &models.User{}, err
 	}
-	if user.PasswordHash != password {
-		return &models.User{}, fmt.Errorf("wrong credentials")
-	}
-	return user, nil
 
+	if user.PasswordHash != passwordHash {
+		return &models.User{}, err
+	}
+
+	return user, nil
 }
