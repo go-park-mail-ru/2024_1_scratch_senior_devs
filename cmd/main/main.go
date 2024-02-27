@@ -82,7 +82,7 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			fmt.Println("error starting server")
+			fmt.Println("Server stopped")
 		}
 	}()
 	fmt.Println("Server started")
@@ -93,7 +93,6 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	log.Println("i am here")
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Server shutdown failed: %v\n", err)
 	}

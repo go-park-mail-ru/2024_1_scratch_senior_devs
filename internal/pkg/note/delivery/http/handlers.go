@@ -27,17 +27,15 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		count = 10
 	}
 
-	var data []models.Note
-	var err error
-	payload := r.Context().Value("payload")
-	if castedPayload, ok := payload.(models.JwtPayload); ok {
-		data, err = h.uc.GetAllNotes(r.Context(), castedPayload.Id, int64(count), int64(offset))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	} else {
+	payload, ok := r.Context().Value("payload").(models.JwtPayload)
+	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	data, err := h.uc.GetAllNotes(r.Context(), payload.Id, int64(count), int64(offset))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

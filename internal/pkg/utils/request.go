@@ -48,6 +48,7 @@ func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 		Value:    token,
 		HttpOnly: false,
 		Expires:  expTime,
+		Path:     "/",
 	}
 }
 
@@ -56,6 +57,7 @@ func DelTokenCookie() *http.Cookie {
 		Name:   authmw.JwtCookie,
 		Value:  "",
 		MaxAge: -1,
+		Path:   "/",
 	}
 }
 
