@@ -9,6 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
+//go:generate mockgen -source=interfaces.go -destination=mocks/mock.go
+
 type AuthUsecase interface {
 	SignUp(context.Context, *models.UserFormData) (*models.User, string, time.Time, error)
 	SignIn(context.Context, *models.UserFormData) (*models.User, string, time.Time, error)
