@@ -3,10 +3,11 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
 const (

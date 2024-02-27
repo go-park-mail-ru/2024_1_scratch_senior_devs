@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/satori/uuid"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/satori/uuid"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
 const (

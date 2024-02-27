@@ -3,9 +3,10 @@ package usecase
 import (
 	"context"
 
+	"github.com/satori/uuid"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
-	"github.com/satori/uuid"
 )
 
 type NotesUsecase struct {

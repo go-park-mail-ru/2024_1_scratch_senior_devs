@@ -14,7 +14,3 @@ type Note struct {
 	UpdateTime *time.Time       `json:"update_time,omitempty"`
 	OwnerId    uuid.UUID        `json:"owner_id"`
 }
-
-type GetAllNotesResponse struct {
-	Notes []Note `json:"notes"`
-}

@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-
 	"github.com/satori/uuid"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
 type AuthUsecase interface {

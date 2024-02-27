@@ -2,10 +2,11 @@ package http
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
-	"net/http"
 )
 
 type AuthHandler struct {
@@ -47,7 +48,6 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	jwtPayload, ok := r.Context().Value("payload").(models.JwtPayload)
 	if !ok {
-		fmt.Println("here")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

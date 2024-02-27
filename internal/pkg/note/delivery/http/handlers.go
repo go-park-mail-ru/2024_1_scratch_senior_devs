@@ -1,12 +1,13 @@
 package http
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 )
 
 type NoteHandler struct {
@@ -25,9 +26,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	if count == 0 {
 		count = 10
 	}
-	if offset == 0 {
-		offset = 0
-	}
+
 	var data []models.Note
 	var err error
 	payload := r.Context().Value("payload")
@@ -37,11 +36,15 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
-	marshaledData, err := json.Marshal(data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-	w.Write(marshaledData)
 
+	err = utils.WriteResponseData(w, data, http.StatusAccepted)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Printf("error in GetAllNotes handler: %s", err)
+		return
+	}
 }
