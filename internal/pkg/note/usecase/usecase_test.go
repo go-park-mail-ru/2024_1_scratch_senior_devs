@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"reflect"
 	"testing"
 	"time"
 
@@ -9,12 +10,14 @@ import (
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNoteUsecase_GetAllNotes(t *testing.T) {
-	/*type fields struct {
-		repo note.NoteRepo
+	uids := []uuid.UUID{
+		uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+		uuid.FromStringOrNil("a839229c-4521-4ea9-9c21-90f0d2715568"),
+
+		uuid.FromStringOrNil("8d48b193-d50a-4df2-8acf-3c3f34853a28"),
 	}
 	type args struct {
 		ctx    context.Context
@@ -23,62 +26,72 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 		offset int64
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []models.Note
-		wantErr bool
+		name       string
+		repoMocker func(context context.Context, repo *mock_note.MockNoteRepo, uId uuid.UUID, count int64, offset int64)
+		args       args
+		want       []models.Note
+		wantErr    bool
 	}{
+		{
+			name: "TestSuccess",
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo, uId uuid.UUID, count int64, offset int64) {
+				mockResp := []models.Note{ //мок ответа от урованя репозитория
+					{
+						Id:         uids[0],
+						OwnerId:    uids[2],
+						UpdateTime: nil,
+						CreateTime: time.Time{},
+						Data:       nil,
+					},
+					{
+						Id:         uids[1],
+						OwnerId:    uids[2],
+						UpdateTime: nil,
+						CreateTime: time.Time{},
+						Data:       nil,
+					},
+				}
+
+				repo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset)).Return(mockResp, nil).Times(1)
+			},
+			args: args{
+				context.Background(),
+				uuid.NewV4(),
+				10,
+				0,
+			},
+			want: []models.Note{
+				{
+					Id:         uids[0],
+					OwnerId:    uids[2], //потом задать из args
+					UpdateTime: nil,
+					CreateTime: time.Time{},
+					Data:       nil,
+				},
+				{
+					Id:         uids[1],
+					OwnerId:    uids[2],
+					UpdateTime: nil,
+					CreateTime: time.Time{},
+					Data:       nil,
+				},
+			},
+			wantErr: false,
+		},
 		// TODO: Add test cases.
-	}*/
-	ctx := context.Background()
-	ctl := gomock.NewController(t)
-	defer ctl.Finish()
-	repo := mock_note.NewMockNoteRepo(ctl)
-	uId := uuid.NewV4()
-	expected := []models.Note{ //ожидаемый от юзкейса результат.
-		{
-			Id:         uuid.NewV4(),
-			OwnerId:    uId,
-			UpdateTime: nil,
-			CreateTime: time.Time{},
-			Data:       nil,
-		},
-		{
-			Id:         uuid.NewV4(),
-			OwnerId:    uId,
-			UpdateTime: nil,
-			CreateTime: time.Time{},
-			Data:       nil,
-		},
 	}
-	mockResp := []models.Note{ //мок ответа от урованя репозитория
-		{
-			Id:         uuid.NewV4(),
-			OwnerId:    uId,
-			UpdateTime: nil,
-			CreateTime: time.Time{},
-			Data:       nil,
-		},
-		{
-			Id:         uuid.NewV4(),
-			OwnerId:    uId,
-			UpdateTime: nil,
-			CreateTime: time.Time{},
-			Data:       nil,
-		},
-	}
-	repo.EXPECT().ReadAllNotes(ctx, uId, int64(10), int64(0)).Return(mockResp, nil).Times(1)
-	Usecase := CreateNoteUsecase(repo)
-	notes, err := Usecase.GetAllNotes(ctx, uId, int64(10), int64(0)) //Get(ctx, log, in)
-	require.NoError(t, err)
-	require.ElementsMatch(t, expected, notes)
-	/*for _, tt := range tests {
+
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			uc := &NoteUsecase{
-				repo: tt.fields.repo,
-			}
-			got, err := uc.GetAllNotes(tt.args.ctx, tt.args.userId, tt.args.count, tt.args.offset)
+
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteRepo(ctl)
+			Usecase := CreateNoteUsecase(repo)
+
+			tt.repoMocker(context.Background(), repo, tt.args.userId, tt.args.count, tt.args.offset)
+			got, err := Usecase.GetAllNotes(tt.args.ctx, tt.args.userId, tt.args.count, tt.args.offset)
+			//got, err := uc.GetAllNotes(tt.args.ctx, tt.args.userId, tt.args.count, tt.args.offset)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NoteUsecase.GetAllNotes() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -87,5 +100,5 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 				t.Errorf("NoteUsecase.GetAllNotes() = %v, want %v", got, tt.want)
 			}
 		})
-	}*/
+	}
 }
