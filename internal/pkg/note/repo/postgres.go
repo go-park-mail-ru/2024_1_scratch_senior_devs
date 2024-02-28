@@ -22,7 +22,9 @@ func CreateNoteRepo(db pgxtype.Querier) *NoteRepo {
 	return &NoteRepo{db: db}
 }
 
-func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) (result []models.Note, err error) {
+func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
+	result := make([]models.Note, 0, count)
+
 	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset)
 	if err != nil {
 		return result, err

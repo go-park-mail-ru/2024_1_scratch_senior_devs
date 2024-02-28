@@ -39,7 +39,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.WriteResponseData(w, data, http.StatusAccepted)
+	err = utils.WriteResponseData(w, data, http.StatusOK)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Printf("error in GetAllNotes handler: %s", err)

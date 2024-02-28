@@ -44,6 +44,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			defer ctrl.Finish()
 
 			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), &json.RawMessage{}, time.Now(), &time.Time{}, tt.userId).ToPgxRows()
 

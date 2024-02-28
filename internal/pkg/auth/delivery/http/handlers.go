@@ -64,7 +64,7 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.WriteResponseData(w, currentUser, http.StatusAccepted)
+	err = utils.WriteResponseData(w, currentUser, http.StatusOK)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Printf("error in CheckUser handler: %s", err)
@@ -96,7 +96,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Authorization", "Bearer "+token)
 	http.SetCookie(w, utils.GenTokenCookie(token, exp))
 
-	err = utils.WriteResponseData(w, user, http.StatusAccepted)
+	err = utils.WriteResponseData(w, user, http.StatusOK)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Printf("error in SignIn handler: %s", err)

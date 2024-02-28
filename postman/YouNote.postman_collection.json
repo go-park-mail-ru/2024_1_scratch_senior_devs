@@ -96,7 +96,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "GET",
 				"header": [],
 				"url": {
 					"raw": "http://127.0.0.1:8080/api/auth/check_user",
@@ -130,7 +130,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "DELETE",
 				"header": [],
 				"url": {
 					"raw": "http://127.0.0.1:8080/api/auth/logout",
@@ -159,7 +159,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkxMzYxNTcsImlkIjoiZGIzZjJlZTItZTIyZC00MmU5LTllYWItZDRlNmMyYjdlZDcyIiwidXNyIjoidGVzdF91c2VyIn0.DbUwKdSR6vslgKgnJm_qTL5NjASweHNZMukXFF2hCF8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkyMzg1MjksImlkIjoiZGIzZjJlZTItZTIyZC00MmU5LTllYWItZDRlNmMyYjdlZDcyIiwidXNyIjoidGVzdF91c2VyIn0.q0rNUmgMhaGybOqeQI2xE_k9yVtCqcsFKrju1fgcrac",
 							"type": "string"
 						}
 					]

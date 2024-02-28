@@ -58,8 +58,8 @@ func main() {
 	{
 		auth.Handle("/signup", http.HandlerFunc(AuthDelivery.SignUp)).Methods(http.MethodPost, http.MethodOptions)
 		auth.Handle("/login", http.HandlerFunc(AuthDelivery.SignIn)).Methods(http.MethodPost, http.MethodOptions)
-		auth.Handle("/logout", authmw.JwtMiddleware(http.HandlerFunc(AuthDelivery.LogOut))).Methods(http.MethodPost, http.MethodOptions)
-		auth.Handle("/check_user", authmw.JwtMiddleware(http.HandlerFunc(AuthDelivery.CheckUser))).Methods(http.MethodPost, http.MethodOptions)
+		auth.Handle("/logout", authmw.JwtMiddleware(http.HandlerFunc(AuthDelivery.LogOut))).Methods(http.MethodDelete, http.MethodOptions) // POST ?
+		auth.Handle("/check_user", authmw.JwtMiddleware(http.HandlerFunc(AuthDelivery.CheckUser))).Methods(http.MethodGet, http.MethodOptions)
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
