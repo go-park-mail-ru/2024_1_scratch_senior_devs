@@ -7,3 +7,6 @@ cover:
 
 test:
 	go test ./...
+
+lint:
+	golangci-lint run --config=.golangci.yaml 
