@@ -2,8 +2,6 @@ package repo
 
 import (
 	"context"
-	"database/sql"
-
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
@@ -31,19 +29,16 @@ func (repo *AuthRepo) CreateUser(ctx context.Context, user *models.User) error {
 
 func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	resultUser := &models.User{Id: id}
-	description := sql.NullString{}
 
 	err := repo.db.QueryRow(ctx, getUserById, id).Scan(
-		&description,
+		&resultUser.Description,
 		&resultUser.Username,
 		&resultUser.PasswordHash,
 		&resultUser.CreateTime,
 		&resultUser.ImagePath,
 	)
 
-	if description.Valid {
-		resultUser.Description = description.String
-	} else if err != nil {
+	if err != nil {
 		return &models.User{}, err
 	}
 
@@ -52,19 +47,16 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.Us
 
 func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	resultUser := &models.User{Username: username}
-	description := sql.NullString{}
 
 	err := repo.db.QueryRow(ctx, getUserByUsername, username).Scan(
 		&resultUser.Id,
-		&description,
+		&resultUser.Description,
 		&resultUser.PasswordHash,
 		&resultUser.CreateTime,
 		&resultUser.ImagePath,
 	)
 
-	if description.Valid {
-		resultUser.Description = description.String
-	} else if err != nil {
+	if err != nil {
 		return &models.User{}, err
 	}
 

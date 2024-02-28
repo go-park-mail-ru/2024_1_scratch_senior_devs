@@ -25,7 +25,7 @@ func CreateNoteRepo(db pgxtype.Querier) *NoteRepo {
 func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) (result []models.Note, err error) {
 	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset)
 	if err != nil {
-		return result, fmt.Errorf("error occured while getting notes: %w", err)
+		return result, err
 	}
 
 	for query.Next() {
