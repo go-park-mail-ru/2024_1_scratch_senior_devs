@@ -41,12 +41,12 @@ func main() {
 	defer db.Close()
 
 	AuthRepo := authRepo.CreateAuthRepo(db)
-	AuthUsecase := authUsecase.CreateAuthUsecase(*AuthRepo)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase)
 
-	NoteRepo := noteRepo.CreateNotesRepo(db)
-	NoteUsecase := noteUsecase.CreateNotesUsecase(*NoteRepo)
-	NoteDelivery := noteDelivery.CreateNotesHandler(*NoteUsecase)
+	NoteRepo := noteRepo.CreateNoteRepo(db)
+	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo)
+	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 

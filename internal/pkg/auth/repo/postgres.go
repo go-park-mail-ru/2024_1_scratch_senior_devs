@@ -14,7 +14,6 @@ const (
 	createUser        = "INSERT INTO users(id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
 	getUserById       = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
 	getUserByUsername = "SELECT id, description, password_hash, create_time, image_path FROM users WHERE username = $1;"
-	//getPasswordByUsername = "SELECT (password_hash) FROM users WHERE username = $1;"
 )
 
 type AuthRepo struct {

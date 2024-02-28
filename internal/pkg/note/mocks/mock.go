@@ -51,21 +51,6 @@ func (mr *MockNoteUsecaseMockRecorder) GetAllNotes(arg0, arg1, arg2, arg3 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllNotes", reflect.TypeOf((*MockNoteUsecase)(nil).GetAllNotes), arg0, arg1, arg2, arg3)
 }
 
-// GetNote mocks base method.
-func (m *MockNoteUsecase) GetNote(arg0 context.Context, arg1 uuid.UUID) (models.Note, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNote", arg0, arg1)
-	ret0, _ := ret[0].(models.Note)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetNote indicates an expected call of GetNote.
-func (mr *MockNoteUsecaseMockRecorder) GetNote(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteUsecase)(nil).GetNote), arg0, arg1)
-}
-
 // MockNoteRepo is a mock of NoteRepo interface.
 type MockNoteRepo struct {
 	ctrl     *gomock.Controller
@@ -102,19 +87,4 @@ func (m *MockNoteRepo) ReadAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, 
 func (mr *MockNoteRepoMockRecorder) ReadAllNotes(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAllNotes", reflect.TypeOf((*MockNoteRepo)(nil).ReadAllNotes), arg0, arg1, arg2, arg3)
-}
-
-// ReadNote mocks base method.
-func (m *MockNoteRepo) ReadNote(arg0 context.Context, arg1 uuid.UUID) (models.Note, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadNote", arg0, arg1)
-	ret0, _ := ret[0].(models.Note)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReadNote indicates an expected call of ReadNote.
-func (mr *MockNoteRepoMockRecorder) ReadNote(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteRepo)(nil).ReadNote), arg0, arg1)
 }

@@ -37,7 +37,7 @@ func (form *UserFormData) Validate() error {
 		return errors.New("username can only include symbols: A-Z, a-z, 0-9, _, - ")
 	}
 
-	if len(runedPassword) < minPasswordLength || len(runedUsername) > maxPasswordLength {
+	if len(runedPassword) < minPasswordLength || len(runedPassword) > maxPasswordLength {
 		return fmt.Errorf("password length must be from %d to %d characters", minPasswordLength, maxPasswordLength)
 	}
 	if !passwordRegexp.MatchString(form.Password) {

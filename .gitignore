@@ -8,6 +8,8 @@
 *.so
 *.dylib
 *.env
+*.tmp
+*.bat
 
 # Test binary, built with `go test -c`
 *.test
