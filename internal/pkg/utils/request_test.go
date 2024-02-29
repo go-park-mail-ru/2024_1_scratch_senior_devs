@@ -5,6 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -156,6 +157,25 @@ func TestDelTokenCookie(t *testing.T) {
 			cookie := DelTokenCookie()
 			assert.Equal(t, cookie.Name, authmw.JwtCookie)
 			assert.Equal(t, cookie.Value, "")
+		})
+	}
+}
+
+func TestWriteErrorMessage(t *testing.T) {
+	var tests = []struct {
+		name string
+	}{
+		{
+			name: "WriteErrorMessage_Success",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			WriteErrorMessage(w, http.StatusOK, "abc")
+
+			assert.Equal(t, w.Code, http.StatusOK)
 		})
 	}
 }

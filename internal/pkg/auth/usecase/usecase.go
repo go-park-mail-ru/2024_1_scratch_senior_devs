@@ -2,8 +2,7 @@ package usecase
 
 import (
 	"context"
-	"crypto/md5"
-	"encoding/hex"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"time"
 
 	"github.com/satori/uuid"
@@ -28,13 +27,6 @@ func CreateAuthUsecase(repo auth.AuthRepo) *AuthUsecase {
 	}
 }
 
-func getHash(data string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(data))
-	hashBytes := hasher.Sum(nil)
-	return hex.EncodeToString(hashBytes)
-}
-
 func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*models.User, string, time.Time, error) {
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(JWTLifeTime)
@@ -42,7 +34,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*
 	newUser := &models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
-		PasswordHash: getHash(data.Password),
+		PasswordHash: utils.GetHash(data.Password),
 		ImagePath:    defaultImagePath,
 		CreateTime:   currentTime,
 	}
@@ -61,7 +53,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data *models.UserFormData) (*
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(JWTLifeTime)
 
-	user, err := uc.repo.CheckUserCredentials(ctx, data.Username, getHash(data.Password))
+	user, err := uc.repo.CheckUserCredentials(ctx, data.Username, utils.GetHash(data.Password))
 	if err != nil {
 		return &models.User{}, "", currentTime, err
 	}

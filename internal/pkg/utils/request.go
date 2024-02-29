@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -64,4 +66,11 @@ func DelTokenCookie() *http.Cookie {
 func WriteErrorMessage(w http.ResponseWriter, statusCode int, message string) {
 	w.WriteHeader(statusCode)
 	_, _ = fmt.Fprintf(w, `{"message":"%s"}`, message)
+}
+
+func GetHash(data string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(data))
+	hashBytes := hasher.Sum(nil)
+	return hex.EncodeToString(hashBytes)
 }
