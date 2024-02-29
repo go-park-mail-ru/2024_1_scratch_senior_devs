@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -68,9 +68,9 @@ func WriteErrorMessage(w http.ResponseWriter, statusCode int, message string) {
 	_, _ = fmt.Fprintf(w, `{"message":"%s"}`, message)
 }
 
-func GetHash(data string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(data))
-	hashBytes := hasher.Sum(nil)
-	return hex.EncodeToString(hashBytes)
+func GetHash(input string) string {
+	hash := sha256.New()
+	hash.Write([]byte(input))
+	hashInBytes := hash.Sum(nil)
+	return hex.EncodeToString(hashInBytes)
 }

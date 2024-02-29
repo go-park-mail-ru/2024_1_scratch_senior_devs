@@ -51,7 +51,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
-	jwtPayload, ok := r.Context().Value("payload").(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return

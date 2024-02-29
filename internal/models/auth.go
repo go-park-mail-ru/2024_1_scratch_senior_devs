@@ -8,6 +8,10 @@ import (
 	"github.com/satori/uuid"
 )
 
+type PayloadKey string
+
+const PayloadContextKey PayloadKey = "payload"
+
 const (
 	minUsernameLength = 4
 	maxUsernameLength = 12

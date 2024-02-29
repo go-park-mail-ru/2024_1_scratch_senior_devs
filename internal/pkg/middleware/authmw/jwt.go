@@ -103,7 +103,7 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "payload", payload)
+		ctx := context.WithValue(r.Context(), models.PayloadContextKey, payload)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)

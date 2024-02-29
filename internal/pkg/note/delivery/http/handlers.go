@@ -27,7 +27,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		count = 10
 	}
 
-	payload, ok := r.Context().Value("payload").(models.JwtPayload)
+	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return

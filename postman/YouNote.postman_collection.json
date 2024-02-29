@@ -24,7 +24,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"test_user\",\r\n    \"password\": \"12345678\"\r\n}",
+					"raw": "{\r\n    \"username\": \"test_user\",\r\n    \"password\": \"12345678a\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -57,7 +57,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"test_user\",\r\n    \"password\": \"12345678\"\r\n}",
+					"raw": "{\r\n    \"username\": \"test_user\",\r\n    \"password\": \"12345678a\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -91,7 +91,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkxMzU5MjEsImlkIjoiZGIzZjJlZTItZTIyZC00MmU5LTllYWItZDRlNmMyYjdlZDcyIiwidXNyIjoidGVzdF91c2VyIn0.KVBhg4W1gnxOVYi_2D3ksCdpGOy2WUU0xKTbYXQzQKo",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkzMjA2NTAsImlkIjoiNTJmYmQ3MGUtMDVjOC00N2NlLWJkYTItNjFiMTdmOWE0NWUwIiwidXNyIjoidGVzdF91c2VyIn0.c74v6ee3YNgYwo2BquNMotVZAtWP2MIyyCWGXGJqAeA",
 							"type": "string"
 						}
 					]
@@ -125,7 +125,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkxMzU5MjEsImlkIjoiZGIzZjJlZTItZTIyZC00MmU5LTllYWItZDRlNmMyYjdlZDcyIiwidXNyIjoidGVzdF91c2VyIn0.KVBhg4W1gnxOVYi_2D3ksCdpGOy2WUU0xKTbYXQzQKo",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkzMjA1NTEsImlkIjoiNTJmYmQ3MGUtMDVjOC00N2NlLWJkYTItNjFiMTdmOWE0NWUwIiwidXNyIjoidGVzdF91c2VyIn0.9Vz6iY2W_t9S5R4liWyUquFJgJdYaW_P5nUxy--Er8k",
 							"type": "string"
 						}
 					]
@@ -159,7 +159,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkyMzg1MjksImlkIjoiZGIzZjJlZTItZTIyZC00MmU5LTllYWItZDRlNmMyYjdlZDcyIiwidXNyIjoidGVzdF91c2VyIn0.q0rNUmgMhaGybOqeQI2xE_k9yVtCqcsFKrju1fgcrac",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkzMjA2NTAsImlkIjoiNTJmYmQ3MGUtMDVjOC00N2NlLWJkYTItNjFiMTdmOWE0NWUwIiwidXNyIjoidGVzdF91c2VyIn0.c74v6ee3YNgYwo2BquNMotVZAtWP2MIyyCWGXGJqAeA",
 							"type": "string"
 						}
 					]
