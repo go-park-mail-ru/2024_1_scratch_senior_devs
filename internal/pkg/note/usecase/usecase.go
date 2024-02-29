@@ -22,7 +22,7 @@ func CreateNoteUsecase(repo note.NoteRepo) *NoteUsecase {
 func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
 	res, err := uc.repo.ReadAllNotes(ctx, userId, count, offset)
 	if err != nil {
-		return nil, err
+		return res, err
 	}
 	return res, nil
 }
