@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -37,7 +38,7 @@ func TestGetRequestData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request, _ := http.NewRequest("POST", "http://127.0.0.1:8080/test", bytes.NewBuffer(tt.requestBody))
+			request, _ := http.NewRequestWithContext(context.Background(), "POST", "http://127.0.0.1:8080/test", bytes.NewBuffer(tt.requestBody))
 			data := dataType{}
 
 			err := GetRequestData(request, &data)
@@ -47,22 +48,6 @@ func TestGetRequestData(t *testing.T) {
 			}
 		})
 	}
-}
-
-type myResponseWriter struct {
-	w int
-}
-
-func (*myResponseWriter) Header() http.Header {
-	return http.Header{}
-}
-
-func (*myResponseWriter) WriteHeader(statusCode int) {
-	return
-}
-
-func (*myResponseWriter) Write(data []byte) (int, error) {
-	return 0, nil
 }
 
 func TestWriteResponseData_Success(t *testing.T) {
@@ -84,8 +69,8 @@ func TestWriteResponseData_Success(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			w := myResponseWriter{}
-			err := WriteResponseData(&w, tt.data, http.StatusOK)
+			w := httptest.NewRecorder()
+			err := WriteResponseData(w, tt.data, http.StatusOK)
 			if (err != nil) != tt.err {
 				t.Error("error in error")
 			}
@@ -112,8 +97,8 @@ func TestWriteResponseData_Fail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			w := myResponseWriter{}
-			err := WriteResponseData(&w, tt.data, http.StatusOK)
+			w := httptest.NewRecorder()
+			err := WriteResponseData(w, tt.data, http.StatusOK)
 			if (err != nil) != tt.err {
 				t.Error("error in error")
 			}

@@ -229,11 +229,9 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			req := httptest.NewRequest("GET", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			ctx := context.Background()
+			ctx := context.WithValue(req.Context(), "payload", models.JwtPayload{Id: tt.id, Username: tt.username})
 			if tt.name == "AuthHandler_CheckUser_Fail_1" {
 				ctx = context.WithValue(req.Context(), "payload", models.Note{})
-			} else {
-				ctx = context.WithValue(req.Context(), "payload", models.JwtPayload{Id: tt.id, Username: tt.username})
 			}
 			req = req.WithContext(ctx)
 
