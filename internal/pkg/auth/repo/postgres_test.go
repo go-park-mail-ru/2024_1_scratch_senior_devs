@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"testing"
 	"time"
 
@@ -15,6 +16,9 @@ import (
 )
 
 func TestAuthRepo_CreateUser(t *testing.T) {
+	userId := uuid.NewV4()
+	currTime := time.Now().UTC()
+
 	tests := []struct {
 		name           string
 		mockRepoAction func(*pgxpoolmock.MockPgxPool)
@@ -24,12 +28,12 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 			name: "CreateUser_Success",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool) {
 				mockPool.EXPECT().Exec(gomock.Any(), createUser,
-					gomock.Any(),
-					gomock.Any(),
-					gomock.Any(),
-					gomock.Any(),
-					gomock.Any(),
-					gomock.Any(),
+					userId,
+					nil,
+					"test_user_2",
+					utils.GetHash("f28fhc2o4m3"),
+					currTime,
+					"default.jpg",
 				).Return(nil, nil)
 			},
 			err: nil,
@@ -45,7 +49,14 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 			tt.mockRepoAction(mockPool)
 
 			repo := CreateAuthRepo(mockPool)
-			err := repo.CreateUser(context.Background(), &models.User{})
+			err := repo.CreateUser(context.Background(), &models.User{
+				Id:           userId,
+				Description:  nil,
+				Username:     "test_user_2",
+				PasswordHash: utils.GetHash("f28fhc2o4m3"),
+				CreateTime:   currTime,
+				ImagePath:    "default.jpg",
+			})
 
 			assert.Equal(t, tt.err, err)
 		})
