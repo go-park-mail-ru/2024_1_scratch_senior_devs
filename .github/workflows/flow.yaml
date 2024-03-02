@@ -42,19 +42,19 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
-          script: cd /home/ubuntu/backend/2024_1_scratch_senior_devs && git pull && touch here.txt
-#      - name: Build containers
-#        uses: appleboy/ssh-action@master
-#        with:
-#          timeout: 10m
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USERNAME }}
-#          key: ${{ secrets.PRIVATE_KEY }}
-#          script: cd /home/ubuntu/backend/2024_1_scratch_senior_devs && sudo docker-compose build
-#      - name: Restart service
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USERNAME }}
-#          key: ${{ secrets.PRIVATE_KEY }}
-#          script: cd /home/ubuntu/backend/2024_1_scratch_senior_devs && sudo docker-compose down && sudo docker-compose up -d
+          script: cd /home/ubuntu/backend/2024_1_scratch_senior_devs && git pull
+      - name: Build containers
+        uses: appleboy/ssh-action@master
+        with:
+          timeout: 10m
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd /home/ubuntu/backend/2024_1_scratch_senior_devs && sudo docker-compose build
+      - name: Restart service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd /home/ubuntu/backend/2024_1_scratch_senior_devs && sudo docker-compose down && sudo docker-compose up -d
