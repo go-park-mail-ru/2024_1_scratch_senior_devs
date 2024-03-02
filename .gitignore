@@ -10,6 +10,7 @@
 *.env
 *.tmp
 *.bat
+*.txt
 
 # Test binary, built with `go test -c`
 *.test
