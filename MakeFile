@@ -10,3 +10,5 @@ test:
 
 lint:
 	golangci-lint run --config=.golangci.yaml 
+swag_gen:
+    $HOME/go/bin/swag init -d cmd/main/ --parseInternal --output swagger --parseDependency 
