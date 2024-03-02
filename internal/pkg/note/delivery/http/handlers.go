@@ -20,6 +20,16 @@ func CreateNotesHandler(uc note.NoteUsecase) *NoteHandler {
 	}
 }
 
+// GetAllNotes
+// @Summary		Get all notes
+// @Description	Get a list of notes of current user
+// @Tags 		note
+// @ID			get-all-notes
+// @Produce		json
+// @Success		200		{object}	[]models.Note			true	"notes"
+// @Failure		400		{object}	utils.ErrorResponse		true	"error"
+// @Failure		401
+// @Router		/api/note/get_all [get]
 func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	count, _ := strconv.Atoi(r.URL.Query().Get("count"))
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))

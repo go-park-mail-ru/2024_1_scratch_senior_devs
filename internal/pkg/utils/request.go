@@ -13,6 +13,10 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 )
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
 func GetRequestData(r *http.Request, requestData interface{}) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

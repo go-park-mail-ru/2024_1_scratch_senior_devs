@@ -19,6 +19,18 @@ func CreateAuthHandler(uc auth.AuthUsecase) *AuthHandler {
 	}
 }
 
+// SignUp
+// @Summary		Sign up
+// @Description	Add a new user to the database
+// @Tags 		auth
+// @ID			sign-up
+// @Accept		json
+// @Produce		json
+// @Param		username	body		string					true	"username"
+// @Param		password	body		string					true	"password"
+// @Success		200			{object}	models.User				true	"user"
+// @Failure		400			{object}	utils.ErrorResponse		true	"error"
+// @Router		/api/auth/signup [post]
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	userData := models.UserFormData{}
 	err := utils.GetRequestData(r, &userData)
@@ -50,6 +62,15 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// CheckUser
+// @Summary		Check user
+// @Description	Get user info if user is authorized
+// @Tags 		auth
+// @ID			check-user
+// @Produce		json
+// @Success		200		{object}	models.User		true	"user"
+// @Failure		401
+// @Router		/api/auth/check_user [get]
 func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -72,12 +93,31 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// LogOut
+// @Summary		Log out
+// @Description	Quit from user`s account
+// @Tags 		auth
+// @ID			log-out
+// @Success		204
+// @Router		/api/auth/logout [delete]
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, utils.DelTokenCookie())
 	w.Header().Del("Authorization")
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// SignIn
+// @Summary		Sign in
+// @Description	Login as a user
+// @Tags 		auth
+// @ID			sign-in
+// @Accept		json
+// @Produce		json
+// @Param		username	body		string					true	"username"
+// @Param		password	body		string					true	"password"
+// @Success		200			{object}	models.User				true	"user"
+// @Failure		400			{object}	utils.ErrorResponse		true	"error"
+// @Router		/api/auth/login [post]
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	userData := models.UserFormData{}
 	err := utils.GetRequestData(r, &userData)
