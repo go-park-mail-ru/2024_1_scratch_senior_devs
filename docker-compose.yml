@@ -5,5 +5,29 @@ services:
     build:
       context: .
       dockerfile: ./build/main.Dockerfile
+    depends_on:
+      - "postgres"
     ports:
-      - 8080:8080
+      - "8080:8080"
+    networks:
+      - YouNote-network
+  postgres:
+    env_file:
+      - .env
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${{ POSTGRES_DB }}
+      POSTGRES_USER: ${{ POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ POSTGRES_PASSWORD }}
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - YouNote-network
+    volumes:
+      - ./build/sql/create_tables.sql:/docker-entrypoint-initdb.d/initdb.sql
+
+networks:
+  YouNote-network:
+    name: YouNote-network
+    driver: bridge
