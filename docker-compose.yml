@@ -1,25 +1,9 @@
-version: "3"
+version: "3.3"
 
 services:
-  api:
-    build: .
+  main:
+    build:
+      context: .
+      dockerfile: ./build/main.Dockerfile
     ports:
-      - "8080:8080"
-    depends_on:
-      - "postgres"
-    volumes:
-      - ./.env:/bin/.env
-  postgres:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: "younote"
-      POSTGRES_USER: "younote"
-      POSTGRES_PASSWORD: "password"
-      PGDATA: "/var/lib/postgresql/data/pgdata"
-    volumes:
-      - PSQL:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-volumes:
-  PSQL:
+      - 8080:8080
