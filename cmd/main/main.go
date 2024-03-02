@@ -10,12 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/joho/godotenv"
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
+	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
@@ -26,6 +27,8 @@ import (
 	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
 )
 
+// @title 			YouNote API
+// @description 	API for YouNote service
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -53,6 +56,12 @@ func main() {
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		utils.WriteErrorMessage(w, http.StatusBadRequest, "endpoint not found")
 	})
+
+	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.DeepLinking(true),
+		httpSwagger.DocExpansion("none"),
+		httpSwagger.DomID("swagger-ui"),
+	)).Methods(http.MethodGet, http.MethodOptions)
 
 	auth := r.PathPrefix("/auth").Subrouter()
 	{

@@ -1,0 +1,32 @@
+name: YouNote build
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+jobs:
+  you-note-linters:
+    name: linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+  you-note-tests:
+    name: tests
+    needs: you-note-linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+      - name: Build
+        run: go build -v ./...
+      - name: Test
+        run: go test -v ./...
