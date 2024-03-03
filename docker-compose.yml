@@ -8,7 +8,9 @@ services:
     env_file:
       - .env
     depends_on:
-      - "postgres"
+      postgres:
+        condition: service_started
+    restart: always
     ports:
       - "8080:8080"
     networks:

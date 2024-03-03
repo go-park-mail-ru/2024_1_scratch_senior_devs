@@ -3,7 +3,10 @@
     "info": {
         "description": "API for YouNote service",
         "title": "YouNote API",
-        "contact": {}
+        "contact": {
+            "name": "ContactName",
+            "url": "ContactUrl"
+        }
     },
     "paths": {
         "/api/auth/check_user": {

@@ -33,7 +33,9 @@ definitions:
         type: string
     type: object
 info:
-  contact: {}
+  contact:
+    name: ContactName
+    url: ContactUrl
   description: API for YouNote service
   title: YouNote API
 paths:

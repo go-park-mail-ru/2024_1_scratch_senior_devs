@@ -10,7 +10,10 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "ContactName",
+            "url": "ContactUrl"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
