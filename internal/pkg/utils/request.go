@@ -5,12 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
 )
 
 type ErrorResponse struct {
@@ -49,7 +48,7 @@ func WriteResponseData(w http.ResponseWriter, responseData interface{}, successS
 
 func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 	return &http.Cookie{
-		Name:     authmw.JwtCookie,
+		Name:     middleware.JwtCookie,
 		Secure:   false, // TODO false --> true
 		Value:    token,
 		HttpOnly: false, // TODO false --> true
@@ -60,7 +59,7 @@ func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 
 func DelTokenCookie() *http.Cookie {
 	return &http.Cookie{
-		Name:   authmw.JwtCookie,
+		Name:   middleware.JwtCookie,
 		Value:  "",
 		MaxAge: -1,
 		Path:   "/",

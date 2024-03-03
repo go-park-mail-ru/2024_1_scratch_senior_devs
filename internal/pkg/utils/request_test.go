@@ -3,7 +3,7 @@ package utils
 import (
 	"bytes"
 	"context"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/authmw"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -122,7 +122,7 @@ func TestGenTokenCookie(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cookie := GenTokenCookie(tt.token, tt.expTime)
-			assert.Equal(t, cookie.Name, authmw.JwtCookie)
+			assert.Equal(t, cookie.Name, middleware.JwtCookie)
 			assert.Equal(t, cookie.Value, tt.token)
 		})
 	}
@@ -140,7 +140,7 @@ func TestDelTokenCookie(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cookie := DelTokenCookie()
-			assert.Equal(t, cookie.Name, authmw.JwtCookie)
+			assert.Equal(t, cookie.Name, middleware.JwtCookie)
 			assert.Equal(t, cookie.Value, "")
 		})
 	}
