@@ -27,15 +27,16 @@ import (
 	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
 )
 
-// @title 			YouNote API
-// @description 	API for YouNote service
-func main() {
+func init() {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
+}
 
+// @title 			YouNote API
+// @description 	API for YouNote service
+func main() {
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println(err)
@@ -54,7 +55,7 @@ func main() {
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		utils.WriteErrorMessage(w, http.StatusBadRequest, "endpoint not found")
+		utils.WriteErrorMessage(w, http.StatusNotFound, "endpoint not found")
 	})
 
 	r.Use(middleware.CorsMiddleware)
@@ -86,7 +87,7 @@ func main() {
 
 	srv := http.Server{
 		Handler:           r,
-		Addr:              "127.0.0.1:8080",
+		Addr:              ":8080",
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
 		ReadHeaderTimeout: 10 * time.Second,

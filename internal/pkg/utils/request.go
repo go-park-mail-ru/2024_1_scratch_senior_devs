@@ -49,9 +49,9 @@ func WriteResponseData(w http.ResponseWriter, responseData interface{}, successS
 func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 	return &http.Cookie{
 		Name:     middleware.JwtCookie,
-		Secure:   false, // TODO false --> true
+		Secure:   true,
 		Value:    token,
-		HttpOnly: false, // TODO false --> true
+		HttpOnly: true,
 		Expires:  expTime,
 		Path:     "/",
 	}
