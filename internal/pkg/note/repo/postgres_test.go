@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v4"
@@ -46,7 +45,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), &json.RawMessage{}, time.Now(), &time.Time{}, tt.userId).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), []byte{}, time.Now(), &time.Time{}, tt.userId).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 

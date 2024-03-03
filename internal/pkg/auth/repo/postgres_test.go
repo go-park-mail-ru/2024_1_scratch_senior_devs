@@ -29,7 +29,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool) {
 				mockPool.EXPECT().Exec(gomock.Any(), createUser,
 					userId,
-					nil,
+					"",
 					"test_user_2",
 					utils.GetHash("f28fhc2o4m3"),
 					currTime,
@@ -49,9 +49,9 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 			tt.mockRepoAction(mockPool)
 
 			repo := CreateAuthRepo(mockPool)
-			err := repo.CreateUser(context.Background(), &models.User{
+			err := repo.CreateUser(context.Background(), models.User{
 				Id:           userId,
-				Description:  nil,
+				Description:  "",
 				Username:     "test_user_2",
 				PasswordHash: utils.GetHash("f28fhc2o4m3"),
 				CreateTime:   currTime,

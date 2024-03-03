@@ -27,11 +27,11 @@ func CreateAuthUsecase(repo auth.AuthRepo) *AuthUsecase {
 	}
 }
 
-func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*models.User, string, time.Time, error) {
+func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(JWTLifeTime)
 
-	newUser := &models.User{
+	newUser := models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
 		PasswordHash: utils.GetHash(data.Password),
@@ -41,32 +41,38 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data *models.UserFormData) (*
 
 	err := uc.repo.CreateUser(ctx, newUser)
 	if err != nil {
-		return &models.User{}, "", currentTime, err
+		return models.User{}, "", currentTime, err
 	}
 
-	token, _ := middleware.GenToken(newUser, JWTLifeTime)
+	token, err := middleware.GenToken(newUser, JWTLifeTime)
+	if err != nil {
+		return models.User{}, "", currentTime, err
+	}
 
 	return newUser, token, expTime, nil
 }
 
-func (uc *AuthUsecase) SignIn(ctx context.Context, data *models.UserFormData) (*models.User, string, time.Time, error) {
+func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(JWTLifeTime)
 
 	user, err := uc.repo.CheckUserCredentials(ctx, data.Username, utils.GetHash(data.Password))
 	if err != nil {
-		return &models.User{}, "", currentTime, err
+		return models.User{}, "", currentTime, err
 	}
 
-	token, _ := middleware.GenToken(user, JWTLifeTime)
+	token, err := middleware.GenToken(user, JWTLifeTime)
+	if err != nil {
+		return models.User{}, "", currentTime, err
+	}
 
 	return user, token, expTime, nil
 }
 
-func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User, error) {
 	userData, err := uc.repo.GetUserById(ctx, id)
 	if err != nil {
-		return &models.User{}, err
+		return models.User{}, err
 	}
 
 	return userData, nil

@@ -44,7 +44,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUser, token, expTime, err := h.uc.SignUp(r.Context(), &userData)
+	newUser, token, expTime, err := h.uc.SignUp(r.Context(), userData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte(`{"message":"this username is already taken"}`))
@@ -126,7 +126,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, exp, err := h.uc.SignIn(r.Context(), &userData)
+	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect username or password")

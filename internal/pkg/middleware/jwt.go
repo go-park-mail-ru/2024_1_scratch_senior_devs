@@ -19,7 +19,7 @@ const (
 	JwtCookie = "YouNoteJWT"
 )
 
-func GenToken(user *models.User, lifeTime time.Duration) (string, error) {
+func GenToken(user models.User, lifeTime time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":  user.Id,
 		"usr": user.Username,

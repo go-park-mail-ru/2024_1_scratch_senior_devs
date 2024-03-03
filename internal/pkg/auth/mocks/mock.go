@@ -38,10 +38,10 @@ func (m *MockAuthUsecase) EXPECT() *MockAuthUsecaseMockRecorder {
 }
 
 // CheckUser mocks base method.
-func (m *MockAuthUsecase) CheckUser(arg0 context.Context, arg1 uuid.UUID) (*models.User, error) {
+func (m *MockAuthUsecase) CheckUser(arg0 context.Context, arg1 uuid.UUID) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckUser", arg0, arg1)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -53,10 +53,10 @@ func (mr *MockAuthUsecaseMockRecorder) CheckUser(arg0, arg1 interface{}) *gomock
 }
 
 // SignIn mocks base method.
-func (m *MockAuthUsecase) SignIn(arg0 context.Context, arg1 *models.UserFormData) (*models.User, string, time.Time, error) {
+func (m *MockAuthUsecase) SignIn(arg0 context.Context, arg1 models.UserFormData) (models.User, string, time.Time, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SignIn", arg0, arg1)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(time.Time)
 	ret3, _ := ret[3].(error)
@@ -70,10 +70,10 @@ func (mr *MockAuthUsecaseMockRecorder) SignIn(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // SignUp mocks base method.
-func (m *MockAuthUsecase) SignUp(arg0 context.Context, arg1 *models.UserFormData) (*models.User, string, time.Time, error) {
+func (m *MockAuthUsecase) SignUp(arg0 context.Context, arg1 models.UserFormData) (models.User, string, time.Time, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SignUp", arg0, arg1)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(time.Time)
 	ret3, _ := ret[3].(error)
@@ -110,10 +110,10 @@ func (m *MockAuthRepo) EXPECT() *MockAuthRepoMockRecorder {
 }
 
 // CheckUserCredentials mocks base method.
-func (m *MockAuthRepo) CheckUserCredentials(arg0 context.Context, arg1, arg2 string) (*models.User, error) {
+func (m *MockAuthRepo) CheckUserCredentials(arg0 context.Context, arg1, arg2 string) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckUserCredentials", arg0, arg1, arg2)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -125,7 +125,7 @@ func (mr *MockAuthRepoMockRecorder) CheckUserCredentials(arg0, arg1, arg2 interf
 }
 
 // CreateUser mocks base method.
-func (m *MockAuthRepo) CreateUser(arg0 context.Context, arg1 *models.User) error {
+func (m *MockAuthRepo) CreateUser(arg0 context.Context, arg1 models.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -139,10 +139,10 @@ func (mr *MockAuthRepoMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.C
 }
 
 // GetUserById mocks base method.
-func (m *MockAuthRepo) GetUserById(arg0 context.Context, arg1 uuid.UUID) (*models.User, error) {
+func (m *MockAuthRepo) GetUserById(arg0 context.Context, arg1 uuid.UUID) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserById", arg0, arg1)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -154,10 +154,10 @@ func (mr *MockAuthRepoMockRecorder) GetUserById(arg0, arg1 interface{}) *gomock.
 }
 
 // GetUserByUsername mocks base method.
-func (m *MockAuthRepo) GetUserByUsername(arg0 context.Context, arg1 string) (*models.User, error) {
+func (m *MockAuthRepo) GetUserByUsername(arg0 context.Context, arg1 string) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByUsername", arg0, arg1)
-	ret0, _ := ret[0].(*models.User)
+	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

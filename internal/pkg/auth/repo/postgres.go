@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"database/sql"
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
@@ -22,55 +23,65 @@ func CreateAuthRepo(db pgxtype.Querier) *AuthRepo {
 	return &AuthRepo{db: db}
 }
 
-func (repo *AuthRepo) CreateUser(ctx context.Context, user *models.User) error {
+func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
 	return err
 }
 
-func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (*models.User, error) {
-	resultUser := &models.User{Id: id}
+func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.User, error) {
+	resultUser := models.User{Id: id}
+	description := sql.NullString{}
 
 	err := repo.db.QueryRow(ctx, getUserById, id).Scan(
-		&resultUser.Description,
+		&description,
 		&resultUser.Username,
 		&resultUser.PasswordHash,
 		&resultUser.CreateTime,
 		&resultUser.ImagePath,
 	)
 
+	if description.Valid {
+		resultUser.Description = description.String
+	}
+
 	if err != nil {
-		return &models.User{}, err
+		return models.User{}, err
 	}
 
 	return resultUser, nil
 }
 
-func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
-	resultUser := &models.User{Username: username}
+func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
+	resultUser := models.User{Username: username}
+	description := sql.NullString{}
 
 	err := repo.db.QueryRow(ctx, getUserByUsername, username).Scan(
 		&resultUser.Id,
-		&resultUser.Description,
+		&description,
 		&resultUser.PasswordHash,
 		&resultUser.CreateTime,
 		&resultUser.ImagePath,
 	)
 
+	if description.Valid {
+		resultUser.Description = description.String
+	}
+
 	if err != nil {
-		return &models.User{}, err
+		return models.User{}, err
 	}
 
 	return resultUser, nil
 }
 
-func (repo *AuthRepo) CheckUserCredentials(ctx context.Context, username string, passwordHash string) (*models.User, error) {
+func (repo *AuthRepo) CheckUserCredentials(ctx context.Context, username string, passwordHash string) (models.User, error) {
 	user, err := repo.GetUserByUsername(ctx, username)
 	if err != nil {
-		return &models.User{}, err
+		return models.User{}, err
 	}
 
 	if user.PasswordHash != passwordHash {
-		return &models.User{}, err
+		return models.User{}, err
 	}
 
 	return user, nil

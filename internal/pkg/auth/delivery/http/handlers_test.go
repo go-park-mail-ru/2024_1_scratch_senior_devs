@@ -66,12 +66,12 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			defer ctrl.Finish()
 
 			if tt.name != "AuthHandler_SignUp_Fail_1" && tt.name != "AuthHandler_SignUp_Fail_2" {
-				mockUsecase.EXPECT().SignUp(gomock.Any(), &models.UserFormData{
+				mockUsecase.EXPECT().SignUp(gomock.Any(), models.UserFormData{
 					Username: tt.username,
 					Password: tt.password,
-				}).Return(&models.User{
+				}).Return(models.User{
 					Id:           uuid.NewV4(),
-					Description:  nil,
+					Description:  "",
 					Username:     tt.username,
 					PasswordHash: utils.GetHash(tt.password),
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
@@ -130,12 +130,12 @@ func TestAuthHandler_SignIn(t *testing.T) {
 			defer ctrl.Finish()
 
 			if tt.name != "AuthHandler_SignIn_Fail_1" {
-				mockUsecase.EXPECT().SignIn(gomock.Any(), &models.UserFormData{
+				mockUsecase.EXPECT().SignIn(gomock.Any(), models.UserFormData{
 					Username: tt.username,
 					Password: tt.password,
-				}).Return(&models.User{
+				}).Return(models.User{
 					Id:           uuid.NewV4(),
-					Description:  nil,
+					Description:  "",
 					Username:     tt.username,
 					PasswordHash: utils.GetHash(tt.password),
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
@@ -218,9 +218,9 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			if tt.name != "AuthHandler_CheckUser_Fail_1" {
-				mockUsecase.EXPECT().CheckUser(gomock.Any(), tt.id).Return(&models.User{
+				mockUsecase.EXPECT().CheckUser(gomock.Any(), tt.id).Return(models.User{
 					Id:           tt.id,
-					Description:  nil,
+					Description:  "",
 					Username:     tt.username,
 					PasswordHash: utils.GetHash("fh9ch283c"),
 				}, tt.usecaseErr)
