@@ -25,3 +25,45 @@ CREATE TABLE IF NOT EXISTS notes (
     owner_id UUID REFERENCES users (id)
         NOT NULL
 );
+
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE OR REPLACE FUNCTION add_draft_note()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+DECLARE
+    name_text json;
+BEGIN
+    IF NEW.id IS NOT NULL AND NEW.username IS NOT NULL THEN
+        name_text := format('{
+            "name": "note",
+            "content": [
+                {
+                    "name": "title",
+                    "content": [
+                        {
+                            "name": "paragraph",
+                            "text": "Добро пожаловать в YouNote, %s",
+                            "marks": []
+                        }
+                    ]
+                }
+            ]
+        }', NEW.username);
+        INSERT INTO notes (id, data, create_time, update_time, owner_id)
+        VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NEW.id);
+    END IF;
+
+    RETURN NEW;
+END;
+$BODY$;
+
+CREATE OR REPLACE TRIGGER add_note_on_new_user
+    AFTER INSERT
+    ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION add_draft_note();
