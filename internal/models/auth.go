@@ -15,8 +15,8 @@ const PayloadContextKey PayloadKey = "payload"
 const (
 	minUsernameLength    = 4
 	maxUsernameLength    = 12
-	minPasswordLength    = 9
-	maxPasswordLength    = 19
+	minPasswordLength    = 8
+	maxPasswordLength    = 20
 	usernameAllowedExtra = "_-"
 	passwordAllowedExtra = "#$%&_-"
 )
