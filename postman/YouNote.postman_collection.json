@@ -24,7 +24,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"test_user\",\r\n    \"password\": \"12345678a\"\r\n}",
+					"raw": "{\r\n    \"username\": \"test_user_8\",\r\n    \"password\": \"12345678a\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -32,13 +32,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8080/api/auth/signup",
+					"raw": "http://{{HOST}}:8080/api/auth/signup",
 					"protocol": "http",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{HOST}}"
 					],
 					"port": "8080",
 					"path": [
@@ -57,7 +54,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"test_user\",\r\n    \"password\": \"12345678a\"\r\n}",
+					"raw": "{\r\n    \"username\": \"test_user_4\",\r\n    \"password\": \"12345678a\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -65,13 +62,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8080/api/auth/login",
+					"raw": "http://{{HOST}}:8080/api/auth/login",
 					"protocol": "http",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{HOST}}"
 					],
 					"port": "8080",
 					"path": [
@@ -91,7 +85,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkzMjA2NTAsImlkIjoiNTJmYmQ3MGUtMDVjOC00N2NlLWJkYTItNjFiMTdmOWE0NWUwIiwidXNyIjoidGVzdF91c2VyIn0.c74v6ee3YNgYwo2BquNMotVZAtWP2MIyyCWGXGJqAeA",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDk1NTIwMTMsImlkIjoiOGZkNThjNDMtNWM0My00MTg4LTg2ZTEtN2Y5MWEzOGIwYjRiIiwidXNyIjoidGVzdF91c2VyXzQifQ.xFJECGg2gzB-NLQxobjm9PVSqFFG7QGAF_LmdffU8n8",
 							"type": "string"
 						}
 					]
@@ -99,13 +93,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8080/api/auth/check_user",
+					"raw": "http://{{HOST}}:8080/api/auth/check_user",
 					"protocol": "http",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{HOST}}"
 					],
 					"port": "8080",
 					"path": [
@@ -125,7 +116,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkzMjA1NTEsImlkIjoiNTJmYmQ3MGUtMDVjOC00N2NlLWJkYTItNjFiMTdmOWE0NWUwIiwidXNyIjoidGVzdF91c2VyIn0.9Vz6iY2W_t9S5R4liWyUquFJgJdYaW_P5nUxy--Er8k",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDk1NTIwMTMsImlkIjoiOGZkNThjNDMtNWM0My00MTg4LTg2ZTEtN2Y5MWEzOGIwYjRiIiwidXNyIjoidGVzdF91c2VyXzQifQ.xFJECGg2gzB-NLQxobjm9PVSqFFG7QGAF_LmdffU8n8",
 							"type": "string"
 						}
 					]
@@ -133,13 +124,10 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8080/api/auth/logout",
+					"raw": "http://{{HOST}}:8080/api/auth/logout",
 					"protocol": "http",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{HOST}}"
 					],
 					"port": "8080",
 					"path": [
@@ -159,7 +147,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDkzMjA2NTAsImlkIjoiNTJmYmQ3MGUtMDVjOC00N2NlLWJkYTItNjFiMTdmOWE0NWUwIiwidXNyIjoidGVzdF91c2VyIn0.c74v6ee3YNgYwo2BquNMotVZAtWP2MIyyCWGXGJqAeA",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDk1NTIwMTMsImlkIjoiOGZkNThjNDMtNWM0My00MTg4LTg2ZTEtN2Y5MWEzOGIwYjRiIiwidXNyIjoidGVzdF91c2VyXzQifQ.xFJECGg2gzB-NLQxobjm9PVSqFFG7QGAF_LmdffU8n8",
 							"type": "string"
 						}
 					]
@@ -167,13 +155,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8080/api/note/get_all",
+					"raw": "http://{{HOST}}:8080/api/note/get_all",
 					"protocol": "http",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{HOST}}"
 					],
 					"port": "8080",
 					"path": [
