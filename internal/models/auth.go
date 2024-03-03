@@ -3,9 +3,9 @@ package models
 import (
 	"errors"
 	"fmt"
-	"regexp"
-
 	"github.com/satori/uuid"
+	"strings"
+	"unicode"
 )
 
 type PayloadKey string
@@ -13,21 +13,48 @@ type PayloadKey string
 const PayloadContextKey PayloadKey = "payload"
 
 const (
-	minUsernameLength = 4
-	maxUsernameLength = 12
-	minPasswordLength = 9
-	maxPasswordLength = 19
-)
-
-var (
-	usernameRegexp         = regexp.MustCompile("^[0-9A-Za-z_-]+$")
-	passwordRegexp         = regexp.MustCompile("^[0-9A-Za-z#$%&_-]+$")
-	notLessOneLetterRegexp = regexp.MustCompile("[A-Za-z]")
+	minUsernameLength    = 4
+	maxUsernameLength    = 12
+	minPasswordLength    = 9
+	maxPasswordLength    = 19
+	usernameAllowedExtra = "_-"
+	passwordAllowedExtra = "#$%&_-"
 )
 
 type UserFormData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+func isEnglishLetter(c rune) bool {
+	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+}
+
+func checkUsernameAllowed(value []rune) bool {
+	for _, sym := range value {
+		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(usernameAllowedExtra, string(sym)) {
+			return false
+		}
+	}
+	return true
+}
+
+func checkPasswordAllowed(value []rune) bool {
+	for _, sym := range value {
+		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(passwordAllowedExtra, string(sym)) {
+			return false
+		}
+	}
+	return true
+}
+
+func checkPasswordRequired(value []rune) bool {
+	for _, sym := range value {
+		if isEnglishLetter(sym) {
+			return true
+		}
+	}
+	return false
 }
 
 func (form *UserFormData) Validate() error {
@@ -37,17 +64,17 @@ func (form *UserFormData) Validate() error {
 	if len(runedUsername) < minUsernameLength || len(runedUsername) > maxUsernameLength {
 		return fmt.Errorf("username length must be from %d to %d characters", minUsernameLength, maxUsernameLength)
 	}
-	if !usernameRegexp.MatchString(form.Username) {
+	if !checkUsernameAllowed(runedUsername) {
 		return errors.New("username can only include symbols: A-Z, a-z, 0-9, _, - ")
 	}
 
 	if len(runedPassword) < minPasswordLength || len(runedPassword) > maxPasswordLength {
 		return fmt.Errorf("password length must be from %d to %d characters", minPasswordLength, maxPasswordLength)
 	}
-	if !passwordRegexp.MatchString(form.Password) {
+	if !checkPasswordAllowed(runedPassword) {
 		return errors.New("password can only include symbols: A-Z, a-z, 0-9, #, $, %, &, _, - ")
 	}
-	if !notLessOneLetterRegexp.MatchString(form.Password) {
+	if !checkPasswordRequired(runedPassword) {
 		return errors.New("password must include at least 1 letter (A-Z, a-z)")
 	}
 
