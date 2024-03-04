@@ -10,15 +10,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
-	httpSwagger "github.com/swaggo/http-swagger"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
 	authUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/usecase"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
@@ -33,7 +32,9 @@ func init() {
 }
 
 // @title 			YouNote API
+// @version 		1.0
 // @description 	API for YouNote service
+// @host 			you-note.ru:8080
 func main() {
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -57,12 +58,6 @@ func main() {
 	})
 
 	r.Use(middleware.CorsMiddleware)
-
-	r.PathPrefix("/swagger").Handler(httpSwagger.Handler(
-		httpSwagger.DeepLinking(true),
-		httpSwagger.DocExpansion("none"),
-		httpSwagger.DomID("swagger-ui"),
-	)).Methods(http.MethodGet, http.MethodOptions)
 
 	auth := r.PathPrefix("/auth").Subrouter()
 	{

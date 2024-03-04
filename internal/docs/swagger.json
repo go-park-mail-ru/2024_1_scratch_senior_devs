@@ -3,11 +3,10 @@
     "info": {
         "description": "API for YouNote service",
         "title": "YouNote API",
-        "contact": {
-            "name": "ContactName",
-            "url": "ContactUrl"
-        }
+        "contact": {},
+        "version": "1.0"
     },
+    "host": "you-note.ru:8080",
     "paths": {
         "/api/auth/check_user": {
             "get": {

@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"testing"
@@ -73,7 +74,17 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 		expectedErr    error
 	}{
 		{
-			name: "GetUserById_Success",
+			name: "GetUserById_Success_1",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, id uuid.UUID) {
+				mockPool.EXPECT().QueryRow(gomock.Any(), getUserById, id).Return(pgxRows)
+				pgxRows.Next()
+			},
+			userId:      uuid.NewV4(),
+			columns:     []string{"description", "username", "password_hash", "create_time", "image_path"},
+			expectedErr: nil,
+		},
+		{
+			name: "GetUserById_Success_2",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, id uuid.UUID) {
 				mockPool.EXPECT().QueryRow(gomock.Any(), getUserById, id).Return(pgxRows)
 				pgxRows.Next()
@@ -90,7 +101,11 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(nil, "", "", time.Now(), "").ToPgxRows()
+			description := sql.NullString{}
+			if tt.name == "GetUserById_Success_2" {
+				description = sql.NullString{String: "description", Valid: true}
+			}
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(description, "", "", time.Now(), "").ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
@@ -111,7 +126,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 		expectedErr    error
 	}{
 		{
-			name: "GetUserByUsername_Success",
+			name: "GetUserByUsername_Success_1",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
 				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
 				pgxRows.Next()
@@ -121,7 +136,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 			expectedErr: nil,
 		},
 		{
-			name: "GetUserByUsername_Success",
+			name: "GetUserByUsername_Success_2",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
 				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
 				pgxRows.Next()
@@ -138,7 +153,11 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), nil, "", time.Now(), "").ToPgxRows()
+			description := sql.NullString{}
+			if tt.name == "GetUserByUsername_Success_2" {
+				description = sql.NullString{String: "description", Valid: true}
+			}
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), description, "", time.Now(), "").ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.username)
 
