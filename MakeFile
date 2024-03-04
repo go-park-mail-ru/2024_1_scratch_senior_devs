@@ -1,8 +1,8 @@
 cover:
 	go test -json ./... -coverprofile coverprofile_.tmp -coverpkg=./... ; \
-    grep -v -e 'mock.go' -e 'docs.go' coverprofile_.tmp > coverprofile.tmp ; \
+    grep -v -e 'mock.go' -e 'docs.go'  coverprofile_.tmp > coverprofile.tmp ; \
     rm coverprofile_.tmp ; \
-    go tool cover -html coverprofile.tmp ; \
+    go tool cover -html coverprofile.tmp -o ../heatmap.html; \
     go tool cover -func coverprofile.tmp
 
 test:
@@ -10,8 +10,8 @@ test:
 
 lint:
 	golangci-lint run --config=.golangci.yaml 
-swag_gen:
-    $HOME/go/bin/swag init -d cmd/main/ --parseInternal --output swagger --parseDependency
 
 mock_gen:
 	go generate ./...
+#swag_gen:
+   # $HOME/go/bin/swag init -d cmd/main/ --parseInternal --output swagger --parseDependency
