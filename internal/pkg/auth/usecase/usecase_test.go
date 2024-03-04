@@ -141,3 +141,63 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckUser(t *testing.T) {
+	type args struct {
+		id uuid.UUID
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(*mockAuth.MockAuthRepo, uuid.UUID, bool)
+		args       args
+		wantErr    bool
+	}{
+		{
+			name: "AuthUsecase_CheckUser_Success",
+			repoMocker: func(repo *mockAuth.MockAuthRepo, id uuid.UUID, wantErr bool) {
+				repo.EXPECT().GetUserById(gomock.Any(), id).Return(models.User{
+					Id:           uuid.NewV4(),
+					Description:  "",
+					Username:     "testuser1",
+					PasswordHash: utils.GetHash("f34ovin332"),
+				}, getErr(wantErr)).Times(1)
+			},
+			args: args{
+				id: uuid.NewV4(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "AuthUsecase_CheckUser_Fail",
+			repoMocker: func(repo *mockAuth.MockAuthRepo, id uuid.UUID, wantErr bool) {
+				repo.EXPECT().GetUserById(gomock.Any(), id).Return(models.User{
+					Id:           uuid.NewV4(),
+					Description:  "",
+					Username:     "testuser1",
+					PasswordHash: utils.GetHash("f34ovin332"),
+				}, getErr(wantErr)).Times(1)
+			},
+			args: args{
+				id: uuid.NewV4(),
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			repo := mockAuth.NewMockAuthRepo(ctrl)
+			uc := CreateAuthUsecase(repo)
+			defer ctrl.Finish()
+
+			tt.repoMocker(repo, tt.args.id, tt.wantErr)
+			_, err := uc.CheckUser(context.Background(), tt.args.id)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AuthUsecase.CheckUser() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}

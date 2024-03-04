@@ -32,12 +32,12 @@ definitions:
       message:
         type: string
     type: object
+host: you-note.ru:8080
 info:
-  contact:
-    name: ContactName
-    url: ContactUrl
+  contact: {}
   description: API for YouNote service
   title: YouNote API
+  version: "1.0"
 paths:
   /api/auth/check_user:
     get:

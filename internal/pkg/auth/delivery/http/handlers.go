@@ -46,8 +46,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	newUser, token, expTime, err := h.uc.SignUp(r.Context(), userData)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(`{"message":"this username is already taken"}`))
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "this username is already taken")
 		return
 	}
 
