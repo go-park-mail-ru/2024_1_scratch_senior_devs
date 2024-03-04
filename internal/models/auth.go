@@ -17,8 +17,7 @@ const (
 	maxUsernameLength    = 12
 	minPasswordLength    = 8
 	maxPasswordLength    = 20
-	usernameAllowedExtra = "_-"
-	passwordAllowedExtra = "#$%&_-"
+	passwordAllowedExtra = "#$%&"
 )
 
 type UserFormData struct {
@@ -32,7 +31,7 @@ func isEnglishLetter(c rune) bool {
 
 func checkUsernameAllowed(value []rune) bool {
 	for _, sym := range value {
-		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(usernameAllowedExtra, string(sym)) {
+		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) {
 			return false
 		}
 	}
@@ -65,14 +64,14 @@ func (form *UserFormData) Validate() error {
 		return fmt.Errorf("username length must be from %d to %d characters", minUsernameLength, maxUsernameLength)
 	}
 	if !checkUsernameAllowed(runedUsername) {
-		return errors.New("username can only include symbols: A-Z, a-z, 0-9, _, - ")
+		return errors.New("username can only include symbols: A-Z, a-z, 0-9")
 	}
 
 	if len(runedPassword) < minPasswordLength || len(runedPassword) > maxPasswordLength {
 		return fmt.Errorf("password length must be from %d to %d characters", minPasswordLength, maxPasswordLength)
 	}
 	if !checkPasswordAllowed(runedPassword) {
-		return errors.New("password can only include symbols: A-Z, a-z, 0-9, #, $, %, &, _, - ")
+		return errors.New("password can only include symbols: A-Z, a-z, 0-9, #, $, %, &")
 	}
 	if !checkPasswordRequired(runedPassword) {
 		return errors.New("password must include at least 1 letter (A-Z, a-z)")

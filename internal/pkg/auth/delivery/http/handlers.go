@@ -128,8 +128,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect username or password")
+		utils.WriteErrorMessage(w, http.StatusUnauthorized, "incorrect username or password")
 		return
 	}
 

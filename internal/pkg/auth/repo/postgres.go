@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
@@ -81,7 +82,7 @@ func (repo *AuthRepo) CheckUserCredentials(ctx context.Context, username string,
 	}
 
 	if user.PasswordHash != passwordHash {
-		return models.User{}, err
+		return models.User{}, errors.New("wrong username or password")
 	}
 
 	return user, nil

@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 				mockPool.EXPECT().Exec(gomock.Any(), createUser,
 					userId,
 					"",
-					"test_user_2",
+					"testuser2",
 					utils.GetHash("f28fhc2o4m3"),
 					currTime,
 					"default.jpg",
@@ -52,7 +53,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 			err := repo.CreateUser(context.Background(), models.User{
 				Id:           userId,
 				Description:  "",
-				Username:     "test_user_2",
+				Username:     "testuser2",
 				PasswordHash: utils.GetHash("f28fhc2o4m3"),
 				CreateTime:   currTime,
 				ImagePath:    "default.jpg",
@@ -115,7 +116,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
 				pgxRows.Next()
 			},
-			username:    "test_user",
+			username:    "testuser",
 			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
 			expectedErr: nil,
 		},
@@ -125,7 +126,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
 				pgxRows.Next()
 			},
-			username:    "test_user",
+			username:    "testuser",
 			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
 			expectedErr: nil,
 		},
@@ -164,10 +165,21 @@ func TestAuthRepo_CheckUserCredentials(t *testing.T) {
 				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
 				pgxRows.Next()
 			},
-			username:    "test_user",
+			username:    "testuser",
 			password:    "cn24v80h2jcw",
 			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
 			expectedErr: nil,
+		},
+		{
+			name: "GetUserByUsername_Fail",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string, password string) {
+				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
+				pgxRows.Next()
+			},
+			username:    "testuser",
+			password:    "cn24v80w",
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
+			expectedErr: errors.New("wrong username or password"),
 		},
 	}
 
@@ -177,12 +189,12 @@ func TestAuthRepo_CheckUserCredentials(t *testing.T) {
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), nil, "", time.Now(), "").ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), nil, utils.GetHash("cn24v80h2jcw"), time.Now(), "").ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.username, tt.password)
 
 			repo := CreateAuthRepo(mockPool)
-			_, err := repo.CheckUserCredentials(context.Background(), tt.username, tt.password)
+			_, err := repo.CheckUserCredentials(context.Background(), tt.username, utils.GetHash(tt.password))
 
 			assert.Equal(t, tt.expectedErr, err)
 		})

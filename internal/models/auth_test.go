@@ -16,18 +16,18 @@ func TestValidate(t *testing.T) {
 	}{
 		{
 			name:        "UserFormFata_ValidateSuccess_1",
-			data:        UserFormData{Username: "test_user", Password: "348gv_%#_332"},
+			data:        UserFormData{Username: "testuser", Password: "348gv%#332"},
 			expectedErr: nil,
 		},
 		{
 			name:        "UserFormFata_ValidateSuccess_2",
-			data:        UserFormData{Username: "-----------", Password: "nv48392fh$"},
+			data:        UserFormData{Username: "testuser2", Password: "nv48392fh$"},
 			expectedErr: nil,
 		},
 		{
 			name:        "UserFormFata_ValidateFail_1",
 			data:        UserFormData{Username: "+74951234567", Password: "nv48392fh$"},
-			expectedErr: errors.New("username can only include symbols: A-Z, a-z, 0-9, _, - "),
+			expectedErr: errors.New("username can only include symbols: A-Z, a-z, 0-9"),
 		},
 		{
 			name:        "UserFormFata_ValidateFail_2",
@@ -41,12 +41,12 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			name:        "UserFormFata_ValidateFail_4",
-			data:        UserFormData{Username: "74951234567", Password: "+*cn39__3297yth2"},
-			expectedErr: errors.New("password can only include symbols: A-Z, a-z, 0-9, #, $, %, &, _, - "),
+			data:        UserFormData{Username: "74951234567", Password: "cn39 3297yth2"},
+			expectedErr: errors.New("password can only include symbols: A-Z, a-z, 0-9, #, $, %, &"),
 		},
 		{
 			name:        "UserFormFata_ValidateFail_5",
-			data:        UserFormData{Username: "74951234567", Password: "----------------"},
+			data:        UserFormData{Username: "74951234567", Password: "42368723632"},
 			expectedErr: errors.New("password must include at least 1 letter (A-Z, a-z)"),
 		},
 	}
