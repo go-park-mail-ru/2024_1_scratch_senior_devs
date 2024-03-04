@@ -40,19 +40,8 @@ DECLARE
 BEGIN
     IF NEW.id IS NOT NULL AND NEW.username IS NOT NULL THEN
         name_text := format('{
-            "name": "note",
-            "content": [
-                {
-                    "name": "title",
-                    "content": [
-                        {
-                            "name": "paragraph",
-                            "text": "Добро пожаловать в YouNote, %s",
-                            "marks": []
-                        }
-                    ]
-                }
-            ]
+            "title": "You-note <3",
+            "content": "Самые лучшие заметки)"
         }', NEW.username);
         INSERT INTO notes (id, data, create_time, update_time, owner_id)
         VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NEW.id);
