@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -94,12 +93,12 @@ func main() {
 	fmt.Println("Server started")
 
 	sig := <-signalCh
-	log.Printf("Received signal: %v\n", sig)
+	fmt.Printf("Received signal: %v\n", sig)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server shutdown failed: %v\n", err)
+		fmt.Printf("Server shutdown failed: %v\n", err)
 	}
 }

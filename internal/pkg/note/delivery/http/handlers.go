@@ -10,6 +10,11 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 )
 
+const (
+	defaultCount  = 10
+	defaultOffset = 0
+)
+
 type NoteHandler struct {
 	uc note.NoteUsecase
 }
@@ -31,10 +36,33 @@ func CreateNotesHandler(uc note.NoteUsecase) *NoteHandler {
 // @Failure		401
 // @Router		/api/note/get_all [get]
 func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
-	count, _ := strconv.Atoi(r.URL.Query().Get("count"))
-	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-	if count == 0 {
-		count = 10
+	count := defaultCount
+	offset := defaultOffset
+
+	var err error
+
+	strCount := r.URL.Query().Get("count")
+	if strCount != "" {
+		count, err = strconv.Atoi(strCount)
+		if err != nil {
+			utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect count parameter")
+			return
+		}
+		if count <= 0 {
+			count = defaultCount
+		}
+	}
+
+	strOffset := r.URL.Query().Get("offset")
+	if strOffset != "" {
+		offset, err = strconv.Atoi(strOffset)
+		if err != nil {
+			utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect offset parameter")
+			return
+		}
+		if offset < 0 {
+			offset = defaultOffset
+		}
 	}
 
 	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
