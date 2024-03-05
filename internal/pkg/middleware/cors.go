@@ -12,6 +12,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Expose-Headers", "Authorization,X-CSRF-Token")
 		w.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS_HOST_NAME"))
+		w.Header().Set("Access-Control-Max-Age", "86400")
 		if r.Method == http.MethodOptions {
 			return
 		}

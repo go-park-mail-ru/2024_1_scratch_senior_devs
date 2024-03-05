@@ -21,5 +21,4 @@ type AuthRepo interface {
 	CreateUser(context.Context, models.User) error
 	GetUserById(context.Context, uuid.UUID) (models.User, error)
 	GetUserByUsername(context.Context, string) (models.User, error)
-	CheckUserCredentials(context.Context, string, string) (models.User, error)
 }

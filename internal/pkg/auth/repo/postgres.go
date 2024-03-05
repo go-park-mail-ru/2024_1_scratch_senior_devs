@@ -3,7 +3,6 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
@@ -11,9 +10,10 @@ import (
 )
 
 const (
-	createUser        = "INSERT INTO users(id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
-	getUserById       = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
-	getUserByUsername = "SELECT id, description, password_hash, create_time, image_path FROM users WHERE username = $1;"
+	createUser                = "INSERT INTO users(id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
+	getUserById               = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
+	getUserByUsername         = "SELECT id, description, password_hash, create_time, image_path FROM users WHERE username = $1;"
+	getPasswordHashByUsername = "SELECT password_hash FROM users WHERE username = $1"
 )
 
 type AuthRepo struct {
@@ -73,17 +73,4 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 	}
 
 	return resultUser, nil
-}
-
-func (repo *AuthRepo) CheckUserCredentials(ctx context.Context, username string, passwordHash string) (models.User, error) {
-	user, err := repo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return models.User{}, err
-	}
-
-	if user.PasswordHash != passwordHash {
-		return models.User{}, errors.New("wrong username or password")
-	}
-
-	return user, nil
 }

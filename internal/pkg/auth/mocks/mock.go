@@ -109,21 +109,6 @@ func (m *MockAuthRepo) EXPECT() *MockAuthRepoMockRecorder {
 	return m.recorder
 }
 
-// CheckUserCredentials mocks base method.
-func (m *MockAuthRepo) CheckUserCredentials(arg0 context.Context, arg1, arg2 string) (models.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckUserCredentials", arg0, arg1, arg2)
-	ret0, _ := ret[0].(models.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckUserCredentials indicates an expected call of CheckUserCredentials.
-func (mr *MockAuthRepoMockRecorder) CheckUserCredentials(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUserCredentials", reflect.TypeOf((*MockAuthRepo)(nil).CheckUserCredentials), arg0, arg1, arg2)
-}
-
 // CreateUser mocks base method.
 func (m *MockAuthRepo) CreateUser(arg0 context.Context, arg1 models.User) error {
 	m.ctrl.T.Helper()

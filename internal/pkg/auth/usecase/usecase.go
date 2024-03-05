@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"time"
@@ -56,9 +57,12 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(JWTLifeTime)
 
-	user, err := uc.repo.CheckUserCredentials(ctx, data.Username, utils.GetHash(data.Password))
+	user, err := uc.repo.GetUserByUsername(ctx, data.Username)
 	if err != nil {
 		return models.User{}, "", currentTime, err
+	}
+	if user.PasswordHash != utils.GetHash(data.Password) {
+		return models.User{}, "", currentTime, errors.New("wrong username or password")
 	}
 
 	token, err := middleware.GenToken(user, JWTLifeTime)

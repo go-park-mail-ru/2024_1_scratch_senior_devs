@@ -3,7 +3,6 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"testing"
 	"time"
@@ -163,57 +162,6 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 
 			repo := CreateAuthRepo(mockPool)
 			_, err := repo.GetUserByUsername(context.Background(), tt.username)
-
-			assert.Equal(t, tt.expectedErr, err)
-		})
-	}
-}
-
-func TestAuthRepo_CheckUserCredentials(t *testing.T) {
-	tests := []struct {
-		name           string
-		mockRepoAction func(*pgxpoolmock.MockPgxPool, pgx.Rows, string, string)
-		username       string
-		password       string
-		columns        []string
-		expectedErr    error
-	}{
-		{
-			name: "GetUserByUsername_Success",
-			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string, password string) {
-				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
-				pgxRows.Next()
-			},
-			username:    "testuser",
-			password:    "cn24v80h2jcw",
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
-			expectedErr: nil,
-		},
-		{
-			name: "GetUserByUsername_Fail",
-			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string, password string) {
-				mockPool.EXPECT().QueryRow(gomock.Any(), getUserByUsername, username).Return(pgxRows)
-				pgxRows.Next()
-			},
-			username:    "testuser",
-			password:    "cn24v80w",
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
-			expectedErr: errors.New("wrong username or password"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
-			defer ctrl.Finish()
-
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), nil, utils.GetHash("cn24v80h2jcw"), time.Now(), "").ToPgxRows()
-
-			tt.mockRepoAction(mockPool, pgxRows, tt.username, tt.password)
-
-			repo := CreateAuthRepo(mockPool)
-			_, err := repo.CheckUserCredentials(context.Background(), tt.username, utils.GetHash(tt.password))
 
 			assert.Equal(t, tt.expectedErr, err)
 		})

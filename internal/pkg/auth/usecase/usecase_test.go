@@ -89,7 +89,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		{
 			name: "AuthUsecase_SignIn_Success",
 			repoMocker: func(repo *mockAuth.MockAuthRepo, username string, passwordHash string, wantErr bool) {
-				repo.EXPECT().CheckUserCredentials(gomock.Any(), username, passwordHash).Return(models.User{
+				repo.EXPECT().GetUserByUsername(gomock.Any(), username).Return(models.User{
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     username,
@@ -107,7 +107,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		{
 			name: "AuthUsecase_SignIn_Fail",
 			repoMocker: func(repo *mockAuth.MockAuthRepo, username string, passwordHash string, wantErr bool) {
-				repo.EXPECT().CheckUserCredentials(gomock.Any(), username, passwordHash).Return(models.User{
+				repo.EXPECT().GetUserByUsername(gomock.Any(), username).Return(models.User{
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     username,
