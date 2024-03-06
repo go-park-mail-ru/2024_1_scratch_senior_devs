@@ -1,0 +1,37 @@
+version: "3.3"
+
+services:
+  main:
+    build:
+      context: .
+      dockerfile: ./build/main.Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - YouNote-network
+  postgres:
+    env_file:
+      - .env
+    container_name: postgres
+    image: postgres:15.0
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - YouNote-network
+    volumes:
+      - ./build/sql/create_tables.sql:/docker-entrypoint-initdb.d/initdb.sql
+
+networks:
+  YouNote-network:
+    name: YouNote-network
+    driver: bridge

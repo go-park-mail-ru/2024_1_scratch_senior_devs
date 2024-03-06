@@ -1,0 +1,156 @@
+definitions:
+  models.Note:
+    properties:
+      create_time:
+        type: string
+      data:
+        items:
+          type: integer
+        type: array
+      id:
+        type: string
+      owner_id:
+        type: string
+      update_time:
+        type: string
+    type: object
+  models.User:
+    properties:
+      create_time:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image_path:
+        type: string
+      username:
+        type: string
+    type: object
+  utils.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+host: you-note.ru:8080
+info:
+  contact: {}
+  description: API for YouNote service
+  title: YouNote API
+  version: "1.0"
+paths:
+  /api/auth/check_user:
+    get:
+      description: Get user info if user is authorized
+      operationId: check-user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+      summary: Check user
+      tags:
+      - auth
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login as a user
+      operationId: sign-in
+      parameters:
+      - description: username
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Sign in
+      tags:
+      - auth
+  /api/auth/logout:
+    delete:
+      description: Quit from user`s account
+      operationId: log-out
+      responses:
+        "204":
+          description: No Content
+      summary: Log out
+      tags:
+      - auth
+  /api/auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Add a new user to the database
+      operationId: sign-up
+      parameters:
+      - description: username
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Sign up
+      tags:
+      - auth
+  /api/note/get_all:
+    get:
+      description: Get a list of notes of current user
+      operationId: get-all-notes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: notes
+          schema:
+            items:
+              $ref: '#/definitions/models.Note'
+            type: array
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized
+      summary: Get all notes
+      tags:
+      - note
+swagger: "2.0"
