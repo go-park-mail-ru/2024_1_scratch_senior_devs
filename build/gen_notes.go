@@ -48,8 +48,8 @@ func main() {
 	}
 
 	for i := 0; i < count; i++ {
-		noteTitle := gofakeit.Sentence(rand.Int()%8 + 3)
-		noteContent := gofakeit.Paragraph(1, rand.Int()%10+1, rand.Int()%8+3, "\n")
+		noteTitle := gofakeit.Sentence(rand.Int()%8 + 3)                            //nolint:all
+		noteContent := gofakeit.Paragraph(1, rand.Int()%10+1, rand.Int()%8+3, "\n") //nolint:all
 		noteData := `{"title":"` + noteTitle + `","content":"` + noteContent + `"}`
 
 		_, err = db.Exec(context.Background(), addNote, uuid.NewV4(), noteData, time.Now().UTC(), time.Now().UTC(), userID)
