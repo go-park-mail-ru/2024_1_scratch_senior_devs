@@ -30,8 +30,12 @@ services:
       - YouNote-network
     volumes:
       - ./build/sql/create_tables.sql:/docker-entrypoint-initdb.d/initdb.sql
+      - younote-db-data:/var/lib/postgresql/data
 
 networks:
   YouNote-network:
     name: YouNote-network
     driver: bridge
+
+volumes:
+  younote-db-data:
