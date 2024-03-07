@@ -26,6 +26,3 @@ go.work
 .idea
 
 .vscode
-
-gen_notes.go
-
