@@ -86,3 +86,24 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
+	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	newNote, err := h.uc.CreateNote(r.Context(), jwtPayload.Id)
+	if err != nil {
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "invalid query")
+		return
+	}
+
+	err = utils.WriteResponseData(w, newNote, http.StatusCreated)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Printf("error in AddNote handler: %s", err)
+		return
+	}
+}

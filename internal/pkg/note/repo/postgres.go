@@ -12,6 +12,7 @@ import (
 
 const (
 	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 AND LOWER(data->>'title') LIKE LOWER($2) LIMIT $3 OFFSET $4;"
+	createNote  = "INSERT INTO notes(id, data, create_time, update_time, owner_id) VALUES ($1, $2::json, $3, $4, $5);"
 )
 
 type NoteRepo struct {
@@ -39,4 +40,9 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count 
 		result = append(result, note)
 	}
 	return result, nil
+}
+
+func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
+	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId)
+	return err
 }
