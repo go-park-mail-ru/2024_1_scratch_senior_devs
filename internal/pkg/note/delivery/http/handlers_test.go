@@ -78,10 +78,10 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 
 			}
 			if tt.name == "Test Success" {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, gomock.Any(), gomock.Any()).Return(tt.expectedData, nil)
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "").Return(tt.expectedData, nil)
 			}
 			if tt.name == "Test Error" {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, gomock.Any(), gomock.Any()).Return(tt.expectedData, errors.New("error"))
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "").Return(tt.expectedData, errors.New("error"))
 
 			}
 			req = req.WithContext(ctx)

@@ -22,7 +22,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 		{
 			name: "ReadAllNotes_Success",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, id uuid.UUID) {
-				mockPool.EXPECT().Query(gomock.Any(), getAllNotes, id, int64(1), int64(0)).Return(pgxRows, nil)
+				mockPool.EXPECT().Query(gomock.Any(), getAllNotes, id, "%%", int64(1), int64(0)).Return(pgxRows, nil)
 			},
 			userId:      uuid.NewV4(),
 			columns:     []string{"id", "data", "create_time", "update_time", "owner_id"},
@@ -31,7 +31,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 		{
 			name: "ReadAllNotes_Fail",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, id uuid.UUID) {
-				mockPool.EXPECT().Query(gomock.Any(), getAllNotes, id, int64(1), int64(0)).Return(pgxRows, pgx.ErrNoRows)
+				mockPool.EXPECT().Query(gomock.Any(), getAllNotes, id, "%%", int64(1), int64(0)).Return(pgxRows, pgx.ErrNoRows)
 			},
 			userId:      uuid.NewV4(),
 			columns:     []string{"id", "data", "create_time", "update_time", "owner_id"},
@@ -50,7 +50,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
 			repo := CreateNoteRepo(mockPool)
-			_, err := repo.ReadAllNotes(context.Background(), tt.userId, int64(1), int64(0))
+			_, err := repo.ReadAllNotes(context.Background(), tt.userId, int64(1), int64(0), "")
 
 			assert.Equal(t, tt.expectedErr, err)
 		})
