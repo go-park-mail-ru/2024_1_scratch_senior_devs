@@ -27,3 +27,5 @@ go.work
 
 .vscode
 
+gen_notes.go
+

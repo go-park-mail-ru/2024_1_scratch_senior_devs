@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id= $1 LIMIT $2 OFFSET $3;"
+	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 AND LOWER(data->>'title') LIKE LOWER($2) LIMIT $3 OFFSET $4;"
 )
 
 type NoteRepo struct {
@@ -22,10 +22,10 @@ func CreateNoteRepo(db pgxtype.Querier) *NoteRepo {
 	return &NoteRepo{db: db}
 }
 
-func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
+func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, titleSubstr string) ([]models.Note, error) {
 	result := make([]models.Note, 0, count)
 
-	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset)
+	query, err := repo.db.Query(ctx, getAllNotes, userId, "%"+titleSubstr+"%", count, offset)
 	if err != nil {
 		return result, err
 	}

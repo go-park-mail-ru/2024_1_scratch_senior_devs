@@ -65,13 +65,15 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	titleSubstr := r.URL.Query().Get("title")
+
 	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	data, err := h.uc.GetAllNotes(r.Context(), payload.Id, int64(count), int64(offset))
+	data, err := h.uc.GetAllNotes(r.Context(), payload.Id, int64(count), int64(offset), titleSubstr)
 	if err != nil {
 		utils.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
 		return

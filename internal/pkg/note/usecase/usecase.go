@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -19,8 +18,8 @@ func CreateNoteUsecase(repo note.NoteRepo) *NoteUsecase {
 	}
 }
 
-func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
-	res, err := uc.repo.ReadAllNotes(ctx, userId, count, offset)
+func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, titleSubstr string) ([]models.Note, error) {
+	res, err := uc.repo.ReadAllNotes(ctx, userId, count, offset, titleSubstr)
 	if err != nil {
 		return res, err
 	}
