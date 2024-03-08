@@ -2,6 +2,8 @@ package http
 
 import (
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/satori/uuid"
 	"net/http"
 	"strconv"
 
@@ -83,6 +85,34 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Printf("error in GetAllNotes handler: %s", err)
+		return
+	}
+}
+
+func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
+	noteIdString := mux.Vars(r)["id"]
+	noteId, err := uuid.FromString(noteIdString)
+	if err != nil {
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
+		return
+	}
+
+	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	resultNote, err := h.uc.GetNote(r.Context(), noteId, payload.Id)
+	if err != nil {
+		utils.WriteErrorMessage(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	err = utils.WriteResponseData(w, resultNote, http.StatusOK)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Printf("error in GetNote handler: %s", err)
 		return
 	}
 }

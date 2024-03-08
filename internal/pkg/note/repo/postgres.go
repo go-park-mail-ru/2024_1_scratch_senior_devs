@@ -12,6 +12,7 @@ import (
 
 const (
 	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 AND LOWER(data->>'title') LIKE LOWER($2) LIMIT $3 OFFSET $4;"
+	getNote     = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE id = $1;"
 	createNote  = "INSERT INTO notes(id, data, create_time, update_time, owner_id) VALUES ($1, $2::json, $3, $4, $5);"
 )
 
@@ -40,6 +41,24 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count 
 		result = append(result, note)
 	}
 	return result, nil
+}
+
+func (repo *NoteRepo) ReadNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
+	resultNote := models.Note{}
+
+	err := repo.db.QueryRow(ctx, getNote, noteId).Scan(
+		&resultNote.Id,
+		&resultNote.Data,
+		&resultNote.CreateTime,
+		&resultNote.UpdateTime,
+		&resultNote.OwnerId,
+	)
+
+	if err != nil {
+		return models.Note{}, err
+	}
+
+	return resultNote, nil
 }
 
 func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {

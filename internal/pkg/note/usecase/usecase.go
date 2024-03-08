@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/satori/uuid"
 	"time"
 
@@ -25,6 +26,16 @@ func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count 
 		return res, err
 	}
 	return res, nil
+}
+
+func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
+	resultNote, err := uc.repo.ReadNote(ctx, noteId)
+
+	if err != nil || resultNote.OwnerId != userId {
+		return models.Note{}, errors.New("note not found")
+	}
+
+	return resultNote, nil
 }
 
 func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID) (models.Note, error) {
