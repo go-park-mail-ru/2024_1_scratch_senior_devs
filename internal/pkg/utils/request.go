@@ -8,7 +8,9 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 	"io"
 	"net/http"
+	"runtime"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -76,4 +78,14 @@ func GetHash(input string) string {
 	hash.Write([]byte(input))
 	hashInBytes := hash.Sum(nil)
 	return hex.EncodeToString(hashInBytes)
+}
+
+func GFN() string {
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(2, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+	values := strings.Split(frame.Function, "/")
+
+	return values[len(values)-1]
 }

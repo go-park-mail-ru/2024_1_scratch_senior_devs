@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -10,12 +11,14 @@ import (
 )
 
 type AuthHandler struct {
-	uc auth.AuthUsecase
+	uc     auth.AuthUsecase
+	logger *slog.Logger
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase) *AuthHandler {
+func CreateAuthHandler(uc auth.AuthUsecase, logger *slog.Logger) *AuthHandler {
 	return &AuthHandler{
-		uc: uc,
+		uc:     uc,
+		logger: logger,
 	}
 }
 
@@ -31,9 +34,12 @@ func CreateAuthHandler(uc auth.AuthUsecase) *AuthHandler {
 // @Failure		400			{object}	utils.ErrorResponse		true	"error"
 // @Router		/api/auth/signup [post]
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+	h.logger.Info(utils.GFN())
+
 	userData := models.UserFormData{}
 	err := utils.GetRequestData(r, &userData)
 	if err != nil {
+		h.logger.Error(err.Error())
 		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}

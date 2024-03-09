@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -45,9 +46,18 @@ func main() {
 	}
 	defer db.Close()
 
+	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer logFile.Close()
+
+	logger := slog.New(slog.NewJSONHandler(logFile, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
 	AuthRepo := authRepo.CreateAuthRepo(db)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, logger)
 
 	NoteRepo := noteRepo.CreateNoteRepo(db)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo)

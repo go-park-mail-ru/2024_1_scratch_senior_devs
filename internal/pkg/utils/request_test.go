@@ -164,3 +164,7 @@ func TestWriteErrorMessage(t *testing.T) {
 		})
 	}
 }
+
+func TestGFN(t *testing.T) {
+	GFN()
+}
