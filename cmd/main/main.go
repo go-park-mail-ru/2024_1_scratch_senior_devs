@@ -59,8 +59,6 @@ func main() {
 		w.WriteHeader(http.StatusNotFound)
 	})
 
-	r.Use(middleware.CorsMiddleware)
-
 	swagger := r.PathPrefix("/swagger").Subrouter()
 	swagger.Use(middleware.CorsMiddlewareForSwagger)
 
@@ -71,6 +69,7 @@ func main() {
 	)).Methods(http.MethodGet, http.MethodOptions)
 
 	auth := r.PathPrefix("/auth").Subrouter()
+	auth.Use(middleware.CorsMiddleware)
 	{
 		auth.Handle("/signup", http.HandlerFunc(AuthDelivery.SignUp)).Methods(http.MethodPost, http.MethodOptions)
 		auth.Handle("/login", http.HandlerFunc(AuthDelivery.SignIn)).Methods(http.MethodPost, http.MethodOptions)
@@ -79,7 +78,7 @@ func main() {
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
-	note.Use(middleware.JwtMiddleware)
+	note.Use(middleware.CorsMiddleware, middleware.JwtMiddleware)
 	{
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
