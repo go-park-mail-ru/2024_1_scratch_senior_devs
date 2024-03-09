@@ -4,17 +4,33 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 )
+
+var logger *slog.Logger
+
+func init() {
+	logFile, err := os.OpenFile("../../../../../main.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer logFile.Close()
+
+	logger = slog.New(slog.NewJSONHandler(logFile, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}
 
 func TestAuthHandler_SignUp(t *testing.T) {
 	var tests = []struct {
@@ -80,7 +96,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase)
+			handler := CreateAuthHandler(mockUsecase, logger)
 			handler.SignUp(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -144,7 +160,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase)
+			handler := CreateAuthHandler(mockUsecase, logger)
 			handler.SignIn(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -172,7 +188,7 @@ func TestAuthHandler_LogOut(t *testing.T) {
 			req := httptest.NewRequest("DELETE", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase)
+			handler := CreateAuthHandler(mockUsecase, logger)
 			handler.LogOut(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -235,7 +251,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase)
+			handler := CreateAuthHandler(mockUsecase, logger)
 			handler.CheckUser(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)

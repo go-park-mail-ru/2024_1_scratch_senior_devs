@@ -11,6 +11,7 @@
 *.tmp
 *.bat
 *.txt
+*.log
 
 # Test binary, built with `go test -c`
 *.test
