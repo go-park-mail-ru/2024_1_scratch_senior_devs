@@ -61,7 +61,10 @@ func main() {
 
 	r.Use(middleware.CorsMiddleware)
 
-	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+	swagger := r.PathPrefix("/swagger").Subrouter()
+	swagger.Use(middleware.CorsMiddlewareForSwagger)
+
+	r.PathPrefix("/swagger").Handler(httpSwagger.Handler(
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 		httpSwagger.DomID("swagger-ui"),
