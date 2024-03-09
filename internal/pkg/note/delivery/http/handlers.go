@@ -27,12 +27,15 @@ func CreateNotesHandler(uc note.NoteUsecase) *NoteHandler {
 	}
 }
 
-// GetAllNotes
+// GetAllNotes godoc
 // @Summary		Get all notes
 // @Description	Get a list of notes of current user
 // @Tags 		note
 // @ID			get-all-notes
 // @Produce		json
+// @Param		count	query		int						false	"notes count"
+// @Param		offset	query		int						false	"notes offset"
+// @Param		title	query		string					false	"notes title substring"
 // @Success		200		{object}	[]models.Note			true	"notes"
 // @Failure		400		{object}	utils.ErrorResponse		true	"error"
 // @Failure		401
@@ -89,6 +92,18 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetNote godoc
+// @Summary		Get one note
+// @Description	Get one of notes of current user
+// @Tags 		note
+// @ID			get-note
+// @Produce		json
+// @Param		id		path		string					true	"note id"
+// @Success		200		{object}	models.Note				true	"note"
+// @Failure		400		{object}	utils.ErrorResponse		true	"incorrect id"
+// @Failure		401
+// @Failure		404		{object}	utils.ErrorResponse		true	"note not found"
+// @Router		/api/note/{id} [get]
 func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	noteId, err := uuid.FromString(noteIdString)
@@ -117,6 +132,16 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// AddNote godoc
+// @Summary		Add note
+// @Description	Create new note to current user
+// @Tags 		note
+// @ID			add-note
+// @Produce		json
+// @Success		200		{object}	models.Note				true	"note"
+// @Failure		400		{object}	utils.ErrorResponse		true	"error"
+// @Failure		401
+// @Router		/api/note/add [post]
 func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {

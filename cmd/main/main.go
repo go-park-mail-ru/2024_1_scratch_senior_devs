@@ -9,10 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
+	httpSwagger "github.com/swaggo/http-swagger"
+
+	_ "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/docs"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
@@ -57,6 +60,12 @@ func main() {
 	})
 
 	r.Use(middleware.CorsMiddleware)
+
+	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.DeepLinking(true),
+		httpSwagger.DocExpansion("none"),
+		httpSwagger.DomID("swagger-ui"),
+	)).Methods(http.MethodGet, http.MethodOptions)
 
 	auth := r.PathPrefix("/auth").Subrouter()
 	{

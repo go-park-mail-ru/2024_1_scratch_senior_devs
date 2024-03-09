@@ -56,21 +56,12 @@ const docTemplate = `{
                 "operationId": "sign-in",
                 "parameters": [
                     {
-                        "description": "username",
-                        "name": "username",
+                        "description": "login data",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.UserFormData"
                         }
                     }
                 ],
@@ -82,6 +73,12 @@ const docTemplate = `{
                         }
                     },
                     "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
                         "description": "error",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
@@ -121,21 +118,12 @@ const docTemplate = `{
                 "operationId": "sign-up",
                 "parameters": [
                     {
-                        "description": "username",
-                        "name": "username",
+                        "description": "registration data",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.UserFormData"
                         }
                     }
                 ],
@@ -155,6 +143,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/note/add": {
+            "post": {
+                "description": "Create new note to current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "note"
+                ],
+                "summary": "Add note",
+                "operationId": "add-note",
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.Note"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/api/note/get_all": {
             "get": {
                 "description": "Get a list of notes of current user",
@@ -166,6 +184,26 @@ const docTemplate = `{
                 ],
                 "summary": "Get all notes",
                 "operationId": "get-all-notes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "notes count",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "notes offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "notes title substring",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "notes",
@@ -184,6 +222,51 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/note/{id}": {
+            "get": {
+                "description": "Get one of notes of current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "note"
+                ],
+                "summary": "Get one note",
+                "operationId": "get-note",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.Note"
+                        }
+                    },
+                    "400": {
+                        "description": "incorrect id",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "note not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -226,6 +309,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "image_path": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserFormData": {
+            "type": "object",
+            "properties": {
+                "password": {
                     "type": "string"
                 },
                 "username": {

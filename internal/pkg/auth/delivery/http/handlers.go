@@ -19,15 +19,14 @@ func CreateAuthHandler(uc auth.AuthUsecase) *AuthHandler {
 	}
 }
 
-// SignUp
+// SignUp godoc
 // @Summary		Sign up
 // @Description	Add a new user to the database
 // @Tags 		auth
 // @ID			sign-up
 // @Accept		json
 // @Produce		json
-// @Param		username	body		string					true	"username"
-// @Param		password	body		string					true	"password"
+// @Param		credentials body		models.UserFormData		true	"registration data"
 // @Success		200			{object}	models.User				true	"user"
 // @Failure		400			{object}	utils.ErrorResponse		true	"error"
 // @Router		/api/auth/signup [post]
@@ -61,7 +60,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// CheckUser
+// CheckUser godoc
 // @Summary		Check user
 // @Description	Get user info if user is authorized
 // @Tags 		auth
@@ -92,7 +91,7 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// LogOut
+// LogOut godoc
 // @Summary		Log out
 // @Description	Quit from user`s account
 // @Tags 		auth
@@ -105,17 +104,17 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// SignIn
+// SignIn godoc
 // @Summary		Sign in
 // @Description	Login as a user
 // @Tags 		auth
 // @ID			sign-in
 // @Accept		json
 // @Produce		json
-// @Param		username	body		string					true	"username"
-// @Param		password	body		string					true	"password"
+// @Param		credentials body		models.UserFormData		true	"login data"
 // @Success		200			{object}	models.User				true	"user"
 // @Failure		400			{object}	utils.ErrorResponse		true	"error"
+// @Failure		401			{object}	utils.ErrorResponse		true	"error"
 // @Router		/api/auth/login [post]
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	userData := models.UserFormData{}

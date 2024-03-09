@@ -27,6 +27,13 @@ definitions:
       username:
         type: string
     type: object
+  models.UserFormData:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   utils.ErrorResponse:
     properties:
       message:
@@ -62,18 +69,12 @@ paths:
       description: Login as a user
       operationId: sign-in
       parameters:
-      - description: username
+      - description: login data
         in: body
-        name: username
+        name: credentials
         required: true
         schema:
-          type: string
-      - description: password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/models.UserFormData'
       produces:
       - application/json
       responses:
@@ -82,6 +83,10 @@ paths:
           schema:
             $ref: '#/definitions/models.User'
         "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
           description: error
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
@@ -105,18 +110,12 @@ paths:
       description: Add a new user to the database
       operationId: sign-up
       parameters:
-      - description: username
+      - description: registration data
         in: body
-        name: username
+        name: credentials
         required: true
         schema:
-          type: string
-      - description: password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/models.UserFormData'
       produces:
       - application/json
       responses:
@@ -131,10 +130,73 @@ paths:
       summary: Sign up
       tags:
       - auth
+  /api/note/{id}:
+    get:
+      description: Get one of notes of current user
+      operationId: get-note
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.Note'
+        "400":
+          description: incorrect id
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "404":
+          description: note not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get one note
+      tags:
+      - note
+  /api/note/add:
+    post:
+      description: Create new note to current user
+      operationId: add-note
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.Note'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized
+      summary: Add note
+      tags:
+      - note
   /api/note/get_all:
     get:
       description: Get a list of notes of current user
       operationId: get-all-notes
+      parameters:
+      - description: notes count
+        in: query
+        name: count
+        type: integer
+      - description: notes offset
+        in: query
+        name: offset
+        type: integer
+      - description: notes title substring
+        in: query
+        name: title
+        type: string
       produces:
       - application/json
       responses:
