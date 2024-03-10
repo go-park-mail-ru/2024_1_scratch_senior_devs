@@ -16,7 +16,9 @@ services:
     networks:
       - YouNote-network
     volumes:
-      - younote-logs:/var/log
+      - type: bind
+        source: /var/log
+        target: /var/log
   postgres:
     env_file:
       - .env
@@ -41,4 +43,3 @@ networks:
 
 volumes:
   younote-db-data:
-  younote-logs:
