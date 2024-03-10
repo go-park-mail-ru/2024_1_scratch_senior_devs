@@ -1,4 +1,4 @@
-package utils
+package models
 
 import (
 	"errors"
@@ -46,7 +46,7 @@ func checkPasswordRequired(value []rune) bool {
 	return false
 }
 
-func CheckUsername(username string) error {
+func checkUsername(username string) error {
 	runedUsername := []rune(username)
 
 	if len(runedUsername) < minUsernameLength || len(runedUsername) > maxUsernameLength {
@@ -60,7 +60,7 @@ func CheckUsername(username string) error {
 	return nil
 }
 
-func CheckPassword(password string) error {
+func checkPassword(password string) error {
 	runedPassword := []rune(password)
 
 	if len(runedPassword) < minPasswordLength || len(runedPassword) > maxPasswordLength {

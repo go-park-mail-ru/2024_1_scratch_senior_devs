@@ -14,6 +14,18 @@ definitions:
       update_time:
         type: string
     type: object
+  models.ProfileUpdatePayload:
+    properties:
+      description:
+        type: string
+      password:
+        properties:
+          new:
+            type: string
+          old:
+            type: string
+        type: object
+    type: object
   models.User:
     properties:
       create_time:
@@ -215,4 +227,31 @@ paths:
       summary: Get all notes
       tags:
       - note
+  /api/profile/update:
+    post:
+      consumes:
+      - application/json
+      description: Change password and/or description
+      operationId: update-profile
+      parameters:
+      - description: update data
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfileUpdatePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Update profile
+      tags:
+      - profile
 swagger: "2.0"

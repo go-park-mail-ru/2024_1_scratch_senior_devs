@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"html"
 )
 
@@ -20,7 +19,7 @@ func (payload *ProfileUpdatePayload) Sanitize() {
 }
 
 func (payload *ProfileUpdatePayload) Validate() error {
-	if err := utils.CheckPassword(payload.Password.New); err != nil {
+	if err := checkPassword(payload.Password.New); err != nil {
 		return err
 	}
 

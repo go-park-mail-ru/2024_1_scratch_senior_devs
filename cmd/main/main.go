@@ -25,6 +25,10 @@ import (
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
 	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
+
+	profileDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/profile/delivery/http"
+	profileRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/profile/repo"
+	profileUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/profile/usecase"
 )
 
 func init() {
@@ -63,6 +67,10 @@ func main() {
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 
+	ProfileRepo := profileRepo.CreateProfileRepo(db)
+	ProfileUsecase := profileUsecase.CreateProfileUsecase(ProfileRepo)
+	ProfileDelivery := profileDelivery.CreateProfileHandler(ProfileUsecase)
+
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -93,6 +101,12 @@ func main() {
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/add", http.HandlerFunc(NoteDelivery.AddNote)).Methods(http.MethodPost, http.MethodOptions)
+	}
+
+	profile := r.PathPrefix("/profile").Subrouter()
+	profile.Use(middleware.CorsMiddleware, middleware.JwtMiddleware)
+	{
+		profile.Handle("/update", http.HandlerFunc(ProfileDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
 	}
 
 	http.Handle("/", r)

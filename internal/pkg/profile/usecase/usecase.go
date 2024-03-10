@@ -21,9 +21,6 @@ func CreateProfileUsecase(repo profile.ProfileRepo) *ProfileUsecase {
 
 func (uc *ProfileUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payload models.ProfileUpdatePayload) (models.User, error) {
 	payload.Sanitize()
-	if err := payload.Validate(); err != nil {
-		return models.User{}, err
-	}
 
 	user, err := uc.repo.GetUserById(ctx, userID)
 	if err != nil {
@@ -31,6 +28,10 @@ func (uc *ProfileUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, p
 	}
 
 	if payload.Password.Old != "" && payload.Password.New != "" {
+		if err := payload.Validate(); err != nil {
+			return models.User{}, err
+		}
+
 		if user.PasswordHash != utils.GetHash(payload.Password.Old) {
 			return models.User{}, errors.New("wrong password")
 		} else {

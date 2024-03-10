@@ -28,7 +28,7 @@ func init() {
 func randomDate() time.Time {
 	yearAgo := time.Now().AddDate(-1, 0, 0).Unix()
 	now := time.Now().Unix()
-	randomUnix := rand.Int63n(now-yearAgo) + yearAgo
+	randomUnix := rand.Int63n(now-yearAgo) + yearAgo //nolint:all
 
 	randomTime := time.Unix(randomUnix, 0)
 	return randomTime.UTC()

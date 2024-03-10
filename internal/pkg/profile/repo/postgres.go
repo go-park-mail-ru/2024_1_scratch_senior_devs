@@ -10,7 +10,7 @@ import (
 
 const (
 	getUserById   = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
-	updateProfile = "UPDATE users SET description = $1, passwordHash = $2 WHERE id = $3;"
+	updateProfile = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
 )
 
 type ProfileRepo struct {

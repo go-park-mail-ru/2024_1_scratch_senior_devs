@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"github.com/satori/uuid"
 )
 
@@ -15,11 +14,11 @@ type UserFormData struct {
 }
 
 func (form *UserFormData) Validate() error {
-	if err := utils.CheckUsername(form.Username); err != nil {
+	if err := checkUsername(form.Username); err != nil {
 		return err
 	}
 
-	if err := utils.CheckPassword(form.Password); err != nil {
+	if err := checkPassword(form.Password); err != nil {
 		return err
 	}
 
