@@ -59,9 +59,9 @@ func main() {
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, logger)
 
-	NoteRepo := noteRepo.CreateNoteRepo(db)
+	NoteRepo := noteRepo.CreateNoteRepo(db, logger)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo)
-	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase)
+	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 

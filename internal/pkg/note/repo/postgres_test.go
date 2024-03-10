@@ -2,14 +2,23 @@ package repo
 
 import (
 	"context"
+	"log/slog"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v4"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
+
+var testLogger *slog.Logger
+
+func init() {
+	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}
 
 func TestNoteRepo_ReadAllNotes(t *testing.T) {
 	tests := []struct {
@@ -49,7 +58,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
-			repo := CreateNoteRepo(mockPool)
+			repo := CreateNoteRepo(mockPool, testLogger)
 			_, err := repo.ReadAllNotes(context.Background(), tt.userId, int64(1), int64(0), "")
 
 			assert.Equal(t, tt.expectedErr, err)

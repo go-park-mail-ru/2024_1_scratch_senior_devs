@@ -2,20 +2,31 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
+var testLogger *slog.Logger
+
+func init() {
+	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}
+
 func TestNoteHandler_GetAllNotes(t *testing.T) {
+	const successTestName = "Test Success"
 
 	tests := []struct {
 		name           string
@@ -26,7 +37,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 	}{
 		{
 
-			name:           "Test Success",
+			name:           successTestName,
 			id:             uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 			username:       "testuser",
 			expectedStatus: http.StatusOK,
@@ -77,7 +88,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
 
 			}
-			if tt.name == "Test Success" {
+			if tt.name == successTestName {
 				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "").Return(tt.expectedData, nil)
 			}
 			if tt.name == "Test Error" {
@@ -86,12 +97,95 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			h := CreateNotesHandler(mockUsecase)
+			h := CreateNotesHandler(mockUsecase, testLogger)
 			h.GetAllNotes(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
-			//d, _ := json.Marshal(tt.expectedData)
-			//assert.Equal(t, w.Body.Bytes(), d)
+			if tt.name == successTestName {
+				d, _ := json.Marshal(tt.expectedData)
+				assert.Equal(t, w.Body.Bytes(), d)
+			}
+		})
+	}
+}
+
+func TestNoteHandler_GetNote(t *testing.T) {
+	const successTestName = "Test Success"
+
+	tests := []struct {
+		name string
+
+		expectedStatus int
+		userId         uuid.UUID
+		noteId         uuid.UUID
+		username       string
+		expectedData   models.Note
+	}{
+		// TODO: Add test cases.
+		{
+			name:           successTestName,
+			expectedStatus: 200,
+			noteId:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+			userId:         uuid.FromStringOrNil(""),
+			username:       "test_user",
+			expectedData:   models.Note{},
+		},
+		{
+			name:           "Test Unauthorized",
+			expectedStatus: 401,
+			noteId:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+			userId:         uuid.FromStringOrNil(""),
+			username:       "test_user",
+			expectedData:   models.Note{},
+		},
+		{
+			name:           "Test Error",
+			expectedStatus: http.StatusNotFound,
+			noteId:         uuid.FromStringOrNil(""),
+			userId:         uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
+			username:       "test_user",
+			expectedData:   models.Note{},
+		},
+		{
+			name:           "Test Bad Request",
+			expectedStatus: http.StatusBadRequest,
+			noteId:         uuid.FromStringOrNil(""),
+			userId:         uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
+			username:       "test_user",
+			expectedData:   models.Note{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			req := httptest.NewRequest("GET", "http://example.com/api/note/c80e3ea8-0813-4731-b6ee-b41604c56f95", nil)
+			w := httptest.NewRecorder()
+			ctx := context.WithValue(req.Context(), models.PayloadContextKey, models.JwtPayload{Id: tt.userId, Username: tt.username})
+			if tt.name == "Test Unauthorized" {
+				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
+
+			}
+			if tt.name == successTestName {
+				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(tt.expectedData, nil)
+			}
+			if tt.name == "Test Error" {
+				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(tt.expectedData, errors.New("error"))
+
+			}
+			req = req.WithContext(ctx)
+			if tt.name != "Test Bad Request" {
+				req = mux.SetURLVars(req, map[string]string{"id": tt.noteId.String()})
+			}
+			h := CreateNotesHandler(mockUsecase, testLogger)
+			h.GetNote(w, req)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.name == successTestName {
+				d, _ := json.Marshal(tt.expectedData)
+				assert.Equal(t, w.Body.Bytes(), d)
+			}
 		})
 	}
 }
