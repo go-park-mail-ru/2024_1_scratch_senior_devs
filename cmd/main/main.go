@@ -46,14 +46,14 @@ func main() {
 	}
 	defer db.Close()
 
-	//logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return
-	//}
-	//defer logFile.Close()
+	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer logFile.Close()
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	logger := slog.New(slog.NewJSONHandler(logFile, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	AuthRepo := authRepo.CreateAuthRepo(db)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo)

@@ -15,6 +15,8 @@ services:
       - "8080:8080"
     networks:
       - YouNote-network
+    volumes:
+      - younote-logs:/var/log
   postgres:
     env_file:
       - .env
@@ -39,3 +41,4 @@ networks:
 
 volumes:
   younote-db-data:
+  younote-logs:
