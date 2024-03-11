@@ -3,10 +3,13 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"log/slog"
+
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 )
 
 const (
@@ -17,19 +20,28 @@ const (
 )
 
 type AuthRepo struct {
-	db pgxtype.Querier
+	db     pgxtype.Querier
+	logger *slog.Logger
 }
 
-func CreateAuthRepo(db pgxtype.Querier) *AuthRepo {
-	return &AuthRepo{db: db}
+func CreateAuthRepo(db pgxtype.Querier, logger *slog.Logger) *AuthRepo {
+	return &AuthRepo{
+		db:     db,
+		logger: logger,
+	}
 }
 
 func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
+	repo.logger.Info(utils.GFN())
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
+	if err != nil {
+		repo.logger.Error(err.Error())
+	}
 	return err
 }
 
 func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.User, error) {
+	repo.logger.Info(utils.GFN())
 	resultUser := models.User{Id: id}
 	description := sql.NullString{}
 
@@ -46,6 +58,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 	}
 
 	if err != nil {
+		repo.logger.Error(err.Error())
 		return models.User{}, err
 	}
 
@@ -69,6 +82,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 	}
 
 	if err != nil {
+		repo.logger.Error(err.Error())
 		return models.User{}, err
 	}
 

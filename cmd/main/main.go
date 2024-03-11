@@ -55,7 +55,7 @@ func main() {
 
 	logger := slog.New(slog.NewJSONHandler(logFile, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
-	AuthRepo := authRepo.CreateAuthRepo(db)
+	AuthRepo := authRepo.CreateAuthRepo(db, logger)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, logger)
 

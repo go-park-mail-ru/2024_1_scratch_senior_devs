@@ -3,9 +3,12 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
+	"log/slog"
+	"os"
 	"testing"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/golang/mock/gomock"
@@ -16,6 +19,11 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
+var testLogger *slog.Logger
+
+func init() {
+	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}
 func TestAuthRepo_CreateUser(t *testing.T) {
 	userId := uuid.NewV4()
 	currTime := time.Now().UTC()
@@ -49,7 +57,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 
 			tt.mockRepoAction(mockPool)
 
-			repo := CreateAuthRepo(mockPool)
+			repo := CreateAuthRepo(mockPool, testLogger)
 			err := repo.CreateUser(context.Background(), models.User{
 				Id:           userId,
 				Description:  "",
@@ -108,7 +116,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
-			repo := CreateAuthRepo(mockPool)
+			repo := CreateAuthRepo(mockPool, testLogger)
 			_, err := repo.GetUserById(context.Background(), tt.userId)
 
 			assert.Equal(t, tt.expectedErr, err)
@@ -160,7 +168,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.username)
 
-			repo := CreateAuthRepo(mockPool)
+			repo := CreateAuthRepo(mockPool, testLogger)
 			_, err := repo.GetUserByUsername(context.Background(), tt.username)
 
 			assert.Equal(t, tt.expectedErr, err)
