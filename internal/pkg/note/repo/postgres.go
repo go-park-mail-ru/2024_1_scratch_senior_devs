@@ -31,30 +31,33 @@ func CreateNoteRepo(db pgxtype.Querier, logger *slog.Logger) *NoteRepo {
 }
 
 func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, titleSubstr string) ([]models.Note, error) {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	result := make([]models.Note, 0, count)
-	repo.logger.Info(utils.GFN())
 
 	query, err := repo.db.Query(ctx, getAllNotes, userId, "%"+titleSubstr+"%", count, offset)
 	if err != nil {
-		repo.logger.Error(err.Error())
+		logger.Error(err.Error())
 		return result, err
 	}
 
 	for query.Next() {
 		var note models.Note
-		err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId)
-		if err != nil {
-			repo.logger.Error(err.Error())
+		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId); err != nil {
+			logger.Error(err.Error())
 			return result, fmt.Errorf("error occured while scanning notes:%w", err)
 		}
 		result = append(result, note)
 	}
+
+	logger.Info("success")
 	return result, nil
 }
 
 func (repo *NoteRepo) ReadNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	resultNote := models.Note{}
-	repo.logger.Info(utils.GFN())
 
 	err := repo.db.QueryRow(ctx, getNote, noteId).Scan(
 		&resultNote.Id,
@@ -65,18 +68,23 @@ func (repo *NoteRepo) ReadNote(ctx context.Context, noteId uuid.UUID) (models.No
 	)
 
 	if err != nil {
-		repo.logger.Error(err.Error())
+		logger.Error(err.Error())
 		return models.Note{}, err
 	}
 
+	logger.Info("success")
 	return resultNote, nil
 }
 
 func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
-	repo.logger.Info(utils.GFN())
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId)
 	if err != nil {
-		repo.logger.Error(err.Error())
+		logger.Error(err.Error())
+		return err
 	}
-	return err
+
+	logger.Info("success")
+	return nil
 }

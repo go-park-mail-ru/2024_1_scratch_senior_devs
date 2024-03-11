@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -34,25 +33,24 @@ func CreateAuthHandler(uc auth.AuthUsecase, logger *slog.Logger) *AuthHandler {
 // @Failure		400			{object}	utils.ErrorResponse		true	"error"
 // @Router		/api/auth/signup [post]
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info(utils.GFN())
+	logger := h.logger.With(slog.String("ID", utils.GetRequestId(r.Context())), slog.String("func", utils.GFN()))
 
 	userData := models.UserFormData{}
-	err := utils.GetRequestData(r, &userData)
-	if err != nil {
-		h.logger.Error(err.Error())
+	if err := utils.GetRequestData(r, &userData); err != nil {
+		utils.LogHandlerError(logger, http.StatusBadRequest, utils.ParseBodyError+err.Error())
 		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
 
 	if err := userData.Validate(); err != nil {
-		h.logger.Error(err.Error())
+		utils.LogHandlerError(logger, http.StatusBadRequest, "validation error: "+err.Error())
 		utils.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	newUser, token, expTime, err := h.uc.SignUp(r.Context(), userData)
 	if err != nil {
-		h.logger.Error(err.Error())
+		utils.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		utils.WriteErrorMessage(w, http.StatusBadRequest, "this username is already taken")
 		return
 	}
@@ -60,13 +58,13 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, utils.GenTokenCookie(token, expTime))
 	w.Header().Set("Authorization", "Bearer "+token)
 
-	err = utils.WriteResponseData(w, newUser, http.StatusCreated)
-	if err != nil {
-		h.logger.Error(err.Error())
+	if err := utils.WriteResponseData(w, newUser, http.StatusCreated); err != nil {
+		utils.LogHandlerError(logger, http.StatusInternalServerError, utils.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("error in SignUp handler: %s", err)
 		return
 	}
+
+	utils.LogHandlerInfo(logger, http.StatusCreated, "success")
 }
 
 // CheckUser godoc
@@ -79,10 +77,12 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/auth/check_user [get]
 func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
+	logger := h.logger.With(slog.String("ID", utils.GetRequestId(r.Context())), slog.String("func", utils.GFN()))
+
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	h.logger.Info(utils.GFN())
 	if !ok {
-		h.logger.Info("Problem while getting jwt payload from context")
+		utils.LogHandlerError(logger, http.StatusUnauthorized, utils.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -90,18 +90,18 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	userId := jwtPayload.Id
 	currentUser, err := h.uc.CheckUser(r.Context(), userId)
 	if err != nil {
-		h.logger.Error(err.Error())
+		utils.LogHandlerError(logger, http.StatusUnauthorized, err.Error())
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	err = utils.WriteResponseData(w, currentUser, http.StatusOK)
-	if err != nil {
-		h.logger.Error(err.Error())
+	if err := utils.WriteResponseData(w, currentUser, http.StatusOK); err != nil {
+		utils.LogHandlerError(logger, http.StatusInternalServerError, utils.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("error in CheckUser handler: %s", err)
 		return
 	}
+
+	utils.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 
 // LogOut godoc
@@ -112,10 +112,13 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Success		204
 // @Router		/api/auth/logout [delete]
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info(utils.GFN())
+	logger := h.logger.With(slog.String("ID", utils.GetRequestId(r.Context())), slog.String("func", utils.GFN()))
+
 	http.SetCookie(w, utils.DelTokenCookie())
 	w.Header().Del("Authorization")
 	w.WriteHeader(http.StatusNoContent)
+
+	utils.LogHandlerInfo(logger, http.StatusNoContent, "success")
 }
 
 // SignIn godoc
@@ -131,18 +134,18 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Failure		401			{object}	utils.ErrorResponse		true	"error"
 // @Router		/api/auth/login [post]
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info(utils.GFN())
+	logger := h.logger.With(slog.String("ID", utils.GetRequestId(r.Context())), slog.String("func", utils.GFN()))
+
 	userData := models.UserFormData{}
-	err := utils.GetRequestData(r, &userData)
-	if err != nil {
-		h.logger.Error(err.Error())
+	if err := utils.GetRequestData(r, &userData); err != nil {
+		utils.LogHandlerError(logger, http.StatusBadRequest, utils.ParseBodyError+err.Error())
 		utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
 
 	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
-		h.logger.Error(err.Error())
+		utils.LogHandlerError(logger, http.StatusUnauthorized, err.Error())
 		utils.WriteErrorMessage(w, http.StatusUnauthorized, "incorrect username or password")
 		return
 	}
@@ -150,11 +153,11 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Authorization", "Bearer "+token)
 	http.SetCookie(w, utils.GenTokenCookie(token, exp))
 
-	err = utils.WriteResponseData(w, user, http.StatusOK)
-	if err != nil {
-		h.logger.Error(err.Error())
+	if err := utils.WriteResponseData(w, user, http.StatusOK); err != nil {
+		utils.LogHandlerError(logger, http.StatusInternalServerError, utils.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("error in SignIn handler: %s", err)
 		return
 	}
+
+	utils.LogHandlerInfo(logger, http.StatusNoContent, "success")
 }

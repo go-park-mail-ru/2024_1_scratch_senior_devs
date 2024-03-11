@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
+	"log/slog"
 )
 
 const (
@@ -14,21 +16,33 @@ const (
 )
 
 type ProfileRepo struct {
-	db pgxtype.Querier
+	db     pgxtype.Querier
+	logger *slog.Logger
 }
 
-func CreateProfileRepo(db pgxtype.Querier) *ProfileRepo {
+func CreateProfileRepo(db pgxtype.Querier, logger *slog.Logger) *ProfileRepo {
 	return &ProfileRepo{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 }
 
 func (repo *ProfileRepo) UpdateProfile(ctx context.Context, user models.User) error {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	_, err := repo.db.Exec(ctx, updateProfile, user.Description, user.PasswordHash, user.Id)
-	return err
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
 }
 
 func (repo *ProfileRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.User, error) {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	resultUser := models.User{Id: id}
 	description := sql.NullString{}
 
@@ -45,8 +59,10 @@ func (repo *ProfileRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.
 	}
 
 	if err != nil {
+		logger.Error(err.Error())
 		return models.User{}, err
 	}
 
+	logger.Info("success")
 	return resultUser, nil
 }

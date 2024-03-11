@@ -32,16 +32,21 @@ func CreateAuthRepo(db pgxtype.Querier, logger *slog.Logger) *AuthRepo {
 }
 
 func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
-	repo.logger.Info(utils.GFN())
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
 	if err != nil {
-		repo.logger.Error(err.Error())
+		logger.Error(err.Error())
+		return err
 	}
-	return err
+
+	logger.Info("success")
+	return nil
 }
 
 func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.User, error) {
-	repo.logger.Info(utils.GFN())
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	resultUser := models.User{Id: id}
 	description := sql.NullString{}
 
@@ -58,14 +63,17 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 	}
 
 	if err != nil {
-		repo.logger.Error(err.Error())
+		logger.Error(err.Error())
 		return models.User{}, err
 	}
 
+	logger.Info("success")
 	return resultUser, nil
 }
 
 func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
 	resultUser := models.User{Username: username}
 	description := sql.NullString{}
 
@@ -82,9 +90,10 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 	}
 
 	if err != nil {
-		repo.logger.Error(err.Error())
+		logger.Error(err.Error())
 		return models.User{}, err
 	}
 
+	logger.Info("success")
 	return resultUser, nil
 }

@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"os"
 	"testing"
 	"time"
 
@@ -12,6 +14,12 @@ import (
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
+
+var testLogger *slog.Logger
+
+func init() {
+	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}
 
 func TestNoteUsecase_GetAllNotes(t *testing.T) {
 
@@ -99,7 +107,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteRepo(ctl)
-			Usecase := CreateNoteUsecase(repo)
+			Usecase := CreateNoteUsecase(repo, testLogger)
 
 			tt.repoMocker(context.Background(), repo, tt.args.userId, tt.args.count, tt.args.offset)
 			got, err := Usecase.GetAllNotes(context.Background(), tt.args.userId, tt.args.count, tt.args.offset, "")

@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/driftprogramming/pgxpoolmock v1.1.0
+	github.com/fatih/color v1.16.0
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgtype v1.14.2
@@ -25,6 +26,8 @@ require (
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect

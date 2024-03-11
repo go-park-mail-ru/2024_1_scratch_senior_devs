@@ -1,17 +1,25 @@
 package utils
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
+	"github.com/satori/uuid"
 	"io"
 	"net/http"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
+)
+
+const (
+	ParseBodyError       = "can`t parse request body: "
+	WriteBodyError       = "can`t write response body: "
+	JwtPayloadParseError = "can`t parse JWT payload from request context"
 )
 
 type ErrorResponse struct {
@@ -88,4 +96,9 @@ func GFN() string {
 	values := strings.Split(frame.Function, "/")
 
 	return values[len(values)-1]
+}
+
+func GetRequestId(ctx context.Context) string {
+	requestID, _ := ctx.Value(middleware.RequestIdContextKey).(uuid.UUID)
+	return requestID.String()
 }

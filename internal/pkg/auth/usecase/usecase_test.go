@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"github.com/satori/uuid"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -12,6 +14,12 @@ import (
 
 	"github.com/golang/mock/gomock"
 )
+
+var testLogger *slog.Logger
+
+func init() {
+	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}
 
 func TestAuthUsecase_SignUp(t *testing.T) { //тут можем чекнуть по сути только наличие или отсутствие ошибки. плохой тест какой-то
 
@@ -57,7 +65,7 @@ func TestAuthUsecase_SignUp(t *testing.T) { //тут можем чекнуть �
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
 			repo := mockAuth.NewMockAuthRepo(ctl)
-			uc := CreateAuthUsecase(repo)
+			uc := CreateAuthUsecase(repo, testLogger)
 
 			tt.repoMocker(context.Background(), repo)
 			_, _, _, err := uc.SignUp(context.Background(), tt.args.data)
@@ -128,7 +136,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			uc := CreateAuthUsecase(repo)
+			uc := CreateAuthUsecase(repo, testLogger)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.data.Username, utils.GetHash(tt.args.data.Password), tt.wantErr)
@@ -188,7 +196,7 @@ func TestCheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			uc := CreateAuthUsecase(repo)
+			uc := CreateAuthUsecase(repo, testLogger)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.id, tt.wantErr)

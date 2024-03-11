@@ -24,6 +24,7 @@ var testLogger *slog.Logger
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 }
+
 func TestAuthRepo_CreateUser(t *testing.T) {
 	userId := uuid.NewV4()
 	currTime := time.Now().UTC()

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -57,25 +58,27 @@ func main() {
 	}
 	defer logFile.Close()
 
-	logger := slog.New(slog.NewJSONHandler(logFile, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	AuthRepo := authRepo.CreateAuthRepo(db, logger)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, logger)
 
 	NoteRepo := noteRepo.CreateNoteRepo(db, logger)
-	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo)
+	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 
-	ProfileRepo := profileRepo.CreateProfileRepo(db)
-	ProfileUsecase := profileUsecase.CreateProfileUsecase(ProfileRepo)
-	ProfileDelivery := profileDelivery.CreateProfileHandler(ProfileUsecase)
+	ProfileRepo := profileRepo.CreateProfileRepo(db, logger)
+	ProfileUsecase := profileUsecase.CreateProfileUsecase(ProfileRepo, logger)
+	ProfileDelivery := profileDelivery.CreateProfileHandler(ProfileUsecase, logger)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	})
+
+	r.Use(middleware.LogMiddleware)
 
 	swagger := r.PathPrefix("/swagger").Subrouter()
 	swagger.Use(middleware.CorsMiddlewareForSwagger)
