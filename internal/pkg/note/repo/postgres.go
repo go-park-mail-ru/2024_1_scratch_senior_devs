@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 AND LOWER(data->>'title') LIKE LOWER($2) LIMIT $3 OFFSET $4;"
+	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 AND LOWER(data->>'title') LIKE LOWER($2) ORDER BY COALESCE(update_time, create_time) DESC LIMIT $3 OFFSET $4;"
 	getNote     = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE id = $1;"
 	createNote  = "INSERT INTO notes(id, data, create_time, update_time, owner_id) VALUES ($1, $2::json, $3, $4, $5);"
 )

@@ -42,7 +42,7 @@ BEGIN
             "content": "Привет, %s!"
         }', NEW.username);
         INSERT INTO notes (id, data, create_time, update_time, owner_id)
-        VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NEW.id);
+        VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, NULL, NEW.id);
     END IF;
 
     RETURN NEW;
