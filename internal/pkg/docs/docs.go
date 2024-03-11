@@ -270,6 +270,47 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/profile/update": {
+            "post": {
+                "description": "Change password and/or description",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Update profile",
+                "operationId": "update-profile",
+                "parameters": [
+                    {
+                        "description": "update data",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfileUpdatePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -293,6 +334,25 @@ const docTemplate = `{
                 },
                 "update_time": {
                     "type": "string"
+                }
+            }
+        },
+        "models.ProfileUpdatePayload": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "object",
+                    "properties": {
+                        "new": {
+                            "type": "string"
+                        },
+                        "old": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },

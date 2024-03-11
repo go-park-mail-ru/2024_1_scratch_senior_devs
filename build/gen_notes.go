@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -22,6 +23,15 @@ func init() {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func randomDate() time.Time {
+	yearAgo := time.Now().AddDate(-1, 0, 0).Unix()
+	now := time.Now().Unix()
+	randomUnix := rand.Int63n(now-yearAgo) + yearAgo //nolint:all
+
+	randomTime := time.Unix(randomUnix, 0)
+	return randomTime.UTC()
 }
 
 func main() {
@@ -48,11 +58,21 @@ func main() {
 	}
 
 	for i := 0; i < count; i++ {
-		noteTitle := gofakeit.Sentence(rand.Int()%8 + 3)                            //nolint:all
-		noteContent := gofakeit.Paragraph(1, rand.Int()%10+1, rand.Int()%8+3, "\n") //nolint:all
-		noteData := `{"title":"` + noteTitle + `","content":"` + noteContent + `"}`
+		noteTitle := gofakeit.Sentence(rand.Int()%8 + 3)                                          //nolint:all
+		noteContent := gofakeit.Paragraph(rand.Int()%10+1, rand.Int()%7+1, rand.Int()%10+3, "\n") //nolint:all
 
-		_, err = db.Exec(context.Background(), addNote, uuid.NewV4(), noteData, time.Now().UTC(), time.Now().UTC(), userID)
+		noteData := map[string]string{
+			"title":   noteTitle,
+			"content": noteContent,
+		}
+
+		jsonData, err := json.Marshal(noteData)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		_, err = db.Exec(context.Background(), addNote, uuid.NewV4(), jsonData, time.Now().AddDate(-1, 0, 0).UTC(), randomDate(), userID)
 		if err != nil {
 			fmt.Println(err)
 			return
