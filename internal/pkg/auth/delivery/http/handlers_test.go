@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
@@ -81,7 +81,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     tt.username,
-					PasswordHash: utils.GetHash(tt.password),
+					PasswordHash: request.GetHash(tt.password),
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 			}
 
@@ -145,7 +145,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     tt.username,
-					PasswordHash: utils.GetHash(tt.password),
+					PasswordHash: request.GetHash(tt.password),
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 			}
 
@@ -210,8 +210,55 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			usecaseErr:     nil,
 			expectedStatus: http.StatusUnauthorized,
 		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			defer ctrl.Finish()
+
+			req := httptest.NewRequest("GET", "http://example.com/api/handler", nil)
+			w := httptest.NewRecorder()
+
+			ctx := context.WithValue(req.Context(), models.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
+			if tt.name == "AuthHandler_CheckUser_Fail_1" {
+				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
+			}
+			req = req.WithContext(ctx)
+
+			handler := CreateAuthHandler(mockUsecase, testLogger)
+			handler.CheckUser(w, req)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
+		})
+	}
+}
+
+func TestAuthHandler_GetProfile(t *testing.T) {
+	var tests = []struct {
+		name           string
+		id             uuid.UUID
+		username       string
+		usecaseErr     error
+		expectedStatus int
+	}{
 		{
-			name:           "AuthHandler_CheckUser_Fail_2",
+			name:           "AuthHandler_GetProfile_Success",
+			id:             uuid.NewV4(),
+			username:       "testuser2",
+			usecaseErr:     nil,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "AuthHandler_GetProfile_Fail_1",
+			id:             uuid.NewV4(),
+			username:       "testuser2",
+			usecaseErr:     nil,
+			expectedStatus: http.StatusUnauthorized,
+		},
+		{
+			name:           "AuthHandler_GetProfile_Fail_2",
 			id:             uuid.NewV4(),
 			username:       "testuser2",
 			usecaseErr:     errors.New("error in CheckUser"),
@@ -225,12 +272,12 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
 			defer ctrl.Finish()
 
-			if tt.name != "AuthHandler_CheckUser_Fail_1" {
+			if tt.name != "AuthHandler_GetProfile_Fail_1" {
 				mockUsecase.EXPECT().CheckUser(gomock.Any(), tt.id).Return(models.User{
 					Id:           tt.id,
 					Description:  "",
 					Username:     tt.username,
-					PasswordHash: utils.GetHash("fh9ch283c"),
+					PasswordHash: request.GetHash("fh9ch283c"),
 				}, tt.usecaseErr)
 			}
 
@@ -238,13 +285,13 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			ctx := context.WithValue(req.Context(), models.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
-			if tt.name == "AuthHandler_CheckUser_Fail_1" {
+			if tt.name == "AuthHandler_GetProfile_Fail_1" {
 				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
 			}
 			req = req.WithContext(ctx)
 
 			handler := CreateAuthHandler(mockUsecase, testLogger)
-			handler.CheckUser(w, req)
+			handler.GetProfile(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})

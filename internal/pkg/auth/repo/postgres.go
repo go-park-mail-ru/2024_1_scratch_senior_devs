@@ -3,13 +3,13 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"log/slog"
 
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 )
 
 const (
@@ -33,7 +33,7 @@ func CreateAuthRepo(db pgxtype.Querier, logger *slog.Logger) *AuthRepo {
 }
 
 func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
 	if err != nil {
@@ -46,7 +46,7 @@ func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 }
 
 func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.User, error) {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	resultUser := models.User{Id: id}
 	description := sql.NullString{}
@@ -73,7 +73,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 }
 
 func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	resultUser := models.User{Username: username}
 	description := sql.NullString{}
@@ -100,7 +100,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 }
 
 func (repo *AuthRepo) UpdateProfile(ctx context.Context, user models.User) error {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateProfile, user.Description, user.PasswordHash, user.Id)
 	if err != nil {
@@ -113,7 +113,7 @@ func (repo *AuthRepo) UpdateProfile(ctx context.Context, user models.User) error
 }
 
 func (repo *AuthRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, imagePath string) error {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateProfileAvatar, imagePath, userID)
 	if err != nil {

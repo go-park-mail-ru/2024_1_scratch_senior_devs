@@ -1,4 +1,4 @@
-package utils
+package images
 
 import (
 	"io"

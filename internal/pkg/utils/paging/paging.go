@@ -1,4 +1,4 @@
-package utils
+package paging
 
 import (
 	"github.com/pkg/errors"

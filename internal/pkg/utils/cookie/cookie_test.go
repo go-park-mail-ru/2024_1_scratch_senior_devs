@@ -1,7 +1,7 @@
-package utils
+package cookie
 
 import (
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -23,7 +23,7 @@ func TestGenTokenCookie(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cookie := GenTokenCookie(tt.token, tt.expTime)
-			assert.Equal(t, cookie.Name, middleware.JwtCookie)
+			assert.Equal(t, cookie.Name, jwt.JwtCookie)
 			assert.Equal(t, cookie.Value, tt.token)
 		})
 	}
@@ -41,7 +41,7 @@ func TestDelTokenCookie(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cookie := DelTokenCookie()
-			assert.Equal(t, cookie.Name, middleware.JwtCookie)
+			assert.Equal(t, cookie.Name, jwt.JwtCookie)
 			assert.Equal(t, cookie.Value, "")
 		})
 	}

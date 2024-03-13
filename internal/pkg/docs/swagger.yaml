@@ -48,7 +48,7 @@ definitions:
       old:
         type: string
     type: object
-  utils.ErrorResponse:
+  response.ErrorResponse:
     properties:
       message:
         type: string
@@ -64,13 +64,9 @@ paths:
     get:
       description: Get user info if user is authorized
       operationId: check-user
-      produces:
-      - application/json
       responses:
         "200":
-          description: user
-          schema:
-            $ref: '#/definitions/models.User'
+          description: OK
         "401":
           description: Unauthorized
       summary: Check user
@@ -99,11 +95,11 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Sign in
       tags:
       - auth
@@ -140,7 +136,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Sign up
       tags:
       - auth
@@ -164,20 +160,29 @@ paths:
         "400":
           description: incorrect id
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized
         "404":
           description: note not found
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Get one note
       tags:
       - note
   /api/note/add:
     post:
+      consumes:
+      - application/json
       description: Create new note to current user
       operationId: add-note
+      parameters:
+      - description: note data
+        in: body
+        name: data
+        required: true
+        schema:
+          type: object
       produces:
       - application/json
       responses:
@@ -188,7 +193,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Add note
@@ -223,12 +228,28 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Get all notes
       tags:
       - note
+  /api/profile/get:
+    get:
+      description: Get user info if user is authorized
+      operationId: get-profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+      summary: Get profile
+      tags:
+      - profile
   /api/profile/update:
     post:
       consumes:
@@ -252,7 +273,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Update profile
       tags:
       - profile
@@ -260,8 +281,14 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Change avatar
-      operationId: update-profile-avatar
+      description: Change images
+      operationId: update-profile-images
+      parameters:
+      - description: avatar
+        in: formData
+        name: avatar
+        required: true
+        type: file
       produces:
       - application/json
       responses:
@@ -272,10 +299,10 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "413":
           description: Request Entity Too Large
-      summary: Update profile avatar
+      summary: Update profile images
       tags:
       - profile
 swagger: "2.0"

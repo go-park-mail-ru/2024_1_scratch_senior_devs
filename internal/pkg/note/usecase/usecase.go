@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/satori/uuid"
 	"log/slog"
 	"time"
@@ -25,7 +25,7 @@ func CreateNoteUsecase(repo note.NoteRepo, logger *slog.Logger) *NoteUsecase {
 }
 
 func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, titleSubstr string) ([]models.Note, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	res, err := uc.repo.ReadAllNotes(ctx, userId, count, offset, titleSubstr)
 	if err != nil {
@@ -38,7 +38,7 @@ func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count 
 }
 
 func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	resultNote, err := uc.repo.ReadNote(ctx, noteId)
 	if err != nil || resultNote.OwnerId != userId {
@@ -50,12 +50,12 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 	return resultNote, nil
 }
 
-func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID) (models.Note, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteData []byte) (models.Note, error) {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	newNote := models.Note{
 		Id:         uuid.NewV4(),
-		Data:       []byte(`{"title":"Новая заметка","content":""}`),
+		Data:       noteData,
 		CreateTime: time.Now().UTC(),
 		UpdateTime: nil,
 		OwnerId:    userId,

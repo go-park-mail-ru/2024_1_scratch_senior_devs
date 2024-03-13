@@ -1,4 +1,4 @@
-package middleware
+package log
 
 import (
 	"context"

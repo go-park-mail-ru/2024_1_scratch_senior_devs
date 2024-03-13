@@ -19,9 +19,6 @@ const docTemplate = `{
         "/api/auth/check_user": {
             "get": {
                 "description": "Get user info if user is authorized",
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "auth"
                 ],
@@ -29,10 +26,7 @@ const docTemplate = `{
                 "operationId": "check-user",
                 "responses": {
                     "200": {
-                        "description": "user",
-                        "schema": {
-                            "$ref": "#/definitions/models.User"
-                        }
+                        "description": "OK"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -75,13 +69,13 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -137,7 +131,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -146,6 +140,9 @@ const docTemplate = `{
         "/api/note/add": {
             "post": {
                 "description": "Create new note to current user",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -154,6 +151,17 @@ const docTemplate = `{
                 ],
                 "summary": "Add note",
                 "operationId": "add-note",
+                "parameters": [
+                    {
+                        "description": "note data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "note",
@@ -164,7 +172,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "401": {
@@ -217,7 +225,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "401": {
@@ -256,7 +264,7 @@ const docTemplate = `{
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "401": {
@@ -265,8 +273,32 @@ const docTemplate = `{
                     "404": {
                         "description": "note not found",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/api/profile/get": {
+            "get": {
+                "description": "Get user info if user is authorized",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Get profile",
+                "operationId": "get-profile",
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -306,7 +338,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -314,7 +346,7 @@ const docTemplate = `{
         },
         "/api/profile/update_avatar": {
             "post": {
-                "description": "Change avatar",
+                "description": "Change images",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -324,8 +356,17 @@ const docTemplate = `{
                 "tags": [
                     "profile"
                 ],
-                "summary": "Update profile avatar",
-                "operationId": "update-profile-avatar",
+                "summary": "Update profile images",
+                "operationId": "update-profile-images",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "avatar",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "user",
@@ -336,7 +377,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "413": {
@@ -423,7 +464,7 @@ const docTemplate = `{
                 }
             }
         },
-        "utils.ErrorResponse": {
+        "response.ErrorResponse": {
             "type": "object",
             "properties": {
                 "message": {

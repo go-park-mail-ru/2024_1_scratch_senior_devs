@@ -3,13 +3,13 @@ package repo
 import (
 	"context"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"log/slog"
 
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 )
 
 const (
@@ -31,7 +31,7 @@ func CreateNoteRepo(db pgxtype.Querier, logger *slog.Logger) *NoteRepo {
 }
 
 func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, titleSubstr string) ([]models.Note, error) {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	result := make([]models.Note, 0, count)
 
@@ -55,7 +55,7 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userId uuid.UUID, count 
 }
 
 func (repo *NoteRepo) ReadNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	resultNote := models.Note{}
 
@@ -77,7 +77,7 @@ func (repo *NoteRepo) ReadNote(ctx context.Context, noteId uuid.UUID) (models.No
 }
 
 func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
-	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId)
 	if err != nil {

@@ -3,8 +3,10 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
 	"log/slog"
 	"mime/multipart"
 	"os"
@@ -34,7 +36,7 @@ func CreateAuthUsecase(repo auth.AuthRepo, logger *slog.Logger) *AuthUsecase {
 }
 
 func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(JWTLifeTime)
@@ -42,7 +44,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	newUser := models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
-		PasswordHash: utils.GetHash(data.Password),
+		PasswordHash: request.GetHash(data.Password),
 		ImagePath:    defaultImagePath,
 		CreateTime:   currentTime,
 	}
@@ -53,7 +55,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		return models.User{}, "", currentTime, err
 	}
 
-	token, err := middleware.GenToken(newUser, JWTLifeTime)
+	token, err := jwt.GenToken(newUser, JWTLifeTime)
 	if err != nil {
 		logger.Error("middleware.GenToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
@@ -64,7 +66,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 }
 
 func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(JWTLifeTime)
@@ -74,12 +76,12 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		logger.Error(err.Error())
 		return models.User{}, "", currentTime, err
 	}
-	if user.PasswordHash != utils.GetHash(data.Password) {
+	if user.PasswordHash != request.GetHash(data.Password) {
 		logger.Error("wrong password: " + err.Error())
 		return models.User{}, "", currentTime, errors.New("wrong username or password")
 	}
 
-	token, err := middleware.GenToken(user, JWTLifeTime)
+	token, err := jwt.GenToken(user, JWTLifeTime)
 	if err != nil {
 		logger.Error("middleware.GenToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
@@ -90,7 +92,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 }
 
 func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	userData, err := uc.repo.GetUserById(ctx, id)
 	if err != nil {
@@ -103,7 +105,7 @@ func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User
 }
 
 func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payload models.ProfileUpdatePayload) (models.User, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	payload.Sanitize()
 
@@ -119,12 +121,12 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 			return models.User{}, err
 		}
 
-		if user.PasswordHash != utils.GetHash(payload.Password.Old) {
-			logger.Error("wrong password: " + err.Error())
+		if user.PasswordHash != request.GetHash(payload.Password.Old) {
+			logger.Error("wrong password")
 			return models.User{}, errors.New("wrong password")
 		}
 
-		user.PasswordHash = utils.GetHash(payload.Password.New)
+		user.PasswordHash = request.GetHash(payload.Password.New)
 	}
 
 	if payload.Description != "" {
@@ -141,7 +143,7 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 }
 
 func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, avatar multipart.File) (models.User, error) {
-	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	user, err := uc.repo.GetUserById(ctx, userID)
 	if err != nil {
@@ -152,8 +154,8 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 	imagesBasePath := os.Getenv("IMAGES_BASE_PATH")
 	newImagePath := uuid.NewV4().String()
 
-	if err := utils.WriteAvatarOnDisk(imagesBasePath+newImagePath, avatar); err != nil {
-		logger.Error(err.Error())
+	if err := images.WriteAvatarOnDisk(imagesBasePath+newImagePath, avatar); err != nil {
+		logger.Error("write on disk: " + err.Error())
 		return models.User{}, err
 	}
 

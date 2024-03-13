@@ -1,8 +1,8 @@
-package utils
+package log
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	"github.com/satori/uuid"
 	"log/slog"
 	"runtime"
@@ -21,7 +21,7 @@ func GFN() string {
 }
 
 func GetRequestId(ctx context.Context) string {
-	requestID, _ := ctx.Value(middleware.RequestIdContextKey).(uuid.UUID)
+	requestID, _ := ctx.Value(log.RequestIdContextKey).(uuid.UUID)
 	return requestID.String()
 }
 

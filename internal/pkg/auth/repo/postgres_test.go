@@ -3,12 +3,11 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
 	"log/slog"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/golang/mock/gomock"
@@ -41,7 +40,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 					userId,
 					"",
 					"testuser2",
-					utils.GetHash("f28fhc2o4m3"),
+					request.GetHash("f28fhc2o4m3"),
 					currTime,
 					"default.jpg",
 				).Return(nil, nil)
@@ -63,7 +62,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 				Id:           userId,
 				Description:  "",
 				Username:     "testuser2",
-				PasswordHash: utils.GetHash("f28fhc2o4m3"),
+				PasswordHash: request.GetHash("f28fhc2o4m3"),
 				CreateTime:   currTime,
 				ImagePath:    "default.jpg",
 			})

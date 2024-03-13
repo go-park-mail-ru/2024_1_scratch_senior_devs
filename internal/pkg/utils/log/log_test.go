@@ -1,4 +1,4 @@
-package utils
+package log
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -6,5 +6,5 @@ import (
 )
 
 func TestGFN(t *testing.T) {
-	assert.Equal(t, "utils.TestGFN", GFN())
+	assert.Equal(t, "log.TestGFN", GFN())
 }

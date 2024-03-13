@@ -37,18 +37,18 @@ func (m *MockNoteUsecase) EXPECT() *MockNoteUsecaseMockRecorder {
 }
 
 // CreateNote mocks base method.
-func (m *MockNoteUsecase) CreateNote(arg0 context.Context, arg1 uuid.UUID) (models.Note, error) {
+func (m *MockNoteUsecase) CreateNote(arg0 context.Context, arg1 uuid.UUID, arg2 []byte) (models.Note, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1, arg2)
 	ret0, _ := ret[0].(models.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateNote indicates an expected call of CreateNote.
-func (mr *MockNoteUsecaseMockRecorder) CreateNote(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockNoteUsecaseMockRecorder) CreateNote(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockNoteUsecase)(nil).CreateNote), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockNoteUsecase)(nil).CreateNote), arg0, arg1, arg2)
 }
 
 // GetAllNotes mocks base method.

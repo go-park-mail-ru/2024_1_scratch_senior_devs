@@ -55,7 +55,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"mizhgun\",\r\n    \"password\": \"12345678a\"\r\n}",
+					"raw": "{\r\n    \"username\": \"alladan\",\r\n    \"password\": \"12345678a\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -73,37 +73,6 @@
 						"api",
 						"auth",
 						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "check_user",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAzNzA0MDAsImlkIjoiM2Q2N2JhNTgtOTAyMy00MmI1LWEwNTktZDYyNmQ3NTg3ZjFlIiwidXNyIjoiYWxsYWRhbiJ9.xfxEY66EVSUvkkB8z2Dhiide-zeDoGtylcoUIZ-V4NA",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://{{HOST}}:8080/api/auth/check_user",
-					"protocol": "http",
-					"host": [
-						"{{HOST}}"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"auth",
-						"check_user"
 					]
 				}
 			},
@@ -135,6 +104,37 @@
 						"api",
 						"auth",
 						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "check_user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA0MTEzNzAsImlkIjoiM2Q2N2JhNTgtOTAyMy00MmI1LWEwNTktZDYyNmQ3NTg3ZjFlIiwidXNyIjoiYWxsYWRhbiJ9.q8W6skpYYteBEfL-3ITxF9RbioSn0csfJD2J0LEKw4U",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{HOST}}:8080/api/auth/check_user",
+					"protocol": "http",
+					"host": [
+						"{{HOST}}"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"auth",
+						"check_user"
 					]
 				}
 			},
@@ -186,6 +186,37 @@
 			"response": []
 		},
 		{
+			"name": "get_note",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAwMDU4MzQsImlkIjoiZTcyYTIzYjUtYTA1Yy00N2Y5LWI1OGQtMDkyOWY0NTkzMzBlIiwidXNyIjoieWFyaWsifQ.WhmmdBg6vuRogereCW4CSyu1Hqw4rDwBtogspFnF4Ak",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{HOST}}:8080/api/note/61f0b63f-d64c-4ff8-ba6f-f31a1efe7af8",
+					"protocol": "http",
+					"host": [
+						"{{HOST}}"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"note",
+						"61f0b63f-d64c-4ff8-ba6f-f31a1efe7af8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "add_note",
 			"request": {
 				"auth": {
@@ -217,14 +248,14 @@
 			"response": []
 		},
 		{
-			"name": "note",
+			"name": "get_profile",
 			"request": {
 				"auth": {
 					"type": "bearer",
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAwMDU4MzQsImlkIjoiZTcyYTIzYjUtYTA1Yy00N2Y5LWI1OGQtMDkyOWY0NTkzMzBlIiwidXNyIjoieWFyaWsifQ.WhmmdBg6vuRogereCW4CSyu1Hqw4rDwBtogspFnF4Ak",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA0MTEzNzAsImlkIjoiM2Q2N2JhNTgtOTAyMy00MmI1LWEwNTktZDYyNmQ3NTg3ZjFlIiwidXNyIjoiYWxsYWRhbiJ9.q8W6skpYYteBEfL-3ITxF9RbioSn0csfJD2J0LEKw4U",
 							"type": "string"
 						}
 					]
@@ -232,7 +263,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://{{HOST}}:8080/api/note/61f0b63f-d64c-4ff8-ba6f-f31a1efe7af8",
+					"raw": "http://{{HOST}}:8080/api/profile/get",
 					"protocol": "http",
 					"host": [
 						"{{HOST}}"
@@ -240,8 +271,8 @@
 					"port": "8080",
 					"path": [
 						"api",
-						"note",
-						"61f0b63f-d64c-4ff8-ba6f-f31a1efe7af8"
+						"profile",
+						"get"
 					]
 				}
 			},
@@ -298,7 +329,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAzNzM2ODEsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.AI1HbOkZMeLCPiginI1CBeYDehSAYSvYNTsMq_HHgOc",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA0MTEzNzAsImlkIjoiM2Q2N2JhNTgtOTAyMy00MmI1LWEwNTktZDYyNmQ3NTg3ZjFlIiwidXNyIjoiYWxsYWRhbiJ9.q8W6skpYYteBEfL-3ITxF9RbioSn0csfJD2J0LEKw4U",
 							"type": "string"
 						}
 					]

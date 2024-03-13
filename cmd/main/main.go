@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/cors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,12 +20,10 @@ import (
 	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	_ "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/docs"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
-
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
 	authUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/usecase"
+	_ "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/docs"
 
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
@@ -56,6 +58,9 @@ func main() {
 
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
 
+	JwtMiddleware := jwt.CreateJwtMiddleware(logger)
+	RecoverMiddleware := recover.CreateRecoverMiddleware(logger)
+
 	AuthRepo := authRepo.CreateAuthRepo(db, logger)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, logger)
@@ -70,10 +75,10 @@ func main() {
 		w.WriteHeader(http.StatusNotFound)
 	})
 
-	r.Use(middleware.LogMiddleware)
+	r.Use(log.LogMiddleware, RecoverMiddleware)
 
 	swagger := r.PathPrefix("/swagger").Subrouter()
-	swagger.Use(middleware.CorsMiddlewareForSwagger)
+	swagger.Use(cors.CorsMiddlewareForSwagger)
 
 	r.PathPrefix("/swagger").Handler(httpSwagger.Handler(
 		httpSwagger.DeepLinking(true),
@@ -82,16 +87,16 @@ func main() {
 	)).Methods(http.MethodGet, http.MethodOptions)
 
 	auth := r.PathPrefix("/auth").Subrouter()
-	auth.Use(middleware.CorsMiddleware)
+	auth.Use(cors.CorsMiddleware)
 	{
 		auth.Handle("/signup", http.HandlerFunc(AuthDelivery.SignUp)).Methods(http.MethodPost, http.MethodOptions)
 		auth.Handle("/login", http.HandlerFunc(AuthDelivery.SignIn)).Methods(http.MethodPost, http.MethodOptions)
-		auth.Handle("/logout", middleware.JwtMiddleware(http.HandlerFunc(AuthDelivery.LogOut))).Methods(http.MethodDelete, http.MethodOptions) // POST ?
-		auth.Handle("/check_user", middleware.JwtMiddleware(http.HandlerFunc(AuthDelivery.CheckUser))).Methods(http.MethodGet, http.MethodOptions)
+		auth.Handle("/logout", JwtMiddleware(http.HandlerFunc(AuthDelivery.LogOut))).Methods(http.MethodDelete, http.MethodOptions) // POST ?
+		auth.Handle("/check_user", JwtMiddleware(http.HandlerFunc(AuthDelivery.CheckUser))).Methods(http.MethodGet, http.MethodOptions)
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
-	note.Use(middleware.CorsMiddleware, middleware.JwtMiddleware)
+	note.Use(cors.CorsMiddleware, JwtMiddleware)
 	{
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
@@ -99,8 +104,9 @@ func main() {
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
-	profile.Use(middleware.CorsMiddleware, middleware.JwtMiddleware)
+	profile.Use(cors.CorsMiddleware, JwtMiddleware)
 	{
+		profile.Handle("/get", http.HandlerFunc(AuthDelivery.GetProfile)).Methods(http.MethodGet, http.MethodOptions)
 		profile.Handle("/update", http.HandlerFunc(AuthDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
 		profile.Handle("/update_avatar", http.HandlerFunc(AuthDelivery.UpdateProfileAvatar)).Methods(http.MethodPost, http.MethodOptions)
 	}
