@@ -311,6 +311,39 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/profile/update_avatar": {
+            "post": {
+                "description": "Change avatar",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Update profile avatar",
+                "operationId": "update-profile-avatar",
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large"
+                    }
+                }
+            }
         }
     },
     "definitions": {

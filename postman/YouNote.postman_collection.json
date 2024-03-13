@@ -15,7 +15,8 @@
 						"exec": [
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -24,7 +25,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"mihail6\",\r\n    \"password\": \"12345678a\"\r\n}",
+					"raw": "{\r\n    \"username\": \"mihai7\",\r\n    \"password\": \"12345678a\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -85,7 +86,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAwODU2MTEsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.VSkOXhe4Bp29bBgyGQRLSKjah4_a0ykx_td1SHqmmJk",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAzNzA0MDAsImlkIjoiM2Q2N2JhNTgtOTAyMy00MmI1LWEwNTktZDYyNmQ3NTg3ZjFlIiwidXNyIjoiYWxsYWRhbiJ9.xfxEY66EVSUvkkB8z2Dhiide-zeDoGtylcoUIZ-V4NA",
 							"type": "string"
 						}
 					]
@@ -116,7 +117,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDk5MjgwMjcsImlkIjoiMTcyNDhkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoiamFwYW5tYW4ifQ.nR5pilPLe_dLzudif87rx3urMZ5XD1VbaoDFnzi44XU",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAzNzA0MDAsImlkIjoiM2Q2N2JhNTgtOTAyMy00MmI1LWEwNTktZDYyNmQ3NTg3ZjFlIiwidXNyIjoiYWxsYWRhbiJ9.xfxEY66EVSUvkkB8z2Dhiide-zeDoGtylcoUIZ-V4NA",
 							"type": "string"
 						}
 					]
@@ -147,7 +148,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAwMDUwOTIsImlkIjoiM2Q2N2JhNTgtOTAyMy00MmI1LWEwNTktZDYyNmQ3NTg3ZjFlIiwidXNyIjoiYWxsYWRhbiJ9.Qbe8reFTcyHk3tHzlLOeXzeSMvTDn19L7eqNXrVRf0Y",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAzNzM2ODEsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.AI1HbOkZMeLCPiginI1CBeYDehSAYSvYNTsMq_HHgOc",
 							"type": "string"
 						}
 					]
@@ -155,7 +156,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://{{HOST}}:8080/api/note/get_all?count=100",
+					"raw": "http://{{HOST}}:8080/api/note/get_all?count=100&&offset=5",
 					"protocol": "http",
 					"host": [
 						"{{HOST}}"
@@ -170,6 +171,14 @@
 						{
 							"key": "count",
 							"value": "100"
+						},
+						{
+							"key": null,
+							"value": null
+						},
+						{
+							"key": "offset",
+							"value": "5"
 						}
 					]
 				}
@@ -273,6 +282,50 @@
 						"api",
 						"profile",
 						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "profile_avatar_update",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTAzNzM2ODEsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.AI1HbOkZMeLCPiginI1CBeYDehSAYSvYNTsMq_HHgOc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "avatar",
+							"type": "file",
+							"src": "/C:/Users/Миша/Pictures/Screenshots/Screenshot 2024-03-13 022434.png"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{HOST}}:8080/api/profile/update_avatar",
+					"protocol": "http",
+					"host": [
+						"{{HOST}}"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"profile",
+						"update_avatar"
 					]
 				}
 			},

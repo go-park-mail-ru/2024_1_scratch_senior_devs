@@ -110,6 +110,7 @@ func main() {
 	profile.Use(middleware.CorsMiddleware, middleware.JwtMiddleware)
 	{
 		profile.Handle("/update", http.HandlerFunc(ProfileDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
+		profile.Handle("/update_avatar", http.HandlerFunc(ProfileDelivery.UpdateProfileAvatar)).Methods(http.MethodPost, http.MethodOptions)
 	}
 
 	http.Handle("/", r)

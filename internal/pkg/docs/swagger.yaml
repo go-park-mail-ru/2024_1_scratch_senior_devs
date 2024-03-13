@@ -254,4 +254,26 @@ paths:
       summary: Update profile
       tags:
       - profile
+  /api/profile/update_avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change avatar
+      operationId: update-profile-avatar
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "413":
+          description: Request Entity Too Large
+      summary: Update profile avatar
+      tags:
+      - profile
 swagger: "2.0"

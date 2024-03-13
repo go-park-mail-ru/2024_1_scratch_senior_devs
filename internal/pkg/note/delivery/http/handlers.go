@@ -1,21 +1,14 @@
 package http
 
 import (
-	"log/slog"
-	"net/http"
-	"strconv"
-
 	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
+	"log/slog"
+	"net/http"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
-)
-
-const (
-	defaultCount  = 10
-	defaultOffset = 0
 )
 
 type NoteHandler struct {
@@ -46,35 +39,11 @@ func CreateNotesHandler(uc note.NoteUsecase, logger *slog.Logger) *NoteHandler {
 func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", utils.GetRequestId(r.Context())), slog.String("func", utils.GFN()))
 
-	count := defaultCount
-	offset := defaultOffset
-
-	var err error
-
-	strCount := r.URL.Query().Get("count")
-	if strCount != "" {
-		count, err = strconv.Atoi(strCount)
-		if err != nil {
-			utils.LogHandlerError(logger, http.StatusBadRequest, "incorrect count parameter"+err.Error())
-			utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect count parameter")
-			return
-		}
-		if count <= 0 {
-			count = defaultCount
-		}
-	}
-
-	strOffset := r.URL.Query().Get("offset")
-	if strOffset != "" {
-		offset, err = strconv.Atoi(strOffset)
-		if err != nil {
-			utils.LogHandlerError(logger, http.StatusBadRequest, "incorrect offset parameter"+err.Error())
-			utils.WriteErrorMessage(w, http.StatusBadRequest, "incorrect offset parameter")
-			return
-		}
-		if offset < 0 {
-			offset = defaultOffset
-		}
+	count, offset, err := utils.GetParams(r)
+	if err != nil {
+		utils.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		utils.WriteErrorMessage(w, http.StatusBadRequest, "invalid parameters")
+		return
 	}
 
 	titleSubstr := r.URL.Query().Get("title")

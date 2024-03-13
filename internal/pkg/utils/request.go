@@ -102,3 +102,8 @@ func GetRequestId(ctx context.Context) string {
 	requestID, _ := ctx.Value(middleware.RequestIdContextKey).(uuid.UUID)
 	return requestID.String()
 }
+
+func CheckFileFormat(content []byte) bool {
+	fileFormat := http.DetectContentType(content)
+	return strings.HasPrefix(fileFormat, "image/png") || strings.HasPrefix(fileFormat, "image/jpeg")
+}

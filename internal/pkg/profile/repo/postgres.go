@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	getUserById   = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
-	updateProfile = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
+	getUserById         = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
+	updateProfile       = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
+	updateProfileAvatar = "UPDATE users SET image_path = $1 WHERE id = $2;"
 )
 
 type ProfileRepo struct {
@@ -31,6 +32,19 @@ func (repo *ProfileRepo) UpdateProfile(ctx context.Context, user models.User) er
 	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateProfile, user.Description, user.PasswordHash, user.Id)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *ProfileRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, imagePath string) error {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
+	_, err := repo.db.Exec(ctx, updateProfileAvatar, imagePath, userID)
 	if err != nil {
 		logger.Error(err.Error())
 		return err

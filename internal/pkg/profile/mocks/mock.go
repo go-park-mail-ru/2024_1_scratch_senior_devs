@@ -6,6 +6,7 @@ package mock_profile
 
 import (
 	context "context"
+	multipart "mime/multipart"
 	reflect "reflect"
 
 	models "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -49,6 +50,21 @@ func (m *MockProfileUsecase) UpdateProfile(arg0 context.Context, arg1 uuid.UUID,
 func (mr *MockProfileUsecaseMockRecorder) UpdateProfile(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockProfileUsecase)(nil).UpdateProfile), arg0, arg1, arg2)
+}
+
+// UpdateProfileAvatar mocks base method.
+func (m *MockProfileUsecase) UpdateProfileAvatar(arg0 context.Context, arg1 uuid.UUID, arg2 multipart.File) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfileAvatar", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateProfileAvatar indicates an expected call of UpdateProfileAvatar.
+func (mr *MockProfileUsecaseMockRecorder) UpdateProfileAvatar(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileAvatar", reflect.TypeOf((*MockProfileUsecase)(nil).UpdateProfileAvatar), arg0, arg1, arg2)
 }
 
 // MockProfileRepo is a mock of ProfileRepo interface.
@@ -101,4 +117,18 @@ func (m *MockProfileRepo) UpdateProfile(arg0 context.Context, arg1 models.User) 
 func (mr *MockProfileRepoMockRecorder) UpdateProfile(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockProfileRepo)(nil).UpdateProfile), arg0, arg1)
+}
+
+// UpdateProfileAvatar mocks base method.
+func (m *MockProfileRepo) UpdateProfileAvatar(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfileAvatar", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProfileAvatar indicates an expected call of UpdateProfileAvatar.
+func (mr *MockProfileRepoMockRecorder) UpdateProfileAvatar(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileAvatar", reflect.TypeOf((*MockProfileRepo)(nil).UpdateProfileAvatar), arg0, arg1, arg2)
 }

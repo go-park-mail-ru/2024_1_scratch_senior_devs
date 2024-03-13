@@ -19,6 +19,9 @@ services:
       - type: bind
         source: /var/log
         target: /var/log
+      - type: bind
+        source: /opt/images
+        target: /opt
   postgres:
     env_file:
       - .env
