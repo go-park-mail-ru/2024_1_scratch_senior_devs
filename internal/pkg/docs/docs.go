@@ -377,15 +377,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "object",
-                    "properties": {
-                        "new": {
-                            "type": "string"
-                        },
-                        "old": {
-                            "type": "string"
-                        }
-                    }
+                    "$ref": "#/definitions/models.passwords"
                 }
             }
         },
@@ -416,6 +408,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.passwords": {
+            "type": "object",
+            "properties": {
+                "new": {
+                    "type": "string"
+                },
+                "old": {
                     "type": "string"
                 }
             }

@@ -19,12 +19,7 @@ definitions:
       description:
         type: string
       password:
-        properties:
-          new:
-            type: string
-          old:
-            type: string
-        type: object
+        $ref: '#/definitions/models.passwords'
     type: object
   models.User:
     properties:
@@ -44,6 +39,13 @@ definitions:
       password:
         type: string
       username:
+        type: string
+    type: object
+  models.passwords:
+    properties:
+      new:
+        type: string
+      old:
         type: string
     type: object
   utils.ErrorResponse:

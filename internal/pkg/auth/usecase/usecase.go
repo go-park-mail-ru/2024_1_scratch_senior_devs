@@ -6,6 +6,8 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
 	"log/slog"
+	"mime/multipart"
+	"os"
 	"time"
 
 	"github.com/satori/uuid"
@@ -98,4 +100,78 @@ func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User
 
 	logger.Info("success")
 	return userData, nil
+}
+
+func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payload models.ProfileUpdatePayload) (models.User, error) {
+	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
+	payload.Sanitize()
+
+	user, err := uc.repo.GetUserById(ctx, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.User{}, err
+	}
+
+	if payload.Password.Old != "" && payload.Password.New != "" {
+		if err := payload.Validate(); err != nil {
+			logger.Error("validation error: " + err.Error())
+			return models.User{}, err
+		}
+
+		if user.PasswordHash != utils.GetHash(payload.Password.Old) {
+			logger.Error("wrong password: " + err.Error())
+			return models.User{}, errors.New("wrong password")
+		}
+
+		user.PasswordHash = utils.GetHash(payload.Password.New)
+	}
+
+	if payload.Description != "" {
+		user.Description = payload.Description
+	}
+
+	if err := uc.repo.UpdateProfile(ctx, user); err != nil {
+		logger.Error(err.Error())
+		return models.User{}, err
+	}
+
+	logger.Info("success")
+	return user, nil
+}
+
+func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, avatar multipart.File) (models.User, error) {
+	logger := uc.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
+	user, err := uc.repo.GetUserById(ctx, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.User{}, err
+	}
+
+	imagesBasePath := os.Getenv("IMAGES_BASE_PATH")
+	newImagePath := uuid.NewV4().String()
+
+	if err := utils.WriteAvatarOnDisk(imagesBasePath+newImagePath, avatar); err != nil {
+		logger.Error(err.Error())
+		return models.User{}, err
+	}
+
+	if err := uc.repo.UpdateProfileAvatar(ctx, userID, newImagePath); err != nil {
+		logger.Error(err.Error())
+		return models.User{}, err
+	}
+
+	// удаление старой аватарки делаем только после успешного создания новой
+	if user.ImagePath != "default.jpg" {
+		if err := os.Remove(imagesBasePath + user.ImagePath); err != nil {
+			logger.Error(err.Error())
+			return models.User{}, err
+		}
+	}
+
+	user.ImagePath = newImagePath
+
+	logger.Info("success")
+	return user, nil
 }

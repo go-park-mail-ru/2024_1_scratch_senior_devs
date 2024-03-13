@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	createUser                = "INSERT INTO users(id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
-	getUserById               = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
-	getUserByUsername         = "SELECT id, description, password_hash, create_time, image_path FROM users WHERE username = $1;"
-	getPasswordHashByUsername = "SELECT password_hash FROM users WHERE username = $1"
+	createUser          = "INSERT INTO users(id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
+	getUserById         = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
+	getUserByUsername   = "SELECT id, description, password_hash, create_time, image_path FROM users WHERE username = $1;"
+	updateProfile       = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
+	updateProfileAvatar = "UPDATE users SET image_path = $1 WHERE id = $2;"
 )
 
 type AuthRepo struct {
@@ -96,4 +97,30 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 
 	logger.Info("success")
 	return resultUser, nil
+}
+
+func (repo *AuthRepo) UpdateProfile(ctx context.Context, user models.User) error {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
+	_, err := repo.db.Exec(ctx, updateProfile, user.Description, user.PasswordHash, user.Id)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *AuthRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, imagePath string) error {
+	logger := repo.logger.With(slog.String("ID", utils.GetRequestId(ctx)), slog.String("func", utils.GFN()))
+
+	_, err := repo.db.Exec(ctx, updateProfileAvatar, imagePath, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
 }

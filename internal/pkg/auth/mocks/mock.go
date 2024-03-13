@@ -6,6 +6,7 @@ package mock_auth
 
 import (
 	context "context"
+	multipart "mime/multipart"
 	reflect "reflect"
 	time "time"
 
@@ -86,6 +87,36 @@ func (mr *MockAuthUsecaseMockRecorder) SignUp(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignUp", reflect.TypeOf((*MockAuthUsecase)(nil).SignUp), arg0, arg1)
 }
 
+// UpdateProfile mocks base method.
+func (m *MockAuthUsecase) UpdateProfile(arg0 context.Context, arg1 uuid.UUID, arg2 models.ProfileUpdatePayload) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfile", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateProfile indicates an expected call of UpdateProfile.
+func (mr *MockAuthUsecaseMockRecorder) UpdateProfile(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockAuthUsecase)(nil).UpdateProfile), arg0, arg1, arg2)
+}
+
+// UpdateProfileAvatar mocks base method.
+func (m *MockAuthUsecase) UpdateProfileAvatar(arg0 context.Context, arg1 uuid.UUID, arg2 multipart.File) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfileAvatar", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateProfileAvatar indicates an expected call of UpdateProfileAvatar.
+func (mr *MockAuthUsecaseMockRecorder) UpdateProfileAvatar(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileAvatar", reflect.TypeOf((*MockAuthUsecase)(nil).UpdateProfileAvatar), arg0, arg1, arg2)
+}
+
 // MockAuthRepo is a mock of AuthRepo interface.
 type MockAuthRepo struct {
 	ctrl     *gomock.Controller
@@ -151,4 +182,32 @@ func (m *MockAuthRepo) GetUserByUsername(arg0 context.Context, arg1 string) (mod
 func (mr *MockAuthRepoMockRecorder) GetUserByUsername(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockAuthRepo)(nil).GetUserByUsername), arg0, arg1)
+}
+
+// UpdateProfile mocks base method.
+func (m *MockAuthRepo) UpdateProfile(arg0 context.Context, arg1 models.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfile", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProfile indicates an expected call of UpdateProfile.
+func (mr *MockAuthRepoMockRecorder) UpdateProfile(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockAuthRepo)(nil).UpdateProfile), arg0, arg1)
+}
+
+// UpdateProfileAvatar mocks base method.
+func (m *MockAuthRepo) UpdateProfileAvatar(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfileAvatar", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProfileAvatar indicates an expected call of UpdateProfileAvatar.
+func (mr *MockAuthRepoMockRecorder) UpdateProfileAvatar(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileAvatar", reflect.TypeOf((*MockAuthRepo)(nil).UpdateProfileAvatar), arg0, arg1, arg2)
 }

@@ -369,15 +369,7 @@
                     "type": "string"
                 },
                 "password": {
-                    "type": "object",
-                    "properties": {
-                        "new": {
-                            "type": "string"
-                        },
-                        "old": {
-                            "type": "string"
-                        }
-                    }
+                    "$ref": "#/definitions/models.passwords"
                 }
             }
         },
@@ -408,6 +400,17 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.passwords": {
+            "type": "object",
+            "properties": {
+                "new": {
+                    "type": "string"
+                },
+                "old": {
                     "type": "string"
                 }
             }

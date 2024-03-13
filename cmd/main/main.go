@@ -26,10 +26,6 @@ import (
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
 	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
-
-	profileDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/profile/delivery/http"
-	profileRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/profile/repo"
-	profileUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/profile/usecase"
 )
 
 func init() {
@@ -68,10 +64,6 @@ func main() {
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 
-	ProfileRepo := profileRepo.CreateProfileRepo(db, logger)
-	ProfileUsecase := profileUsecase.CreateProfileUsecase(ProfileRepo, logger)
-	ProfileDelivery := profileDelivery.CreateProfileHandler(ProfileUsecase, logger)
-
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -109,8 +101,8 @@ func main() {
 	profile := r.PathPrefix("/profile").Subrouter()
 	profile.Use(middleware.CorsMiddleware, middleware.JwtMiddleware)
 	{
-		profile.Handle("/update", http.HandlerFunc(ProfileDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
-		profile.Handle("/update_avatar", http.HandlerFunc(ProfileDelivery.UpdateProfileAvatar)).Methods(http.MethodPost, http.MethodOptions)
+		profile.Handle("/update", http.HandlerFunc(AuthDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
+		profile.Handle("/update_avatar", http.HandlerFunc(AuthDelivery.UpdateProfileAvatar)).Methods(http.MethodPost, http.MethodOptions)
 	}
 
 	http.Handle("/", r)
@@ -128,18 +120,18 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			fmt.Println("Server stopped")
+			logger.Info("Server stopped")
 		}
 	}()
-	fmt.Println("Server started")
+	logger.Info("Server started")
 
 	sig := <-signalCh
-	fmt.Printf("Received signal: %v\n", sig)
+	logger.Info("Received signal: %v\n", sig)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		fmt.Printf("Server shutdown failed: %v\n", err)
+		logger.Error("Server shutdown failed: %v\n", err)
 	}
 }

@@ -4,12 +4,14 @@ import (
 	"html"
 )
 
+type passwords struct {
+	Old string `json:"old"`
+	New string `json:"new"`
+}
+
 type ProfileUpdatePayload struct {
-	Description string `json:"description,omitempty"`
-	Password    struct {
-		Old string `json:"old"`
-		New string `json:"new"`
-	} `json:"password,omitempty"`
+	Description string    `json:"description,omitempty"`
+	Password    passwords `json:"password,omitempty"`
 }
 
 func (payload *ProfileUpdatePayload) Sanitize() {
