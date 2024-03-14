@@ -42,14 +42,14 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 					{
 						Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 						OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
-						UpdateTime: nil,
+						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
 						Data:       nil,
 					},
 					{
 						Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
 						OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
-						UpdateTime: nil,
+						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
 						Data:       nil,
 					},
@@ -67,14 +67,14 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 				{
 					Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"), //потом задать из args
-					UpdateTime: nil,
+					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
 					Data:       nil,
 				},
 				{
 					Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
 					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
-					UpdateTime: nil,
+					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
 					Data:       nil,
 				},

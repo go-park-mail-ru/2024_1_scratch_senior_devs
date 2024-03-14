@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS notes (
     data JSON,
     create_time TIMESTAMP
         NOT NULL,
-    update_time TIMESTAMP,
+    update_time TIMESTAMP 
+        NOT NULL,
     owner_id UUID REFERENCES users (id)
         NOT NULL
 );
@@ -42,7 +43,7 @@ BEGIN
             "content": "Привет, %s!"
         }', NEW.username);
         INSERT INTO notes (id, data, create_time, update_time, owner_id)
-        VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, NULL, NEW.id);
+        VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NEW.id);
     END IF;
 
     RETURN NEW;

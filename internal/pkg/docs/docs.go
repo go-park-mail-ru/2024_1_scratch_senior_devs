@@ -154,11 +154,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "note data",
-                        "name": "data",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/models.UpsertNoteRequest"
                         }
                     }
                 ],
@@ -234,17 +234,17 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/note/{id}": {
-            "get": {
-                "description": "Get one of notes of current user",
+        "/api/note/{id}/delete": {
+            "delete": {
+                "description": "Delete selected note of current user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "note"
                 ],
-                "summary": "Get one note",
-                "operationId": "get-note",
+                "summary": "Delete note",
+                "operationId": "delete-note",
                 "parameters": [
                     {
                         "type": "string",
@@ -256,10 +256,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "note",
-                        "schema": {
-                            "$ref": "#/definitions/models.Note"
-                        }
+                        "description": "OK"
                     },
                     "400": {
                         "description": "incorrect id",
@@ -275,6 +272,57 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/api/note/{id}/edit": {
+            "put": {
+                "description": "Create new note to current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "note"
+                ],
+                "summary": "Update note",
+                "operationId": "update-note",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "note data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpsertNoteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.Note"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -420,6 +468,12 @@ const docTemplate = `{
                 "password": {
                     "$ref": "#/definitions/models.passwords"
                 }
+            }
+        },
+        "models.UpsertNoteRequest": {
+            "type": "object",
+            "properties": {
+                "data": {}
             }
         },
         "models.User": {

@@ -21,6 +21,10 @@ definitions:
       password:
         $ref: '#/definitions/models.passwords'
     type: object
+  models.UpsertNoteRequest:
+    properties:
+      data: {}
+    type: object
   models.User:
     properties:
       create_time:
@@ -140,10 +144,10 @@ paths:
       summary: Sign up
       tags:
       - auth
-  /api/note/{id}:
-    get:
-      description: Get one of notes of current user
-      operationId: get-note
+  /api/note/{id}/delete:
+    delete:
+      description: Delete selected note of current user
+      operationId: delete-note
       parameters:
       - description: note id
         in: path
@@ -154,9 +158,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: note
-          schema:
-            $ref: '#/definitions/models.Note'
+          description: OK
         "400":
           description: incorrect id
           schema:
@@ -167,7 +169,41 @@ paths:
           description: note not found
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Get one note
+      summary: Delete note
+      tags:
+      - note
+  /api/note/{id}/edit:
+    put:
+      consumes:
+      - application/json
+      description: Create new note to current user
+      operationId: update-note
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: note data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpsertNoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.Note'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+      summary: Update note
       tags:
       - note
   /api/note/add:
@@ -179,10 +215,10 @@ paths:
       parameters:
       - description: note data
         in: body
-        name: data
+        name: payload
         required: true
         schema:
-          type: object
+          $ref: '#/definitions/models.UpsertNoteRequest'
       produces:
       - application/json
       responses:
