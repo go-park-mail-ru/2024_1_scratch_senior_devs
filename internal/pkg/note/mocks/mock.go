@@ -96,18 +96,18 @@ func (mr *MockNoteUsecaseMockRecorder) GetNote(arg0, arg1, arg2 interface{}) *go
 }
 
 // UpdateNote mocks base method.
-func (m *MockNoteUsecase) UpdateNote(arg0 context.Context, arg1 uuid.UUID, arg2 []byte) (models.Note, error) {
+func (m *MockNoteUsecase) UpdateNote(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 []byte) (models.Note, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateNote", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateNote", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(models.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateNote indicates an expected call of UpdateNote.
-func (mr *MockNoteUsecaseMockRecorder) UpdateNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockNoteUsecaseMockRecorder) UpdateNote(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteUsecase)(nil).UpdateNote), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteUsecase)(nil).UpdateNote), arg0, arg1, arg2, arg3)
 }
 
 // MockNoteRepo is a mock of NoteRepo interface.
@@ -148,17 +148,17 @@ func (mr *MockNoteRepoMockRecorder) CreateNote(arg0, arg1 interface{}) *gomock.C
 }
 
 // DeleteNote mocks base method.
-func (m *MockNoteRepo) DeleteNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+func (m *MockNoteRepo) DeleteNote(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteNote", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "DeleteNote", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteNote indicates an expected call of DeleteNote.
-func (mr *MockNoteRepoMockRecorder) DeleteNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockNoteRepoMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteRepo)(nil).DeleteNote), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteRepo)(nil).DeleteNote), arg0, arg1)
 }
 
 // ReadAllNotes mocks base method.

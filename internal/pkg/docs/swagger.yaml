@@ -1,12 +1,17 @@
 definitions:
-  models.Note:
+  models.NoteDataForSwagger:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
+  models.NoteForSwagger:
     properties:
       create_time:
         type: string
       data:
-        items:
-          type: integer
-        type: array
+        $ref: '#/definitions/models.NoteDataForSwagger'
       id:
         type: string
       owner_id:
@@ -21,9 +26,10 @@ definitions:
       password:
         $ref: '#/definitions/models.passwords'
     type: object
-  models.UpsertNoteRequest:
+  models.UpsertNoteRequestForSwagger:
     properties:
-      data: {}
+      data:
+        $ref: '#/definitions/models.NoteDataForSwagger'
     type: object
   models.User:
     properties:
@@ -154,11 +160,9 @@ paths:
         name: id
         required: true
         type: string
-      produces:
-      - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
         "400":
           description: incorrect id
           schema:
@@ -189,14 +193,14 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/models.UpsertNoteRequest'
+          $ref: '#/definitions/models.UpsertNoteRequestForSwagger'
       produces:
       - application/json
       responses:
         "200":
           description: note
           schema:
-            $ref: '#/definitions/models.Note'
+            $ref: '#/definitions/models.NoteForSwagger'
         "400":
           description: error
           schema:
@@ -204,6 +208,34 @@ paths:
         "401":
           description: Unauthorized
       summary: Update note
+      tags:
+      - note
+  /api/note/{id}/get:
+    get:
+      description: Get one of notes of current user
+      operationId: get-note
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.NoteForSwagger'
+        "400":
+          description: incorrect id
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "404":
+          description: note not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get one note
       tags:
       - note
   /api/note/add:
@@ -218,14 +250,14 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/models.UpsertNoteRequest'
+          $ref: '#/definitions/models.UpsertNoteRequestForSwagger'
       produces:
       - application/json
       responses:
         "200":
           description: note
           schema:
-            $ref: '#/definitions/models.Note'
+            $ref: '#/definitions/models.NoteForSwagger'
         "400":
           description: error
           schema:
@@ -259,7 +291,7 @@ paths:
           description: notes
           schema:
             items:
-              $ref: '#/definitions/models.Note'
+              $ref: '#/definitions/models.NoteForSwagger'
             type: array
         "400":
           description: error

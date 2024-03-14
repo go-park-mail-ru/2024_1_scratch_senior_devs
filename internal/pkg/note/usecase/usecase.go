@@ -71,29 +71,43 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	return newNote, nil
 }
 
-func (uc *NoteUsecase) UpdateNote(ctx context.Context, id uuid.UUID, noteData []byte) (models.Note, error) {
+func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID, noteData []byte) (models.Note, error) {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	updatedNote, err := uc.repo.ReadNote(ctx, id)
-	if err != nil {
+	updatedNote, err := uc.repo.ReadNote(ctx, noteId)
+	if err != nil || updatedNote.OwnerId != ownerId {
+		logger.Error(err.Error())
 		return models.Note{}, err
 	}
 
 	updatedNote.UpdateTime = time.Now().UTC()
-	updatedNote.Data = noteData //data.Data
+	updatedNote.Data = noteData
 
 	err = uc.repo.UpdateNote(ctx, updatedNote)
 	if err != nil {
+		logger.Error(err.Error())
 		return models.Note{}, err
 	}
 
+	logger.Info("success")
 	return updatedNote, nil
-
 }
-func (uc *NoteUsecase) DeleteNote(ctx context.Context, id uuid.UUID, ownerId uuid.UUID) error {
-	err := uc.repo.DeleteNote(ctx, id, ownerId)
-	if err != nil {
+
+func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID) error {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	deletedNote, err := uc.repo.ReadNote(ctx, noteId)
+	if err != nil || deletedNote.OwnerId != ownerId {
+		logger.Error(err.Error())
 		return err
 	}
-	return nil
 
+	err = uc.repo.DeleteNote(ctx, noteId)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
 }

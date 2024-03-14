@@ -158,7 +158,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpsertNoteRequest"
+                            "$ref": "#/definitions/models.UpsertNoteRequestForSwagger"
                         }
                     }
                 ],
@@ -166,7 +166,7 @@ const docTemplate = `{
                     "200": {
                         "description": "note",
                         "schema": {
-                            "$ref": "#/definitions/models.Note"
+                            "$ref": "#/definitions/models.NoteForSwagger"
                         }
                     },
                     "400": {
@@ -218,7 +218,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Note"
+                                "$ref": "#/definitions/models.NoteForSwagger"
                             }
                         }
                     },
@@ -237,9 +237,6 @@ const docTemplate = `{
         "/api/note/{id}/delete": {
             "delete": {
                 "description": "Delete selected note of current user",
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "note"
                 ],
@@ -255,8 +252,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "incorrect id",
@@ -304,7 +301,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpsertNoteRequest"
+                            "$ref": "#/definitions/models.UpsertNoteRequestForSwagger"
                         }
                     }
                 ],
@@ -312,7 +309,7 @@ const docTemplate = `{
                     "200": {
                         "description": "note",
                         "schema": {
-                            "$ref": "#/definitions/models.Note"
+                            "$ref": "#/definitions/models.NoteForSwagger"
                         }
                     },
                     "400": {
@@ -323,6 +320,48 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/note/{id}/get": {
+            "get": {
+                "description": "Get one of notes of current user",
+                "tags": [
+                    "note"
+                ],
+                "summary": "Get one note",
+                "operationId": "get-note",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.NoteForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "incorrect id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "note not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -436,17 +475,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Note": {
+        "models.NoteDataForSwagger": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NoteForSwagger": {
             "type": "object",
             "properties": {
                 "create_time": {
                     "type": "string"
                 },
                 "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "$ref": "#/definitions/models.NoteDataForSwagger"
                 },
                 "id": {
                     "type": "string"
@@ -470,10 +517,12 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpsertNoteRequest": {
+        "models.UpsertNoteRequestForSwagger": {
             "type": "object",
             "properties": {
-                "data": {}
+                "data": {
+                    "$ref": "#/definitions/models.NoteDataForSwagger"
+                }
             }
         },
         "models.User": {

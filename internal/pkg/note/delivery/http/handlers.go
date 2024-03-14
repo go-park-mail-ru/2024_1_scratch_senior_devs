@@ -38,11 +38,11 @@ const (
 // @Tags 		note
 // @ID			get-all-notes
 // @Produce		json
-// @Param		count	query		int						false	"notes count"
-// @Param		offset	query		int						false	"notes offset"
-// @Param		title	query		string					false	"notes title substring"
-// @Success		200		{object}	[]models.Note			true	"notes"
-// @Failure		400		{object}	response.ErrorResponse	true	"error"
+// @Param		count	query		int							false	"notes count"
+// @Param		offset	query		int							false	"notes offset"
+// @Param		title	query		string						false	"notes title substring"
+// @Success		200		{object}	[]models.NoteForSwagger		true	"notes"
+// @Failure		400		{object}	response.ErrorResponse		true	"error"
 // @Failure		401
 // @Router		/api/note/get_all [get]
 func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
@@ -86,11 +86,11 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 // @Tags 		note
 // @ID			get-note
 // @Param		id		path		string					true	"note id"
-// @Success		200		{object}	models.Note				true	"note"
+// @Success		200		{object}	models.NoteForSwagger	true	"note"
 // @Failure		400		{object}	response.ErrorResponse	true	"incorrect id"
 // @Failure		401
 // @Failure		404		{object}	response.ErrorResponse	true	"note not found"
-// @Router		/api/note/{id}/delete [delete]
+// @Router		/api/note/{id}/get [get]
 func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
@@ -132,9 +132,9 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 // @ID			add-note
 // @Accept		json
 // @Produce		json
-// @Param    payload   body    models.UpsertNoteRequest  true  "note data" example="title": "string", "content": "string"
-// @Success		200		{object}	models.Note				true	"note"
-// @Failure		400		{object}	response.ErrorResponse	true	"error"
+// @Param    	payload		body    	models.UpsertNoteRequestForSwagger  	true  	"note data"
+// @Success		200			{object}	models.NoteForSwagger					true	"note"
+// @Failure		400			{object}	response.ErrorResponse					true	"error"
 // @Failure		401
 // @Router		/api/note/add [post]
 func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
@@ -153,12 +153,14 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
+
 	noteData, err := json.Marshal(payload.Data)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
 		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
+
 	newNote, err := h.uc.CreateNote(r.Context(), jwtPayload.Id, noteData)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
@@ -182,10 +184,10 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 // @ID			update-note
 // @Accept		json
 // @Produce		json
-// @Param		id		path		string					true	"note id"
-// @Param    payload   body    models.UpsertNoteRequest  true  "note data"
-// @Success		200		{object}	models.Note				true	"note"
-// @Failure		400		{object}	response.ErrorResponse	true	"error"
+// @Param		id			path		string								true	"note id"
+// @Param    	payload		body    	models.UpsertNoteRequestForSwagger	true  	"note data"
+// @Success		200			{object}	models.NoteForSwagger				true	"note"
+// @Failure		400			{object}	response.ErrorResponse				true	"error"
 // @Failure		401
 // @Router		/api/note/{id}/edit [put]
 func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +200,8 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		response.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
 		return
 	}
-	_, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+
+	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -219,21 +222,20 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedNote, err := h.uc.UpdateNote(r.Context(), noteId, noteData)
+	updatedNote, err := h.uc.UpdateNote(r.Context(), noteId, jwtPayload.Id, noteData)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "invalid query")
+		response.WriteErrorMessage(w, http.StatusBadRequest, "note not found")
 		return
 	}
 
-	if err := response.WriteResponseData(w, updatedNote, http.StatusCreated); err != nil {
+	if err := response.WriteResponseData(w, updatedNote, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
-
 }
 
 // DeleteNote godoc
@@ -241,9 +243,8 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 // @Description	Delete selected note of current user
 // @Tags 		note
 // @ID			delete-note
-// @Produce		json
 // @Param		id		path		string					true	"note id"
-// @Success		200
+// @Success		204
 // @Failure		400		{object}	response.ErrorResponse	true	"incorrect id"
 // @Failure		401
 // @Failure		404		{object}	response.ErrorResponse	true	"note not found"
@@ -259,19 +260,20 @@ func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	err = h.uc.DeleteNote(r.Context(), noteId, payload.Id)
+	err = h.uc.DeleteNote(r.Context(), noteId, jwtPayload.Id)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
-		response.WriteErrorMessage(w, http.StatusNotFound, err.Error())
+		response.WriteErrorMessage(w, http.StatusNotFound, "note not found")
 		return
 	}
 
-	log.LogHandlerInfo(logger, http.StatusOK, "success")
+	w.WriteHeader(http.StatusNoContent)
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 }
