@@ -90,7 +90,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 // @Failure		400		{object}	response.ErrorResponse	true	"incorrect id"
 // @Failure		401
 // @Failure		404		{object}	response.ErrorResponse	true	"note not found"
-// @Router		/api/note/{id}/get [get]
+// @Router		/api/note/{id} [get]
 func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
