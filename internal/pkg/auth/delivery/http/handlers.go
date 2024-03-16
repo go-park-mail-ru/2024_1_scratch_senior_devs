@@ -268,6 +268,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		return
 	}
+	defer r.MultipartForm.RemoveAll()
 
 	avatar, _, err := r.FormFile("avatar")
 	if err != nil {
