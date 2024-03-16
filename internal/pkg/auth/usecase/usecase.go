@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"mime/multipart"
 	"os"
+	"path"
 	"time"
 
 	"github.com/satori/uuid"
@@ -153,7 +154,7 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 	imagesBasePath := os.Getenv("IMAGES_BASE_PATH")
 	newImagePath := uuid.NewV4().String()
 
-	if err := images.WriteAvatarOnDisk(imagesBasePath+newImagePath, avatar); err != nil {
+	if err := images.WriteAvatarOnDisk(path.Join(imagesBasePath, newImagePath), avatar); err != nil {
 		logger.Error("write on disk: " + err.Error())
 		return models.User{}, err
 	}
@@ -165,9 +166,8 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 
 	// удаление старой аватарки делаем только после успешного создания новой
 	if user.ImagePath != "default.jpg" {
-		if err := os.Remove(imagesBasePath + user.ImagePath); err != nil {
+		if err := os.Remove(path.Join(imagesBasePath, user.ImagePath)); err != nil {
 			logger.Error(err.Error())
-			return models.User{}, err
 		}
 	}
 

@@ -38,6 +38,18 @@ services:
     volumes:
       - ./build/sql/create_tables.sql:/docker-entrypoint-initdb.d/initdb.sql
       - younote-db-data:/var/lib/postgresql/data
+  proxy:
+    image: nginx
+    volumes:
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+      - type: bind
+        source: /opt/images
+        target: /opt
+    ports:
+      - 80:80
 
 networks:
   YouNote-network:

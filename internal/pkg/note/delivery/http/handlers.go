@@ -189,7 +189,7 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 // @Success		200			{object}	models.NoteForSwagger				true	"note"
 // @Failure		400			{object}	response.ErrorResponse				true	"error"
 // @Failure		401
-// @Router		/api/note/{id}/edit [put]
+// @Router		/api/note/{id}/edit [post]
 func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 

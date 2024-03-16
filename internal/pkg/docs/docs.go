@@ -234,6 +234,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/note/{id}": {
+            "get": {
+                "description": "Get one of notes of current user",
+                "tags": [
+                    "note"
+                ],
+                "summary": "Get one note",
+                "operationId": "get-note",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.NoteForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "incorrect id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "note not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/note/{id}/delete": {
             "delete": {
                 "description": "Delete selected note of current user",
@@ -274,7 +316,7 @@ const docTemplate = `{
             }
         },
         "/api/note/{id}/edit": {
-            "put": {
+            "post": {
                 "description": "Create new note to current user",
                 "consumes": [
                     "application/json"
@@ -320,48 +362,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized"
-                    }
-                }
-            }
-        },
-        "/api/note/{id}/get": {
-            "get": {
-                "description": "Get one of notes of current user",
-                "tags": [
-                    "note"
-                ],
-                "summary": "Get one note",
-                "operationId": "get-note",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "note id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "note",
-                        "schema": {
-                            "$ref": "#/definitions/models.NoteForSwagger"
-                        }
-                    },
-                    "400": {
-                        "description": "incorrect id",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "404": {
-                        "description": "note not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
                     }
                 }
             }

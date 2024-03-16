@@ -270,8 +270,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 	}
 	defer func() {
 		if err := r.MultipartForm.RemoveAll(); err != nil {
-			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error(err.Error())
 		}
 	}()
 
