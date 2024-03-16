@@ -2,18 +2,26 @@ package images
 
 import (
 	"io"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
 )
 
-func CheckFileFormat(content []byte) bool {
+func CheckFileFormat(content []byte) string {
 	fileFormat := http.DetectContentType(content)
-	return strings.HasPrefix(fileFormat, "image/png") || strings.HasPrefix(fileFormat, "image/jpeg")
+
+	if strings.HasPrefix(fileFormat, "image/png") {
+		return ".png"
+	}
+
+	if strings.HasPrefix(fileFormat, "image/jpeg") {
+		return ".jpeg"
+	}
+
+	return ""
 }
 
-func WriteAvatarOnDisk(path string, avatar multipart.File) error {
+func WriteAvatarOnDisk(path string, avatar io.ReadSeeker) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err

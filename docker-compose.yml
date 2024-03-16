@@ -50,6 +50,8 @@ services:
         target: /opt
     ports:
       - 80:80
+    networks:
+      - YouNote-network
 
 networks:
   YouNote-network:

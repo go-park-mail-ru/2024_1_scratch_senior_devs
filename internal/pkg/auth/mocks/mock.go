@@ -6,7 +6,7 @@ package mock_auth
 
 import (
 	context "context"
-	multipart "mime/multipart"
+	io "io"
 	reflect "reflect"
 	time "time"
 
@@ -103,18 +103,18 @@ func (mr *MockAuthUsecaseMockRecorder) UpdateProfile(arg0, arg1, arg2 interface{
 }
 
 // UpdateProfileAvatar mocks base method.
-func (m *MockAuthUsecase) UpdateProfileAvatar(arg0 context.Context, arg1 uuid.UUID, arg2 multipart.File) (models.User, error) {
+func (m *MockAuthUsecase) UpdateProfileAvatar(arg0 context.Context, arg1 uuid.UUID, arg2 io.ReadSeeker, arg3 string) (models.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfileAvatar", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateProfileAvatar", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateProfileAvatar indicates an expected call of UpdateProfileAvatar.
-func (mr *MockAuthUsecaseMockRecorder) UpdateProfileAvatar(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAuthUsecaseMockRecorder) UpdateProfileAvatar(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileAvatar", reflect.TypeOf((*MockAuthUsecase)(nil).UpdateProfileAvatar), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileAvatar", reflect.TypeOf((*MockAuthUsecase)(nil).UpdateProfileAvatar), arg0, arg1, arg2, arg3)
 }
 
 // MockAuthRepo is a mock of AuthRepo interface.

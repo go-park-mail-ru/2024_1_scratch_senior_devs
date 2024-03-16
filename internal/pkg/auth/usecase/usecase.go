@@ -7,8 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
+	"io"
 	"log/slog"
-	"mime/multipart"
 	"os"
 	"path"
 	"time"
@@ -142,7 +142,7 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 	return user, nil
 }
 
-func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, avatar multipart.File) (models.User, error) {
+func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, avatar io.ReadSeeker, extension string) (models.User, error) {
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	user, err := uc.repo.GetUserById(ctx, userID)
@@ -152,7 +152,7 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 	}
 
 	imagesBasePath := os.Getenv("IMAGES_BASE_PATH")
-	newImagePath := uuid.NewV4().String()
+	newImagePath := uuid.NewV4().String() + extension
 
 	if err := images.WriteAvatarOnDisk(path.Join(imagesBasePath, newImagePath), avatar); err != nil {
 		logger.Error("write on disk: " + err.Error())

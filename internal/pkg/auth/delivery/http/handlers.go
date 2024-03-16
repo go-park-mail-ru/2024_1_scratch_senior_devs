@@ -289,13 +289,14 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	if !images.CheckFileFormat(content) {
+	fileExtension := images.CheckFileFormat(content)
+	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, "incorrect file format")
 		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect file format")
 		return
 	}
 
-	user, err := h.uc.UpdateProfileAvatar(r.Context(), jwtPayload.Id, avatar)
+	user, err := h.uc.UpdateProfileAvatar(r.Context(), jwtPayload.Id, avatar, fileExtension)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		w.WriteHeader(http.StatusBadRequest)

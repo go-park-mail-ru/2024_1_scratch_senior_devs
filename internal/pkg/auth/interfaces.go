@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"mime/multipart"
+	"io"
 	"time"
 
 	"github.com/satori/uuid"
@@ -17,7 +17,7 @@ type AuthUsecase interface {
 	SignIn(context.Context, models.UserFormData) (models.User, string, time.Time, error)
 	CheckUser(context.Context, uuid.UUID) (models.User, error)
 	UpdateProfile(context.Context, uuid.UUID, models.ProfileUpdatePayload) (models.User, error)
-	UpdateProfileAvatar(context.Context, uuid.UUID, multipart.File) (models.User, error)
+	UpdateProfileAvatar(context.Context, uuid.UUID, io.ReadSeeker, string) (models.User, error)
 }
 
 type AuthRepo interface {
