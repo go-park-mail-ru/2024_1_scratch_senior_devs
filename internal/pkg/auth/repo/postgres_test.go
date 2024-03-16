@@ -43,6 +43,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 					request.GetHash("f28fhc2o4m3"),
 					currTime,
 					"default.jpg",
+					"",
 				).Return(nil, nil)
 			},
 			err: nil,
@@ -87,7 +88,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 				pgxRows.Next()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"description", "username", "password_hash", "create_time", "image_path"},
+			columns:     []string{"description", "username", "password_hash", "create_time", "image_path", "secret"},
 			expectedErr: nil,
 		},
 		{
@@ -97,7 +98,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 				pgxRows.Next()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"description", "username", "password_hash", "create_time", "image_path"},
+			columns:     []string{"description", "username", "password_hash", "create_time", "image_path", "secret"},
 			expectedErr: nil,
 		},
 	}
@@ -109,10 +110,12 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 			defer ctrl.Finish()
 
 			description := sql.NullString{}
+			secret := sql.NullString{}
 			if tt.name == "GetUserById_Success_2" {
 				description = sql.NullString{String: "description", Valid: true}
+				secret = sql.NullString{String: "fnwovnw", Valid: true}
 			}
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(description, "", "", time.Now(), "").ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(description, "", "", time.Now(), "", secret).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
@@ -139,7 +142,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 				pgxRows.Next()
 			},
 			username:    "testuser",
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
 			expectedErr: nil,
 		},
 		{
@@ -149,7 +152,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 				pgxRows.Next()
 			},
 			username:    "testuser",
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
 			expectedErr: nil,
 		},
 	}
@@ -161,10 +164,12 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 			defer ctrl.Finish()
 
 			description := sql.NullString{}
+			secret := sql.NullString{}
 			if tt.name == "GetUserByUsername_Success_2" {
 				description = sql.NullString{String: "description", Valid: true}
+				secret = sql.NullString{String: "fnwovnw", Valid: true}
 			}
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), description, "", time.Now(), "").ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), description, "", time.Now(), "", secret).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.username)
 

@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
         NOT NULL,
     image_path TEXT DEFAULT ('default.jpg')
         NOT NULL
-        CONSTRAINT image_path_length CHECK (char_length(image_path) <= 255)
+        CONSTRAINT image_path_length CHECK (char_length(image_path) <= 255),
+    secret TEXT
+        CONSTRAINT secret_length CHECK (char_length(secret) <= 255)
 );
 
 CREATE TABLE IF NOT EXISTS notes (

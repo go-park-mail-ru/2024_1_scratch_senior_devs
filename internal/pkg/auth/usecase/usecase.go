@@ -47,6 +47,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		PasswordHash: request.GetHash(data.Password),
 		ImagePath:    defaultImagePath,
 		CreateTime:   currentTime,
+		Secret:       "",
 	}
 
 	err := uc.repo.CreateUser(ctx, newUser)
@@ -129,9 +130,7 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 		user.PasswordHash = request.GetHash(payload.Password.New)
 	}
 
-	if payload.Description != "" {
-		user.Description = payload.Description
-	}
+	user.Description = payload.Description
 
 	if err := uc.repo.UpdateProfile(ctx, user); err != nil {
 		logger.Error(err.Error())

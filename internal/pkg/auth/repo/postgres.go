@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	createUser          = "INSERT INTO users(id, description, username, password_hash, create_time, image_path) VALUES ($1, $2, $3, $4, $5, $6);"
-	getUserById         = "SELECT description, username, password_hash, create_time, image_path FROM users WHERE id = $1;"
-	getUserByUsername   = "SELECT id, description, password_hash, create_time, image_path FROM users WHERE username = $1;"
+	createUser          = "INSERT INTO users(id, description, username, password_hash, create_time, image_path, secret) VALUES ($1, $2, $3, $4, $5, $6, $7);"
+	getUserById         = "SELECT description, username, password_hash, create_time, image_path, secret FROM users WHERE id = $1;"
+	getUserByUsername   = "SELECT id, description, password_hash, create_time, image_path, secret FROM users WHERE username = $1;"
 	updateProfile       = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
 	updateProfileAvatar = "UPDATE users SET image_path = $1 WHERE id = $2;"
 )
@@ -35,7 +35,12 @@ func CreateAuthRepo(db pgxtype.Querier, logger *slog.Logger) *AuthRepo {
 func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath)
+	userSecret := sql.NullString{}
+	if user.Secret != "" {
+		userSecret = sql.NullString{String: user.Secret, Valid: true}
+	}
+
+	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath, userSecret)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -50,6 +55,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 
 	resultUser := models.User{Id: id}
 	description := sql.NullString{}
+	secret := sql.NullString{}
 
 	err := repo.db.QueryRow(ctx, getUserById, id).Scan(
 		&description,
@@ -57,10 +63,15 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 		&resultUser.PasswordHash,
 		&resultUser.CreateTime,
 		&resultUser.ImagePath,
+		&secret,
 	)
 
 	if description.Valid {
 		resultUser.Description = description.String
+	}
+
+	if secret.Valid {
+		resultUser.Secret = secret.String
 	}
 
 	if err != nil {
@@ -77,6 +88,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 
 	resultUser := models.User{Username: username}
 	description := sql.NullString{}
+	secret := sql.NullString{}
 
 	err := repo.db.QueryRow(ctx, getUserByUsername, username).Scan(
 		&resultUser.Id,
@@ -84,10 +96,15 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 		&resultUser.PasswordHash,
 		&resultUser.CreateTime,
 		&resultUser.ImagePath,
+		&secret,
 	)
 
 	if description.Valid {
 		resultUser.Description = description.String
+	}
+
+	if secret.Valid {
+		resultUser.Secret = secret.String
 	}
 
 	if err != nil {
