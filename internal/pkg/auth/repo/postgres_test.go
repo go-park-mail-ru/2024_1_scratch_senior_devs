@@ -43,7 +43,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 					request.GetHash("f28fhc2o4m3"),
 					currTime,
 					"default.jpg",
-					"",
+					sql.NullString{},
 				).Return(nil, nil)
 			},
 			err: nil,
@@ -66,6 +66,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 				PasswordHash: request.GetHash("f28fhc2o4m3"),
 				CreateTime:   currTime,
 				ImagePath:    "default.jpg",
+				Secret:       "",
 			})
 
 			assert.Equal(t, tt.err, err)
