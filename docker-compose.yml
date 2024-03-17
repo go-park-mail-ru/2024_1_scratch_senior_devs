@@ -18,11 +18,11 @@ services:
       - YouNote-network
     volumes:
       - type: bind
-        source: /var/log
-        target: /var/log
+        source: /var/log/
+        target: /var/log/
       - type: bind
-        source: /opt/images
-        target: /opt/images
+        source: /opt/images/
+        target: /opt/images/
   postgres:
     env_file:
       - .env
@@ -50,11 +50,11 @@ services:
         source: /etc/letsencrypt/live/you-note.ru/privkey.pem
         target: /etc/letsencrypt/live/you-note.ru/privkey.pem
       - type: bind
-        source: /opt/images
-        target: /opt/images
+        source: /opt/images/
+        target: /opt/images/
       - type: bind
-        source: /opt/public
-        target: /opt/public
+        source: /opt/public/
+        target: /opt/public/
       - type: bind
         source: ./nginx.conf
         target: /etc/nginx/nginx.conf
