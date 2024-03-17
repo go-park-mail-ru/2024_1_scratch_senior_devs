@@ -14,6 +14,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/cors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
 
 	"github.com/gorilla/mux"
@@ -120,7 +121,7 @@ func main() {
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
 	srv := http.Server{
-		Handler:           r,
+		Handler:           path.PathMiddleware(r),
 		Addr:              ":8080",
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
@@ -135,12 +136,12 @@ func main() {
 	logger.Info("Server started")
 
 	sig := <-signalCh
-	logger.Info("Received signal: %v\n", sig)
+	logger.Info("Received signal: " + sig.String())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		logger.Error("Server shutdown failed: %v\n", err)
+		logger.Error("Server shutdown failed: " + err.Error())
 	}
 }

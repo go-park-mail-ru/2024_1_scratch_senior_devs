@@ -42,13 +42,22 @@ services:
     image: nginx
     volumes:
       - type: bind
-        source: ./nginx.conf
-        target: /etc/nginx/conf.d/default.conf
-        read_only: true
+        source: /etc/letsencrypt/live/you-note.ru/fullchain.pem
+        target: /etc/letsencrypt/live/you-note.ru/fullchain.pem
+      - type: bind
+        source: /etc/letsencrypt/live/you-note.ru/privkey.pem
+        target: /etc/letsencrypt/live/you-note.ru/privkey.pem
       - type: bind
         source: /opt/images
         target: /opt
+#      - type: bind
+#        source: /opt/public
+#        target: /opt
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/nginx.conf
     ports:
+      - 443:443
       - 80:80
     networks:
       - YouNote-network
