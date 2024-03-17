@@ -2,6 +2,7 @@ version: "3.3"
 
 services:
   main:
+    container_name: main
     build:
       context: .
       dockerfile: ./build/main.Dockerfile
@@ -21,7 +22,7 @@ services:
         target: /var/log
       - type: bind
         source: /opt/images
-        target: /opt
+        target: /opt/images
   postgres:
     env_file:
       - .env
@@ -39,6 +40,7 @@ services:
       - ./build/sql/create_tables.sql:/docker-entrypoint-initdb.d/initdb.sql
       - younote-db-data:/var/lib/postgresql/data
   proxy:
+    container_name: nginx
     image: nginx
     volumes:
       - type: bind
@@ -49,10 +51,10 @@ services:
         target: /etc/letsencrypt/live/you-note.ru/privkey.pem
       - type: bind
         source: /opt/images
-        target: /opt
-#      - type: bind
-#        source: /opt/public
-#        target: /opt
+        target: /opt/images
+      - type: bind
+        source: /opt/public
+        target: /opt/public
       - type: bind
         source: ./nginx.conf
         target: /etc/nginx/nginx.conf
