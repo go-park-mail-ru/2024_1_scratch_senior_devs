@@ -77,10 +77,7 @@ func main() {
 		w.WriteHeader(http.StatusNotFound)
 	})
 
-	r.Use(log.LogMiddleware, RecoverMiddleware)
-
-	swagger := r.PathPrefix("/swagger").Subrouter()
-	swagger.Use(cors.CorsMiddlewareForSwagger)
+	r.Use(log.LogMiddleware, RecoverMiddleware, cors.CorsMiddleware)
 
 	r.PathPrefix("/swagger").Handler(httpSwagger.Handler(
 		httpSwagger.DeepLinking(true),
@@ -89,7 +86,7 @@ func main() {
 	)).Methods(http.MethodGet, http.MethodOptions)
 
 	auth := r.PathPrefix("/auth").Subrouter()
-	auth.Use(cors.CorsMiddleware)
+
 	{
 		auth.Handle("/signup", http.HandlerFunc(AuthDelivery.SignUp)).Methods(http.MethodPost, http.MethodOptions)
 		auth.Handle("/login", http.HandlerFunc(AuthDelivery.SignIn)).Methods(http.MethodPost, http.MethodOptions)
@@ -98,7 +95,7 @@ func main() {
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
-	note.Use(cors.CorsMiddleware, JwtMiddleware)
+
 	{
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
@@ -108,7 +105,7 @@ func main() {
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
-	profile.Use(cors.CorsMiddleware, JwtMiddleware)
+
 	{
 		profile.Handle("/get", http.HandlerFunc(AuthDelivery.GetProfile)).Methods(http.MethodGet, http.MethodOptions)
 		profile.Handle("/update", http.HandlerFunc(AuthDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
