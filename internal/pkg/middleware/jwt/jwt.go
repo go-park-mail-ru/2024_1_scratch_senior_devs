@@ -84,7 +84,13 @@ func CreateJwtMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 			token := headerParts[1]
 
 			cookie, err := r.Cookie(JwtCookie)
-			if err != nil || cookie.Value != token {
+			if err != nil {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "no jwt cookie: "+err.Error())
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			if cookie.Value != token {
 				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "tokens in cookie and header are different")
 				w.WriteHeader(http.StatusUnauthorized)
 				return
