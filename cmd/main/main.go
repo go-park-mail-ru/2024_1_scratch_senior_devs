@@ -94,7 +94,7 @@ func main() {
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
-	auth.Use(JwtMiddleware)
+	note.Use(JwtMiddleware)
 	{
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
@@ -104,7 +104,7 @@ func main() {
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
-	auth.Use(JwtMiddleware)
+	profile.Use(JwtMiddleware)
 	{
 		profile.Handle("/get", http.HandlerFunc(AuthDelivery.GetProfile)).Methods(http.MethodGet, http.MethodOptions)
 		profile.Handle("/update", http.HandlerFunc(AuthDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
