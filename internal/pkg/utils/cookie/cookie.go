@@ -9,7 +9,7 @@ import (
 func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 	return &http.Cookie{
 		Name:     jwt.JwtCookie,
-		Secure:   true,
+		Secure:   false,
 		Value:    token,
 		HttpOnly: true,
 		Expires:  expTime,
@@ -19,11 +19,9 @@ func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 
 func DelTokenCookie() *http.Cookie {
 	return &http.Cookie{
-		Name:     jwt.JwtCookie,
-		Secure:   true,
-		Value:    "",
-		HttpOnly: true,
-		MaxAge:   -1,
-		Path:     "/",
+		Name:   jwt.JwtCookie,
+		Value:  "",
+		MaxAge: -1,
+		Path:   "/",
 	}
 }
