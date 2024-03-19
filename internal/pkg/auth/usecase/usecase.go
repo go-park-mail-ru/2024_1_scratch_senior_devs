@@ -79,7 +79,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		return models.User{}, "", currentTime, err
 	}
 	if user.PasswordHash != request.GetHash(data.Password) {
-		logger.Error("wrong password: " + err.Error())
+		logger.Error("wrong password")
 		return models.User{}, "", currentTime, errors.New("wrong username or password")
 	}
 
