@@ -14,7 +14,7 @@ func GenTokenCookie(token string, expTime time.Time) *http.Cookie {
 		HttpOnly: true,
 		Expires:  expTime,
 		Path:     "/",
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 
@@ -26,6 +26,6 @@ func DelTokenCookie() *http.Cookie {
 		HttpOnly: true,
 		MaxAge:   -1,
 		Path:     "/",
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
