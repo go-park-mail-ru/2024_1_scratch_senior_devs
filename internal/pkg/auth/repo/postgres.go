@@ -18,6 +18,8 @@ const (
 	getUserByUsername   = "SELECT id, description, password_hash, create_time, image_path, secret FROM users WHERE username = $1;"
 	updateProfile       = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
 	updateProfileAvatar = "UPDATE users SET image_path = $1 WHERE id = $2;"
+	updateSecret        = "UPDATE users SET secret = $1 WHERE username = $2;"
+	getSecret           = "SELECT secret FROM users WHERE username = $1;"
 )
 
 type AuthRepo struct {
@@ -140,4 +142,33 @@ func (repo *AuthRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID,
 
 	logger.Info("success")
 	return nil
+}
+
+func (repo *AuthRepo) UpdateSecret(ctx context.Context, username string, secret string) error {
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	_, err := repo.db.Exec(ctx, updateSecret, secret, username)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *AuthRepo) GetSecret(ctx context.Context, username string) (string, error) {
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	secret := sql.NullString{}
+
+	err := repo.db.QueryRow(ctx, getSecret, username).Scan(&secret)
+
+	if err != nil {
+		logger.Error(err.Error())
+		return "", err
+	}
+
+	logger.Info("success")
+	return secret.String, nil
 }

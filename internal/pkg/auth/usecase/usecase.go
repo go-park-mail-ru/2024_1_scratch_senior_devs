@@ -6,6 +6,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	qr "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/qrcode"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
 	"io"
 	"log/slog"
@@ -175,4 +176,31 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 
 	logger.Info("success")
 	return user, nil
+}
+
+func (uc *AuthUsecase) GenerateAndUpdateSecret(ctx context.Context, username string) ([]byte, error) {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	secret := qr.GenerateSecret()
+	err := uc.repo.UpdateSecret(ctx, username, string(secret))
+	if err != nil {
+		logger.Error(err.Error())
+		return []byte{}, err
+	}
+
+	logger.Info("success")
+	return secret, nil
+}
+
+func (uc *AuthUsecase) GetSecret(ctx context.Context, username string) ([]byte, error) {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	secret, err := uc.repo.GetSecret(ctx, username)
+	if err != nil {
+		logger.Error(err.Error())
+		return []byte{}, err
+	}
+
+	logger.Info("success")
+	return []byte(secret), nil
 }

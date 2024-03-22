@@ -1,22 +1,27 @@
 package http
 
 import (
+	"encoding/base32"
 	"errors"
+	"fmt"
+	"github.com/dgryski/dgoogauth"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/response"
+	"github.com/skip2/go-qrcode"
 	"io"
 	"log/slog"
 	"net/http"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
+	"net/url"
 )
 
 const (
 	maxFormDataSize = 5 * 1024 * 1024
+	qrIssuer        = "YouNoteQR"
 )
 
 type AuthHandler struct {
@@ -310,4 +315,84 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 	}
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
+	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+
+	info := models.QrPayload{}
+	if err := request.GetRequestData(r, &info); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
+		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		return
+	}
+
+	byteSecret, err := h.uc.GenerateAndUpdateSecret(r.Context(), info.Username)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		response.WriteErrorMessage(w, http.StatusBadRequest, "wrong username")
+		return
+	}
+
+	secret := base32.StdEncoding.EncodeToString(byteSecret)
+
+	URL, err := url.Parse("otpauth://totp")
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	secretParam := url.Values{}
+	secretParam.Add("secret", secret)
+
+	issuer := url.Values{}
+	issuer.Add("issuer", qrIssuer)
+
+	URL.RawQuery = secretParam.Encode() + "&" + issuer.Encode()
+	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(qrIssuer), url.PathEscape(info.Username))
+
+	var png []byte
+	png, _ = qrcode.Encode(URL.String(), qrcode.Medium, 256)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(png)
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *AuthHandler) CheckQRCode(w http.ResponseWriter, r *http.Request) {
+	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+
+	info := models.OtpPayload{}
+	if err := request.GetRequestData(r, &info); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
+		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		return
+	}
+
+	byteSecret, err := h.uc.GetSecret(r.Context(), info.Username)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		response.WriteErrorMessage(w, http.StatusBadRequest, "wrong username")
+		return
+	}
+
+	otpConfig := &dgoogauth.OTPConfig{
+		Secret:      base32.StdEncoding.EncodeToString(byteSecret),
+		WindowSize:  30,
+		HotpCounter: 0,
+	}
+
+	success, err := otpConfig.Authenticate(info.QrCode)
+	if success && err == nil {
+		log.LogHandlerInfo(logger, http.StatusAccepted, "qr code is good")
+		w.WriteHeader(http.StatusAccepted)
+	} else {
+		logErrorMessage := "success is false"
+		if err != nil {
+			logErrorMessage = err.Error()
+		}
+		log.LogHandlerError(logger, http.StatusUnauthorized, response.ParseBodyError+logErrorMessage)
+		w.WriteHeader(http.StatusUnauthorized)
+	}
 }

@@ -29,3 +29,12 @@ type JwtPayload struct {
 	Id       uuid.UUID
 	Username string
 }
+
+type QrPayload struct {
+	Username string `json:"username"`
+}
+
+type OtpPayload struct {
+	Username string `json:"username"`
+	QrCode   string `json:"qr_code"`
+}
