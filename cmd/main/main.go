@@ -122,10 +122,8 @@ func main() {
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
 		ReadHeaderTimeout: 10 * time.Second,
-		IdleTimeout:       10 * time.Second,
+		IdleTimeout:       30 * time.Second,
 	}
-
-	server.SetKeepAlivesEnabled(true)
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
