@@ -116,16 +116,19 @@ func main() {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
-	srv := http.Server{
+	server := http.Server{
 		Handler:           path.PathMiddleware(r),
 		Addr:              ":8080",
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
 		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       10 * time.Second,
 	}
 
+	server.SetKeepAlivesEnabled(true)
+
 	go func() {
-		if err := srv.ListenAndServe(); err != nil {
+		if err := server.ListenAndServe(); err != nil {
 			logger.Info("Server stopped")
 		}
 	}()
@@ -137,7 +140,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(ctx); err != nil {
 		logger.Error("Server shutdown failed: " + err.Error())
 	}
 }
