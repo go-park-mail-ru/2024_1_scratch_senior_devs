@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/check"
 	"log/slog"
 	"time"
 
@@ -54,6 +55,12 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteData []byte) (models.Note, error) {
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
+	err := check.ValidateNoteTitleLength(noteData)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+
 	newNote := models.Note{
 		Id:         uuid.NewV4(),
 		Data:       noteData,
@@ -73,6 +80,12 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 
 func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID, noteData []byte) (models.Note, error) {
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	err := check.ValidateNoteTitleLength(noteData)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
 
 	updatedNote, err := uc.repo.ReadNote(ctx, noteId)
 	if err != nil || updatedNote.OwnerId != ownerId {

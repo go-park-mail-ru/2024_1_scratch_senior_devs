@@ -20,8 +20,6 @@ func CreateRecoverMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 					response.WriteErrorMessage(w, http.StatusInternalServerError, "internal server error")
 					return
 				}
-
-				recoverLogger.Info("success")
 			}()
 
 			next.ServeHTTP(w, r)
