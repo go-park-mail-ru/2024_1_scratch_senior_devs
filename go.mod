@@ -4,6 +4,7 @@ go 1.21.5
 
 require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/driftprogramming/pgxpoolmock v1.1.0
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
@@ -11,6 +12,7 @@ require (
 	github.com/mailru/easyjson v0.7.7
 	github.com/pkg/errors v0.8.1
 	github.com/satori/uuid v1.2.0
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.8.1

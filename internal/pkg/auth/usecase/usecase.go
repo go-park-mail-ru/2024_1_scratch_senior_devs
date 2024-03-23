@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
@@ -81,6 +82,19 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 	if user.PasswordHash != request.GetHash(data.Password) {
 		logger.Error("wrong password")
 		return models.User{}, "", currentTime, errors.New("wrong username or password")
+	}
+
+	if user.Secret != "" {
+		if data.Code == "" {
+			logger.Error(auth.ErrFirstFactorPassed)
+			return models.User{}, "", currentTime, errors.New(auth.ErrFirstFactorPassed)
+		}
+
+		err := code.CheckCode(data.Code, string(user.Secret))
+		if err != nil {
+			logger.Error(err.Error())
+			return models.User{}, "", currentTime, err
+		}
 	}
 
 	token, err := jwt.GenToken(user, JWTLifeTime)
@@ -175,4 +189,18 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 
 	logger.Info("success")
 	return user, nil
+}
+
+func (uc *AuthUsecase) GenerateAndUpdateSecret(ctx context.Context, username string) ([]byte, error) {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	secret := code.GenerateSecret()
+	err := uc.repo.UpdateSecret(ctx, username, string(secret))
+	if err != nil {
+		logger.Error(err.Error())
+		return []byte{}, err
+	}
+
+	logger.Info("success")
+	return secret, nil
 }

@@ -11,6 +11,7 @@ const PayloadContextKey PayloadKey = "payload"
 type UserFormData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Code     string `json:"code,omitempty"`
 }
 
 func (form *UserFormData) Validate() error {
@@ -19,6 +20,10 @@ func (form *UserFormData) Validate() error {
 	}
 
 	if err := checkPassword(form.Password); err != nil {
+		return err
+	}
+
+	if err := checkSecret(form.Code); err != nil {
 		return err
 	}
 

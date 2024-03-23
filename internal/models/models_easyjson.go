@@ -113,6 +113,8 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			out.Username = string(in.String())
 		case "password":
 			out.Password = string(in.String())
+		case "code":
+			out.Code = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -136,6 +138,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"password\":"
 		out.RawString(prefix)
 		out.String(string(in.Password))
+	}
+	if in.Code != "" {
+		const prefix string = ",\"code\":"
+		out.RawString(prefix)
+		out.String(string(in.Code))
 	}
 	out.RawByte('}')
 }
@@ -196,6 +203,8 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			}
 		case "image_path":
 			out.ImagePath = string(in.String())
+		case "secret":
+			out.Secret = Secret(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -234,6 +243,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"image_path\":"
 		out.RawString(prefix)
 		out.String(string(in.ImagePath))
+	}
+	{
+		const prefix string = ",\"secret\":"
+		out.RawString(prefix)
+		out.Raw((in.Secret).MarshalJSON())
 	}
 	out.RawByte('}')
 }

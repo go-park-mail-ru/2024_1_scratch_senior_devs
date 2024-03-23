@@ -1,22 +1,26 @@
 package http
 
 import (
+	"encoding/base32"
 	"errors"
+	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/response"
+	"github.com/skip2/go-qrcode"
 	"io"
 	"log/slog"
 	"net/http"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
+	"net/url"
 )
 
 const (
 	maxFormDataSize = 5 * 1024 * 1024
+	qrIssuer        = "YouNote"
 )
 
 type AuthHandler struct {
@@ -140,8 +144,14 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
+		if err.Error() == auth.ErrFirstFactorPassed {
+			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
+			w.WriteHeader(http.StatusAccepted)
+			return
+		}
+
 		log.LogHandlerError(logger, http.StatusUnauthorized, err.Error())
-		response.WriteErrorMessage(w, http.StatusUnauthorized, "incorrect username or password")
+		response.WriteErrorMessage(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
@@ -315,6 +325,49 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
+	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	byteSecret, err := h.uc.GenerateAndUpdateSecret(r.Context(), jwtPayload.Username)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		response.WriteErrorMessage(w, http.StatusBadRequest, "wrong username")
+		return
+	}
+
+	secret := base32.StdEncoding.EncodeToString(byteSecret)
+
+	URL, err := url.Parse("otpauth://totp")
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	secretParam := url.Values{}
+	secretParam.Add("secret", secret)
+
+	issuer := url.Values{}
+	issuer.Add("issuer", qrIssuer)
+
+	URL.RawQuery = secretParam.Encode() + "&" + issuer.Encode()
+	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(qrIssuer), url.PathEscape(jwtPayload.Username))
+
+	var png []byte
+	png, _ = qrcode.Encode(URL.String(), qrcode.Medium, 256)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(png)
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }

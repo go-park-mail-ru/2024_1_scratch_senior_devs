@@ -53,6 +53,21 @@ func (mr *MockAuthUsecaseMockRecorder) CheckUser(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUser", reflect.TypeOf((*MockAuthUsecase)(nil).CheckUser), arg0, arg1)
 }
 
+// GenerateAndUpdateSecret mocks base method.
+func (m *MockAuthUsecase) GenerateAndUpdateSecret(arg0 context.Context, arg1 string) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateAndUpdateSecret", arg0, arg1)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateAndUpdateSecret indicates an expected call of GenerateAndUpdateSecret.
+func (mr *MockAuthUsecaseMockRecorder) GenerateAndUpdateSecret(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAndUpdateSecret", reflect.TypeOf((*MockAuthUsecase)(nil).GenerateAndUpdateSecret), arg0, arg1)
+}
+
 // SignIn mocks base method.
 func (m *MockAuthUsecase) SignIn(arg0 context.Context, arg1 models.UserFormData) (models.User, string, time.Time, error) {
 	m.ctrl.T.Helper()
@@ -210,4 +225,18 @@ func (m *MockAuthRepo) UpdateProfileAvatar(arg0 context.Context, arg1 uuid.UUID,
 func (mr *MockAuthRepoMockRecorder) UpdateProfileAvatar(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfileAvatar", reflect.TypeOf((*MockAuthRepo)(nil).UpdateProfileAvatar), arg0, arg1, arg2)
+}
+
+// UpdateSecret mocks base method.
+func (m *MockAuthRepo) UpdateSecret(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSecret", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateSecret indicates an expected call of UpdateSecret.
+func (mr *MockAuthRepoMockRecorder) UpdateSecret(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSecret", reflect.TypeOf((*MockAuthRepo)(nil).UpdateSecret), arg0, arg1, arg2)
 }

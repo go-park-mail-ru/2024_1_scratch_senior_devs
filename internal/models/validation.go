@@ -13,6 +13,7 @@ const (
 	minPasswordLength    = 8
 	maxPasswordLength    = 20
 	passwordAllowedExtra = "#$%&"
+	secretLength         = 6
 )
 
 func isEnglishLetter(c rune) bool {
@@ -73,6 +74,26 @@ func checkPassword(password string) error {
 
 	if !checkPasswordRequired(runedPassword) {
 		return errors.New("password must include at least 1 letter (A-Z, a-z)")
+	}
+
+	return nil
+}
+
+func checkSecret(secret string) error {
+	runedSecret := []rune(secret)
+
+	if len(runedSecret) == 0 {
+		return nil
+	}
+
+	if len(runedSecret) != secretLength {
+		return fmt.Errorf("secret length must be %d", secretLength)
+	}
+
+	for _, sym := range runedSecret {
+		if !unicode.IsDigit(sym) {
+			return fmt.Errorf("secret must contain only digits")
+		}
 	}
 
 	return nil
