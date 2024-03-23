@@ -104,7 +104,7 @@ func main() {
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
-	profile.Use(JwtMiddleware)
+	profile.Use(jwt.ReadAndCloseBody, JwtMiddleware)
 	{
 		profile.Handle("/get", http.HandlerFunc(AuthDelivery.GetProfile)).Methods(http.MethodGet, http.MethodOptions)
 		profile.Handle("/update", http.HandlerFunc(AuthDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)

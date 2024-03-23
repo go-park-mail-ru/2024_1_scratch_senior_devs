@@ -274,6 +274,13 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		}
 	}()
 
+	files := r.MultipartForm.File["avatar"]
+	if len(files) > 1 {
+		log.LogHandlerError(logger, http.StatusBadRequest, "incorrect request format: too many files")
+		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect request format: too many files")
+		return
+	}
+
 	avatar, _, err := r.FormFile("avatar")
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
