@@ -4,7 +4,6 @@ import (
 	"encoding/base32"
 	"errors"
 	"fmt"
-	"github.com/dgryski/dgoogauth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
@@ -21,7 +20,7 @@ import (
 
 const (
 	maxFormDataSize = 5 * 1024 * 1024
-	qrIssuer        = "YouNoteQR"
+	qrIssuer        = "YouNote"
 )
 
 type AuthHandler struct {
@@ -145,8 +144,14 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
+		if err.Error() == auth.ErrFirstFactorPassed {
+			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
+			w.WriteHeader(http.StatusAccepted)
+			return
+		}
+
 		log.LogHandlerError(logger, http.StatusUnauthorized, err.Error())
-		response.WriteErrorMessage(w, http.StatusUnauthorized, "incorrect username or password")
+		response.WriteErrorMessage(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
@@ -320,14 +325,14 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	info := models.QrPayload{}
-	if err := request.GetRequestData(r, &info); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	byteSecret, err := h.uc.GenerateAndUpdateSecret(r.Context(), info.Username)
+	byteSecret, err := h.uc.GenerateAndUpdateSecret(r.Context(), jwtPayload.Username)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		response.WriteErrorMessage(w, http.StatusBadRequest, "wrong username")
@@ -350,7 +355,7 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	issuer.Add("issuer", qrIssuer)
 
 	URL.RawQuery = secretParam.Encode() + "&" + issuer.Encode()
-	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(qrIssuer), url.PathEscape(info.Username))
+	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(qrIssuer), url.PathEscape(jwtPayload.Username))
 
 	var png []byte
 	png, _ = qrcode.Encode(URL.String(), qrcode.Medium, 256)
@@ -358,41 +363,4 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(png)
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
-}
-
-func (h *AuthHandler) CheckQRCode(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
-
-	info := models.OtpPayload{}
-	if err := request.GetRequestData(r, &info); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
-		return
-	}
-
-	byteSecret, err := h.uc.GetSecret(r.Context(), info.Username)
-	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "wrong username")
-		return
-	}
-
-	otpConfig := &dgoogauth.OTPConfig{
-		Secret:      base32.StdEncoding.EncodeToString(byteSecret),
-		WindowSize:  30,
-		HotpCounter: 0,
-	}
-
-	success, err := otpConfig.Authenticate(info.QrCode)
-	if success && err == nil {
-		log.LogHandlerInfo(logger, http.StatusAccepted, "qr code is good")
-		w.WriteHeader(http.StatusAccepted)
-	} else {
-		logErrorMessage := "success is false"
-		if err != nil {
-			logErrorMessage = err.Error()
-		}
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.ParseBodyError+logErrorMessage)
-		w.WriteHeader(http.StatusUnauthorized)
-	}
 }

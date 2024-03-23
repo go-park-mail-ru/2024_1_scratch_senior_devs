@@ -18,8 +18,7 @@ const (
 	getUserByUsername   = "SELECT id, description, password_hash, create_time, image_path, secret FROM users WHERE username = $1;"
 	updateProfile       = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
 	updateProfileAvatar = "UPDATE users SET image_path = $1 WHERE id = $2;"
-	updateSecret        = "UPDATE users SET secret = $1 WHERE username = $2;"
-	getSecret           = "SELECT secret FROM users WHERE username = $1;"
+	updateSecret        = "UPDATE users SET secret = $1 WHERE username = $2;" //nolint:gosec
 )
 
 type AuthRepo struct {
@@ -39,7 +38,7 @@ func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 
 	userSecret := sql.NullString{}
 	if user.Secret != "" {
-		userSecret = sql.NullString{String: user.Secret, Valid: true}
+		userSecret = sql.NullString{String: string(user.Secret), Valid: true}
 	}
 
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath, userSecret)
@@ -73,7 +72,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 	}
 
 	if secret.Valid {
-		resultUser.Secret = secret.String
+		resultUser.Secret = models.Secret(secret.String)
 	}
 
 	if err != nil {
@@ -106,7 +105,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 	}
 
 	if secret.Valid {
-		resultUser.Secret = secret.String
+		resultUser.Secret = models.Secret(secret.String)
 	}
 
 	if err != nil {
@@ -155,20 +154,4 @@ func (repo *AuthRepo) UpdateSecret(ctx context.Context, username string, secret 
 
 	logger.Info("success")
 	return nil
-}
-
-func (repo *AuthRepo) GetSecret(ctx context.Context, username string) (string, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
-
-	secret := sql.NullString{}
-
-	err := repo.db.QueryRow(ctx, getSecret, username).Scan(&secret)
-
-	if err != nil {
-		logger.Error(err.Error())
-		return "", err
-	}
-
-	logger.Info("success")
-	return secret.String, nil
 }

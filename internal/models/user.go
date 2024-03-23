@@ -1,10 +1,17 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/satori/uuid"
 )
+
+type Secret string
+
+func (secret Secret) MarshalJSON() ([]byte, error) {
+	return json.Marshal(secret != "")
+}
 
 type User struct {
 	Id           uuid.UUID `json:"id"`
@@ -13,5 +20,5 @@ type User struct {
 	PasswordHash string    `json:"-"`
 	CreateTime   time.Time `json:"create_time"`
 	ImagePath    string    `json:"image_path"`
-	Secret       string    `json:"-"`
+	Secret       Secret    `json:"secret"`
 }

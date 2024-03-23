@@ -12,6 +12,8 @@ import (
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/mock.go
 
+const ErrFirstFactorPassed = "first factor passed"
+
 type AuthUsecase interface {
 	SignUp(context.Context, models.UserFormData) (models.User, string, time.Time, error)
 	SignIn(context.Context, models.UserFormData) (models.User, string, time.Time, error)
@@ -19,7 +21,6 @@ type AuthUsecase interface {
 	UpdateProfile(context.Context, uuid.UUID, models.ProfileUpdatePayload) (models.User, error)
 	UpdateProfileAvatar(context.Context, uuid.UUID, io.ReadSeeker, string) (models.User, error)
 	GenerateAndUpdateSecret(context.Context, string) ([]byte, error)
-	GetSecret(context.Context, string) ([]byte, error)
 }
 
 type AuthRepo interface {
@@ -29,5 +30,4 @@ type AuthRepo interface {
 	UpdateProfile(context.Context, models.User) error
 	UpdateProfileAvatar(context.Context, uuid.UUID, string) error
 	UpdateSecret(context.Context, string, string) error
-	GetSecret(context.Context, string) (string, error)
 }

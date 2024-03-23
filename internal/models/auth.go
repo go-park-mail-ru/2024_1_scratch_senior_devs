@@ -11,6 +11,7 @@ const PayloadContextKey PayloadKey = "payload"
 type UserFormData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Code     string `json:"code,omitempty"`
 }
 
 func (form *UserFormData) Validate() error {
@@ -22,19 +23,14 @@ func (form *UserFormData) Validate() error {
 		return err
 	}
 
+	if err := checkSecret(form.Code); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 type JwtPayload struct {
 	Id       uuid.UUID
 	Username string
-}
-
-type QrPayload struct {
-	Username string `json:"username"`
-}
-
-type OtpPayload struct {
-	Username string `json:"username"`
-	QrCode   string `json:"qr_code"`
 }

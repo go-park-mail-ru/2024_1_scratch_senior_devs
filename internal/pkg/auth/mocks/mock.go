@@ -68,21 +68,6 @@ func (mr *MockAuthUsecaseMockRecorder) GenerateAndUpdateSecret(arg0, arg1 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAndUpdateSecret", reflect.TypeOf((*MockAuthUsecase)(nil).GenerateAndUpdateSecret), arg0, arg1)
 }
 
-// GetSecret mocks base method.
-func (m *MockAuthUsecase) GetSecret(arg0 context.Context, arg1 string) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSecret", arg0, arg1)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetSecret indicates an expected call of GetSecret.
-func (mr *MockAuthUsecaseMockRecorder) GetSecret(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecret", reflect.TypeOf((*MockAuthUsecase)(nil).GetSecret), arg0, arg1)
-}
-
 // SignIn mocks base method.
 func (m *MockAuthUsecase) SignIn(arg0 context.Context, arg1 models.UserFormData) (models.User, string, time.Time, error) {
 	m.ctrl.T.Helper()
@@ -182,21 +167,6 @@ func (m *MockAuthRepo) CreateUser(arg0 context.Context, arg1 models.User) error 
 func (mr *MockAuthRepoMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAuthRepo)(nil).CreateUser), arg0, arg1)
-}
-
-// GetSecret mocks base method.
-func (m *MockAuthRepo) GetSecret(arg0 context.Context, arg1 string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSecret", arg0, arg1)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetSecret indicates an expected call of GetSecret.
-func (mr *MockAuthRepoMockRecorder) GetSecret(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecret", reflect.TypeOf((*MockAuthRepo)(nil).GetSecret), arg0, arg1)
 }
 
 // GetUserById mocks base method.
