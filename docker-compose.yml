@@ -50,6 +50,9 @@ services:
         source: /etc/letsencrypt/live/you-note.ru/privkey.pem
         target: /etc/letsencrypt/live/you-note.ru/privkey.pem
       - type: bind
+        source: /var/log/nginx/
+        target: /var/log/nginx/
+      - type: bind
         source: /opt/images/
         target: /opt/images/
       - type: bind

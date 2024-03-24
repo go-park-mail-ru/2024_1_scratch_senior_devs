@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/validation"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,12 +33,12 @@ func TestValidate(t *testing.T) {
 		{
 			name:        "UserFormFata_ValidateFail_2",
 			data:        UserFormData{Username: "7495123456789", Password: "nv48392fh$"},
-			expectedErr: fmt.Errorf("username length must be from %d to %d characters", minUsernameLength, maxUsernameLength),
+			expectedErr: fmt.Errorf("username length must be from %d to %d characters", validation.MinUsernameLength, validation.MaxUsernameLength),
 		},
 		{
 			name:        "UserFormFata_ValidateFail_3",
 			data:        UserFormData{Username: "74951234567", Password: "fn4839vjn8309jn80c39j23hfv93n309h4v"},
-			expectedErr: fmt.Errorf("password length must be from %d to %d characters", minPasswordLength, maxPasswordLength),
+			expectedErr: fmt.Errorf("password length must be from %d to %d characters", validation.MinPasswordLength, validation.MaxPasswordLength),
 		},
 		{
 			name:        "UserFormFata_ValidateFail_4",

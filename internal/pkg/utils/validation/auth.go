@@ -1,4 +1,4 @@
-package models
+package validation
 
 import (
 	"errors"
@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	minUsernameLength    = 4
-	maxUsernameLength    = 12
-	minPasswordLength    = 8
-	maxPasswordLength    = 20
-	passwordAllowedExtra = "#$%&"
-	secretLength         = 6
+	MinUsernameLength    = 4
+	MaxUsernameLength    = 12
+	MinPasswordLength    = 8
+	MaxPasswordLength    = 20
+	PasswordAllowedExtra = "#$%&"
+	SecretLength         = 6
 )
 
 func isEnglishLetter(c rune) bool {
@@ -31,7 +31,7 @@ func checkUsernameAllowed(value []rune) bool {
 
 func checkPasswordAllowed(value []rune) bool {
 	for _, sym := range value {
-		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(passwordAllowedExtra, string(sym)) {
+		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(PasswordAllowedExtra, string(sym)) {
 			return false
 		}
 	}
@@ -47,11 +47,11 @@ func checkPasswordRequired(value []rune) bool {
 	return false
 }
 
-func checkUsername(username string) error {
+func CheckUsername(username string) error {
 	runedUsername := []rune(username)
 
-	if len(runedUsername) < minUsernameLength || len(runedUsername) > maxUsernameLength {
-		return fmt.Errorf("username length must be from %d to %d characters", minUsernameLength, maxUsernameLength)
+	if len(runedUsername) < MinUsernameLength || len(runedUsername) > MaxUsernameLength {
+		return fmt.Errorf("username length must be from %d to %d characters", MinUsernameLength, MaxUsernameLength)
 	}
 
 	if !checkUsernameAllowed(runedUsername) {
@@ -61,11 +61,11 @@ func checkUsername(username string) error {
 	return nil
 }
 
-func checkPassword(password string) error {
+func CheckPassword(password string) error {
 	runedPassword := []rune(password)
 
-	if len(runedPassword) < minPasswordLength || len(runedPassword) > maxPasswordLength {
-		return fmt.Errorf("password length must be from %d to %d characters", minPasswordLength, maxPasswordLength)
+	if len(runedPassword) < MinPasswordLength || len(runedPassword) > MaxPasswordLength {
+		return fmt.Errorf("password length must be from %d to %d characters", MinPasswordLength, MaxPasswordLength)
 	}
 
 	if !checkPasswordAllowed(runedPassword) {
@@ -79,15 +79,15 @@ func checkPassword(password string) error {
 	return nil
 }
 
-func checkSecret(secret string) error {
+func CheckSecret(secret string) error {
 	runedSecret := []rune(secret)
 
 	if len(runedSecret) == 0 {
 		return nil
 	}
 
-	if len(runedSecret) != secretLength {
-		return fmt.Errorf("secret length must be %d", secretLength)
+	if len(runedSecret) != SecretLength {
+		return fmt.Errorf("secret length must be %d", SecretLength)
 	}
 
 	for _, sym := range runedSecret {

@@ -26,6 +26,13 @@ definitions:
       password:
         $ref: '#/definitions/models.passwords'
     type: object
+  models.SignUpPayloadForSwagger:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   models.UpsertNoteRequestForSwagger:
     properties:
       data:
@@ -41,11 +48,15 @@ definitions:
         type: string
       image_path:
         type: string
+      secret:
+        type: string
       username:
         type: string
     type: object
   models.UserFormData:
     properties:
+      code:
+        type: string
       password:
         type: string
       username:
@@ -82,6 +93,24 @@ paths:
       summary: Check user
       tags:
       - auth
+  /api/auth/get_qr:
+    get:
+      description: Generate QR code for 2FA
+      operationId: get-qr-code
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: QR-code
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+      summary: Get QR code
+      tags:
+      - auth
   /api/auth/login:
     post:
       consumes:
@@ -102,6 +131,8 @@ paths:
           description: user
           schema:
             $ref: '#/definitions/models.User'
+        "202":
+          description: Accepted
         "400":
           description: error
           schema:
@@ -120,6 +151,8 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Unauthorized
       summary: Log out
       tags:
       - auth
@@ -135,7 +168,7 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/models.UserFormData'
+          $ref: '#/definitions/models.SignUpPayloadForSwagger'
       produces:
       - application/json
       responses:
@@ -342,6 +375,8 @@ paths:
           description: error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
       summary: Update profile
       tags:
       - profile
@@ -368,6 +403,8 @@ paths:
           description: error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized
         "413":
           description: Request Entity Too Large
       summary: Update profile images

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"io"
 	"time"
 
@@ -12,7 +13,17 @@ import (
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/mock.go
 
-const ErrFirstFactorPassed = "first factor passed"
+var (
+	ErrCreatingUser      = errors.New("this username is already taken")
+	ErrFirstFactorPassed = errors.New("first factor passed")
+	ErrIncorrectPayload  = errors.New("incorrect data format")
+	ErrUserNotFound      = errors.New("user not found")
+	ErrWrongAuthCode     = errors.New("wrong code")
+	ErrWrongFileFormat   = errors.New("incorrect file format")
+	ErrWrongFilesNumber  = errors.New("incorrect form data: must be exactly one file")
+	ErrWrongPassword     = errors.New("wrong password")
+	ErrWrongUserData     = errors.New("wrong username or password")
+)
 
 type AuthUsecase interface {
 	SignUp(context.Context, models.UserFormData) (models.User, string, time.Time, error)

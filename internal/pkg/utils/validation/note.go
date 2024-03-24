@@ -1,11 +1,11 @@
-package check
+package validation
 
 import (
 	"encoding/json"
 	"errors"
 )
 
-func ValidateNoteTitleLength(noteData []byte) error {
+func CheckNoteTitle(noteData []byte) error {
 	var m map[string]interface{}
 	err := json.Unmarshal(noteData, &m)
 	if err != nil {

@@ -34,6 +34,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/auth/get_qr": {
+            "get": {
+                "description": "Generate QR code for 2FA",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get QR code",
+                "operationId": "get-qr-code",
+                "responses": {
+                    "200": {
+                        "description": "QR-code",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/api/auth/login": {
             "post": {
                 "description": "Login as a user",
@@ -66,6 +93,9 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.User"
                         }
                     },
+                    "202": {
+                        "description": "Accepted"
+                    },
                     "400": {
                         "description": "error",
                         "schema": {
@@ -92,6 +122,9 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -117,7 +150,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserFormData"
+                            "$ref": "#/definitions/models.SignUpPayloadForSwagger"
                         }
                     }
                 ],
@@ -427,6 +460,9 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -466,6 +502,9 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     },
                     "413": {
                         "description": "Request Entity Too Large"
@@ -517,6 +556,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SignUpPayloadForSwagger": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UpsertNoteRequestForSwagger": {
             "type": "object",
             "properties": {
@@ -540,6 +590,9 @@ const docTemplate = `{
                 "image_path": {
                     "type": "string"
                 },
+                "secret": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -548,6 +601,9 @@ const docTemplate = `{
         "models.UserFormData": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },

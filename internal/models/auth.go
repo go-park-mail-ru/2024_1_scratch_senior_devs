@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/validation"
 	"github.com/satori/uuid"
 )
 
@@ -15,15 +16,15 @@ type UserFormData struct {
 }
 
 func (form *UserFormData) Validate() error {
-	if err := checkUsername(form.Username); err != nil {
+	if err := validation.CheckUsername(form.Username); err != nil {
 		return err
 	}
 
-	if err := checkPassword(form.Password); err != nil {
+	if err := validation.CheckPassword(form.Password); err != nil {
 		return err
 	}
 
-	if err := checkSecret(form.Code); err != nil {
+	if err := validation.CheckSecret(form.Code); err != nil {
 		return err
 	}
 
@@ -33,4 +34,12 @@ func (form *UserFormData) Validate() error {
 type JwtPayload struct {
 	Id       uuid.UUID
 	Username string
+}
+
+// ================================================================
+// only swagger examples
+
+type SignUpPayloadForSwagger struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }

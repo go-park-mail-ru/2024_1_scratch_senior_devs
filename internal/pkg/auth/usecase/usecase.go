@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
@@ -55,7 +54,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	err := uc.repo.CreateUser(ctx, newUser)
 	if err != nil {
 		logger.Error(err.Error())
-		return models.User{}, "", currentTime, err
+		return models.User{}, "", currentTime, auth.ErrCreatingUser
 	}
 
 	token, err := jwt.GenToken(newUser, JWTLifeTime)
@@ -77,23 +76,23 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 	user, err := uc.repo.GetUserByUsername(ctx, data.Username)
 	if err != nil {
 		logger.Error(err.Error())
-		return models.User{}, "", currentTime, err
+		return models.User{}, "", currentTime, auth.ErrUserNotFound
 	}
 	if user.PasswordHash != request.GetHash(data.Password) {
 		logger.Error("wrong password")
-		return models.User{}, "", currentTime, errors.New("wrong username or password")
+		return models.User{}, "", currentTime, auth.ErrWrongUserData
 	}
 
 	if user.Secret != "" {
 		if data.Code == "" {
-			logger.Error(auth.ErrFirstFactorPassed)
-			return models.User{}, "", currentTime, errors.New(auth.ErrFirstFactorPassed)
+			logger.Error(auth.ErrFirstFactorPassed.Error())
+			return models.User{}, "", currentTime, auth.ErrFirstFactorPassed
 		}
 
 		err := code.CheckCode(data.Code, string(user.Secret))
 		if err != nil {
 			logger.Error(err.Error())
-			return models.User{}, "", currentTime, err
+			return models.User{}, "", currentTime, auth.ErrWrongAuthCode
 		}
 	}
 
@@ -113,7 +112,7 @@ func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User
 	userData, err := uc.repo.GetUserById(ctx, id)
 	if err != nil {
 		logger.Error(err.Error())
-		return models.User{}, err
+		return models.User{}, auth.ErrUserNotFound
 	}
 
 	logger.Info("success")
@@ -128,7 +127,7 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 	user, err := uc.repo.GetUserById(ctx, userID)
 	if err != nil {
 		logger.Error(err.Error())
-		return models.User{}, err
+		return models.User{}, auth.ErrUserNotFound
 	}
 
 	if payload.Password.Old != "" && payload.Password.New != "" {
@@ -139,7 +138,7 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 
 		if user.PasswordHash != request.GetHash(payload.Password.Old) {
 			logger.Error("wrong password")
-			return models.User{}, errors.New("wrong password")
+			return models.User{}, auth.ErrWrongPassword
 		}
 
 		user.PasswordHash = request.GetHash(payload.Password.New)
@@ -162,7 +161,7 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 	user, err := uc.repo.GetUserById(ctx, userID)
 	if err != nil {
 		logger.Error(err.Error())
-		return models.User{}, err
+		return models.User{}, auth.ErrUserNotFound
 	}
 
 	imagesBasePath := os.Getenv("IMAGES_BASE_PATH")

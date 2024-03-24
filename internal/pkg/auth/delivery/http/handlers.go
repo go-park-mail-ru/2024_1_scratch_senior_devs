@@ -42,9 +42,9 @@ func CreateAuthHandler(uc auth.AuthUsecase, logger *slog.Logger) *AuthHandler {
 // @ID			sign-up
 // @Accept		json
 // @Produce		json
-// @Param		credentials body		models.UserFormData		true	"registration data"
-// @Success		200			{object}	models.User				true	"user"
-// @Failure		400			{object}	response.ErrorResponse	true	"error"
+// @Param		credentials body		models.SignUpPayloadForSwagger	true	"registration data"
+// @Success		200			{object}	models.User						true	"user"
+// @Failure		400			{object}	response.ErrorResponse			true	"error"
 // @Router		/api/auth/signup [post]
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -52,7 +52,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	userData := models.UserFormData{}
 	if err := request.GetRequestData(r, &userData); err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	newUser, token, expTime, err := h.uc.SignUp(r.Context(), userData)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "this username is already taken")
+		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrCreatingUser.Error())
 		return
 	}
 
@@ -109,6 +109,7 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Tags 		auth
 // @ID			log-out
 // @Success		204
+// @Failure		401
 // @Router		/api/auth/logout [delete]
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -129,6 +130,7 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Produce		json
 // @Param		credentials body		models.UserFormData		true	"login data"
 // @Success		200			{object}	models.User				true	"user"
+// @Success		202
 // @Failure		400			{object}	response.ErrorResponse	true	"error"
 // @Failure		401			{object}	response.ErrorResponse	true	"error"
 // @Router		/api/auth/login [post]
@@ -138,20 +140,20 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	userData := models.UserFormData{}
 	if err := request.GetRequestData(r, &userData); err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
 		return
 	}
 
 	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
-		if err.Error() == auth.ErrFirstFactorPassed {
+		if errors.Is(err, auth.ErrFirstFactorPassed) {
 			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
 			w.WriteHeader(http.StatusAccepted)
 			return
 		}
 
 		log.LogHandlerError(logger, http.StatusUnauthorized, err.Error())
-		response.WriteErrorMessage(w, http.StatusUnauthorized, err.Error())
+		response.WriteErrorMessage(w, http.StatusUnauthorized, auth.ErrWrongUserData.Error())
 		return
 	}
 
@@ -164,7 +166,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 
 // GetProfile godoc
@@ -213,6 +215,7 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 // @Param		credentials body		models.ProfileUpdatePayload		true	"update data"
 // @Success		200			{object}	models.User						true	"user"
 // @Failure		400			{object}	response.ErrorResponse			true	"error"
+// @Failure		401
 // @Router		/api/profile/update [post]
 func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -227,7 +230,7 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	payload := models.ProfileUpdatePayload{}
 	if err := request.GetRequestData(r, &payload); err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
 		return
 	}
 
@@ -257,6 +260,7 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 // @Param		avatar 		formData	file						true	"avatar"
 // @Success		200			{object}	models.User					true	"user"
 // @Failure		400			{object}	response.ErrorResponse		true	"error"
+// @Failure		401
 // @Failure		413
 // @Router		/api/profile/update_avatar [post]
 func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request) {
@@ -286,15 +290,15 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 
 	files := r.MultipartForm.File["avatar"]
 	if len(files) > 1 {
-		log.LogHandlerError(logger, http.StatusBadRequest, "incorrect request format: too many files")
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect request format: too many files")
+		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
+		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
 		return
 	}
 
 	avatar, _, err := r.FormFile("avatar")
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "no file found")
+		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
 		return
 	}
 	content, err := io.ReadAll(avatar)
@@ -308,8 +312,8 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 
 	fileExtension := images.CheckFileFormat(content)
 	if fileExtension == "" {
-		log.LogHandlerError(logger, http.StatusBadRequest, "incorrect file format")
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect file format")
+		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
+		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
 		return
 	}
 
@@ -329,6 +333,16 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 
+// GetQRCode godoc
+// @Summary		Get QR code
+// @Description	Generate QR code for 2FA
+// @Tags 		auth
+// @ID			get-qr-code
+// @Produce		image/png
+// @Success		200		file	image/png	true	"QR-code"
+// @Failure		400
+// @Failure		401
+// @Router		/api/auth/get_qr [get]
 func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
@@ -342,7 +356,7 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	byteSecret, err := h.uc.GenerateAndUpdateSecret(r.Context(), jwtPayload.Username)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "wrong username")
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

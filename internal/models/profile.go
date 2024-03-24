@@ -2,6 +2,8 @@ package models
 
 import (
 	"html"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/validation"
 )
 
 type passwords struct {
@@ -21,7 +23,7 @@ func (payload *ProfileUpdatePayload) Sanitize() {
 }
 
 func (payload *ProfileUpdatePayload) Validate() error {
-	if err := checkPassword(payload.Password.New); err != nil {
+	if err := validation.CheckPassword(payload.Password.New); err != nil {
 		return err
 	}
 
