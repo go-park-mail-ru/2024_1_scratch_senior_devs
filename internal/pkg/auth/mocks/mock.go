@@ -240,3 +240,92 @@ func (mr *MockAuthRepoMockRecorder) UpdateSecret(arg0, arg1, arg2 interface{}) *
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSecret", reflect.TypeOf((*MockAuthRepo)(nil).UpdateSecret), arg0, arg1, arg2)
 }
+
+// MockBlockerUsecase is a mock of BlockerUsecase interface.
+type MockBlockerUsecase struct {
+	ctrl     *gomock.Controller
+	recorder *MockBlockerUsecaseMockRecorder
+}
+
+// MockBlockerUsecaseMockRecorder is the mock recorder for MockBlockerUsecase.
+type MockBlockerUsecaseMockRecorder struct {
+	mock *MockBlockerUsecase
+}
+
+// NewMockBlockerUsecase creates a new mock instance.
+func NewMockBlockerUsecase(ctrl *gomock.Controller) *MockBlockerUsecase {
+	mock := &MockBlockerUsecase{ctrl: ctrl}
+	mock.recorder = &MockBlockerUsecaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockBlockerUsecase) EXPECT() *MockBlockerUsecaseMockRecorder {
+	return m.recorder
+}
+
+// CheckLoginAttempts mocks base method.
+func (m *MockBlockerUsecase) CheckLoginAttempts(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckLoginAttempts", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CheckLoginAttempts indicates an expected call of CheckLoginAttempts.
+func (mr *MockBlockerUsecaseMockRecorder) CheckLoginAttempts(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckLoginAttempts", reflect.TypeOf((*MockBlockerUsecase)(nil).CheckLoginAttempts), arg0, arg1)
+}
+
+// MockBlockerRepo is a mock of BlockerRepo interface.
+type MockBlockerRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockBlockerRepoMockRecorder
+}
+
+// MockBlockerRepoMockRecorder is the mock recorder for MockBlockerRepo.
+type MockBlockerRepoMockRecorder struct {
+	mock *MockBlockerRepo
+}
+
+// NewMockBlockerRepo creates a new mock instance.
+func NewMockBlockerRepo(ctrl *gomock.Controller) *MockBlockerRepo {
+	mock := &MockBlockerRepo{ctrl: ctrl}
+	mock.recorder = &MockBlockerRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockBlockerRepo) EXPECT() *MockBlockerRepoMockRecorder {
+	return m.recorder
+}
+
+// GetLoginAttempts mocks base method.
+func (m *MockBlockerRepo) GetLoginAttempts(arg0 context.Context, arg1 string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLoginAttempts", arg0, arg1)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLoginAttempts indicates an expected call of GetLoginAttempts.
+func (mr *MockBlockerRepoMockRecorder) GetLoginAttempts(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLoginAttempts", reflect.TypeOf((*MockBlockerRepo)(nil).GetLoginAttempts), arg0, arg1)
+}
+
+// IncreaseLoginAttempts mocks base method.
+func (m *MockBlockerRepo) IncreaseLoginAttempts(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IncreaseLoginAttempts", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// IncreaseLoginAttempts indicates an expected call of IncreaseLoginAttempts.
+func (mr *MockBlockerRepoMockRecorder) IncreaseLoginAttempts(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncreaseLoginAttempts", reflect.TypeOf((*MockBlockerRepo)(nil).IncreaseLoginAttempts), arg0, arg1)
+}

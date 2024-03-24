@@ -42,3 +42,12 @@ type AuthRepo interface {
 	UpdateProfileAvatar(context.Context, uuid.UUID, string) error
 	UpdateSecret(context.Context, string, string) error
 }
+
+type BlockerUsecase interface {
+	CheckLoginAttempts(context.Context, string) error
+}
+
+type BlockerRepo interface {
+	GetLoginAttempts(context.Context, string) (int, error)
+	IncreaseLoginAttempts(context.Context, string) error
+}

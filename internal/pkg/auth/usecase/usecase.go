@@ -75,10 +75,12 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 
 	user, err := uc.repo.GetUserByUsername(ctx, data.Username)
 	if err != nil {
+		// тут increase счетчика
 		logger.Error(err.Error())
 		return models.User{}, "", currentTime, auth.ErrUserNotFound
 	}
 	if user.PasswordHash != request.GetHash(data.Password) {
+		// тут increase счетчика
 		logger.Error("wrong password")
 		return models.User{}, "", currentTime, auth.ErrWrongUserData
 	}
@@ -91,6 +93,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 
 		err := code.CheckCode(data.Code, string(user.SecondFactor))
 		if err != nil {
+			// тут increase счетчика
 			logger.Error(err.Error())
 			return models.User{}, "", currentTime, auth.ErrWrongAuthCode
 		}

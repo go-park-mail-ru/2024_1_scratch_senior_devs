@@ -153,7 +153,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.LogHandlerError(logger, http.StatusUnauthorized, err.Error())
-		response.WriteErrorMessage(w, http.StatusUnauthorized, auth.ErrWrongUserData.Error())
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
