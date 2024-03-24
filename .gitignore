@@ -29,3 +29,4 @@ go.work
 .vscode
 
 local-*.*
+redis.conf

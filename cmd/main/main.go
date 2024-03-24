@@ -42,7 +42,7 @@ func init() {
 // @title 			YouNote API
 // @version 		1.0
 // @description 	API for YouNote service
-// @host 			you-note.ru:8080
+// @host 			you-note.ru
 func main() {
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {

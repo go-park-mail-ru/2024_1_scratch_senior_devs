@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "you-note.ru:8080",
+    "host": "you-note.ru",
     "paths": {
         "/api/auth/check_user": {
             "get": {
