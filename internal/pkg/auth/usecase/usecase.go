@@ -48,7 +48,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		PasswordHash: request.GetHash(data.Password),
 		ImagePath:    defaultImagePath,
 		CreateTime:   currentTime,
-		Secret:       "",
+		SecondFactor: "",
 	}
 
 	err := uc.repo.CreateUser(ctx, newUser)
@@ -83,13 +83,13 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		return models.User{}, "", currentTime, auth.ErrWrongUserData
 	}
 
-	if user.Secret != "" {
+	if user.SecondFactor != "" {
 		if data.Code == "" {
 			logger.Error(auth.ErrFirstFactorPassed.Error())
 			return models.User{}, "", currentTime, auth.ErrFirstFactorPassed
 		}
 
-		err := code.CheckCode(data.Code, string(user.Secret))
+		err := code.CheckCode(data.Code, string(user.SecondFactor))
 		if err != nil {
 			logger.Error(err.Error())
 			return models.User{}, "", currentTime, auth.ErrWrongAuthCode

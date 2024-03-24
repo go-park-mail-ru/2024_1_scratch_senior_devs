@@ -38,7 +38,7 @@ definitions:
       data:
         $ref: '#/definitions/models.NoteDataForSwagger'
     type: object
-  models.User:
+  models.UserForSwagger:
     properties:
       create_time:
         type: string
@@ -48,8 +48,8 @@ definitions:
         type: string
       image_path:
         type: string
-      secret:
-        type: string
+      second_factor:
+        type: boolean
       username:
         type: string
     type: object
@@ -130,7 +130,7 @@ paths:
         "200":
           description: user
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserForSwagger'
         "202":
           description: Accepted
         "400":
@@ -175,7 +175,7 @@ paths:
         "200":
           description: user
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserForSwagger'
         "400":
           description: error
           schema:
@@ -345,7 +345,7 @@ paths:
         "200":
           description: user
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserForSwagger'
         "401":
           description: Unauthorized
       summary: Get profile
@@ -370,7 +370,7 @@ paths:
         "200":
           description: user
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserForSwagger'
         "400":
           description: error
           schema:
@@ -398,7 +398,7 @@ paths:
         "200":
           description: user
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserForSwagger'
         "400":
           description: error
           schema:

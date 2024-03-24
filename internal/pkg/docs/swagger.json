@@ -82,7 +82,7 @@
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "202": {
@@ -150,7 +150,7 @@
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "400": {
@@ -406,7 +406,7 @@
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "401": {
@@ -444,7 +444,7 @@
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "400": {
@@ -486,7 +486,7 @@
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "400": {
@@ -567,7 +567,7 @@
                 }
             }
         },
-        "models.User": {
+        "models.UserForSwagger": {
             "type": "object",
             "properties": {
                 "create_time": {
@@ -582,8 +582,8 @@
                 "image_path": {
                     "type": "string"
                 },
-                "secret": {
-                    "type": "string"
+                "second_factor": {
+                    "type": "boolean"
                 },
                 "username": {
                     "type": "string"

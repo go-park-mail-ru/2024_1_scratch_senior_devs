@@ -90,7 +90,7 @@ const docTemplate = `{
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "202": {
@@ -158,7 +158,7 @@ const docTemplate = `{
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "400": {
@@ -414,7 +414,7 @@ const docTemplate = `{
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "401": {
@@ -452,7 +452,7 @@ const docTemplate = `{
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "400": {
@@ -494,7 +494,7 @@ const docTemplate = `{
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "400": {
@@ -575,7 +575,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.User": {
+        "models.UserForSwagger": {
             "type": "object",
             "properties": {
                 "create_time": {
@@ -590,8 +590,8 @@ const docTemplate = `{
                 "image_path": {
                     "type": "string"
                 },
-                "secret": {
-                    "type": "string"
+                "second_factor": {
+                    "type": "boolean"
                 },
                 "username": {
                     "type": "string"

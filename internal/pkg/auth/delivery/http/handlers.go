@@ -43,7 +43,7 @@ func CreateAuthHandler(uc auth.AuthUsecase, logger *slog.Logger) *AuthHandler {
 // @Accept		json
 // @Produce		json
 // @Param		credentials body		models.SignUpPayloadForSwagger	true	"registration data"
-// @Success		200			{object}	models.User						true	"user"
+// @Success		200			{object}	models.UserForSwagger			true	"user"
 // @Failure		400			{object}	response.ErrorResponse			true	"error"
 // @Router		/api/auth/signup [post]
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
@@ -129,7 +129,7 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Accept		json
 // @Produce		json
 // @Param		credentials body		models.UserFormData		true	"login data"
-// @Success		200			{object}	models.User				true	"user"
+// @Success		200			{object}	models.UserForSwagger	true	"user"
 // @Success		202
 // @Failure		400			{object}	response.ErrorResponse	true	"error"
 // @Failure		401			{object}	response.ErrorResponse	true	"error"
@@ -175,7 +175,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 // @Tags 		profile
 // @ID			get-profile
 // @Produce		json
-// @Success		200		{object}	models.User		true	"user"
+// @Success		200		{object}	models.UserForSwagger		true	"user"
 // @Failure		401
 // @Router		/api/profile/get [get]
 func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
@@ -213,7 +213,7 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 // @Accept		json
 // @Produce		json
 // @Param		credentials body		models.ProfileUpdatePayload		true	"update data"
-// @Success		200			{object}	models.User						true	"user"
+// @Success		200			{object}	models.UserForSwagger			true	"user"
 // @Failure		400			{object}	response.ErrorResponse			true	"error"
 // @Failure		401
 // @Router		/api/profile/update [post]
@@ -258,7 +258,7 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 // @Accept		multipart/form-data
 // @Produce		json
 // @Param		avatar 		formData	file						true	"avatar"
-// @Success		200			{object}	models.User					true	"user"
+// @Success		200			{object}	models.UserForSwagger		true	"user"
 // @Failure		400			{object}	response.ErrorResponse		true	"error"
 // @Failure		401
 // @Failure		413

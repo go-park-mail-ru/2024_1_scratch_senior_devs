@@ -37,8 +37,8 @@ func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	userSecret := sql.NullString{}
-	if user.Secret != "" {
-		userSecret = sql.NullString{String: string(user.Secret), Valid: true}
+	if user.SecondFactor != "" {
+		userSecret = sql.NullString{String: string(user.SecondFactor), Valid: true}
 	}
 
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath, userSecret)
@@ -72,7 +72,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 	}
 
 	if secret.Valid {
-		resultUser.Secret = models.Secret(secret.String)
+		resultUser.SecondFactor = models.Secret(secret.String)
 	}
 
 	if err != nil {
@@ -105,7 +105,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 	}
 
 	if secret.Valid {
-		resultUser.Secret = models.Secret(secret.String)
+		resultUser.SecondFactor = models.Secret(secret.String)
 	}
 
 	if err != nil {
