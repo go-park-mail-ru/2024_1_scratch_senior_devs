@@ -64,8 +64,8 @@ services:
         source: ./nginx.conf
         target: /etc/nginx/nginx.conf
     ports:
-      - 443:443
-      - 80:80
+      - "443:443"
+      - "80:80"
     networks:
       - YouNote-network
   redis:
@@ -79,7 +79,7 @@ services:
       - younote-redis-data:/var/lib/redis/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     env_file:
       - .env
 

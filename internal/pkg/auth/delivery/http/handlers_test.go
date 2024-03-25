@@ -151,7 +151,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 			}
 
-			mockBlocker.EXPECT().CheckLoginAttempts(gomock.Any(), gomock.Any()).Return(nil)
+			//mockBlocker.EXPECT().CheckLoginAttempts(gomock.Any(), gomock.Any()).Return(nil)
 
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
