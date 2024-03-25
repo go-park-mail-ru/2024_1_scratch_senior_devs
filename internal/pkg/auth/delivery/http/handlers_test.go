@@ -71,6 +71,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlocker := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			if tt.name != "AuthHandler_SignUp_Fail_1" && tt.name != "AuthHandler_SignUp_Fail_2" {
@@ -88,7 +89,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
 			handler.SignUp(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -135,6 +136,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlocker := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			if tt.name != "AuthHandler_SignIn_Fail_1" {
@@ -149,10 +151,12 @@ func TestAuthHandler_SignIn(t *testing.T) {
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 			}
 
+			mockBlocker.EXPECT().CheckLoginAttempts(gomock.Any(), gomock.Any()).Return(nil)
+
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
 			handler.SignIn(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -175,12 +179,13 @@ func TestAuthHandler_LogOut(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlocker := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			req := httptest.NewRequest("DELETE", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
 			handler.LogOut(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -216,6 +221,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlocker := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			req := httptest.NewRequest("GET", "http://example.com/api/handler", nil)
@@ -227,7 +233,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
 			handler.CheckUser(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -270,6 +276,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlocker := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			if tt.name != "AuthHandler_GetProfile_Fail_1" {
@@ -290,7 +297,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
 			handler.GetProfile(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)

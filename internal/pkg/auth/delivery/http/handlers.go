@@ -24,14 +24,16 @@ const (
 )
 
 type AuthHandler struct {
-	uc     auth.AuthUsecase
-	logger *slog.Logger
+	uc        auth.AuthUsecase
+	blockerUC auth.BlockerUsecase
+	logger    *slog.Logger
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase, logger *slog.Logger) *AuthHandler {
+func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logger *slog.Logger) *AuthHandler {
 	return &AuthHandler{
-		uc:     uc,
-		logger: logger,
+		uc:        uc,
+		blockerUC: blockerUC,
+		logger:    logger,
 	}
 }
 
@@ -136,6 +138,12 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Router		/api/auth/login [post]
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+
+	if err := h.blockerUC.CheckLoginAttempts(r.Context(), r.RemoteAddr); err != nil {
+		log.LogHandlerError(logger, http.StatusTooManyRequests, err.Error())
+		w.WriteHeader(http.StatusTooManyRequests)
+		return
+	}
 
 	userData := models.UserFormData{}
 	if err := request.GetRequestData(r, &userData); err != nil {

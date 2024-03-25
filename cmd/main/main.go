@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"io"
 	"log/slog"
 	"net/http"
@@ -51,6 +52,12 @@ func main() {
 	}
 	defer db.Close()
 
+	redisDB := redis.NewClient(&redis.Options{
+		Addr:     ":6379",
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+
 	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println(err)
@@ -63,9 +70,12 @@ func main() {
 	JwtMiddleware := jwt.CreateJwtMiddleware(logger)
 	RecoverMiddleware := recover.CreateRecoverMiddleware(logger)
 
+	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger)
+	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, logger)
+
 	AuthRepo := authRepo.CreateAuthRepo(db, logger)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, logger)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger)
 
 	NoteRepo := noteRepo.CreateNoteRepo(db, logger)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)

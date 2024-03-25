@@ -55,6 +55,7 @@ func (repo *BlockerRepo) IncreaseLoginAttempts(ctx context.Context, ipAddr strin
 			logger.Error(err.Error())
 			return err
 		}
+		stringCount = "1"
 	}
 
 	count, err := strconv.Atoi(stringCount)
