@@ -118,8 +118,8 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie.DelTokenCookie())
 	w.Header().Del("Authorization")
-	w.WriteHeader(http.StatusNoContent)
 
+	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 }
 
@@ -392,4 +392,32 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(png)
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+// DisableSecondFactor godoc
+// @Summary		Disable second factor
+// @Description	Remove secret for QR-code from database
+// @Tags 		auth
+// @ID			disable-second-factor
+// @Success		204
+// @Failure		401
+// @Router		/api/auth/disable_2fa [delete]
+func (h *AuthHandler) DisableSecondFactor(w http.ResponseWriter, r *http.Request) {
+	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.uc.DeleteSecret(r.Context(), jwtPayload.Username); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 }

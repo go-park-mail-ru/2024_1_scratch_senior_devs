@@ -194,12 +194,23 @@ func (uc *AuthUsecase) GenerateAndUpdateSecret(ctx context.Context, username str
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	secret := code.GenerateSecret()
-	err := uc.repo.UpdateSecret(ctx, username, string(secret))
-	if err != nil {
+	if err := uc.repo.UpdateSecret(ctx, username, string(secret)); err != nil {
 		logger.Error(err.Error())
 		return []byte{}, err
 	}
 
 	logger.Info("success")
 	return secret, nil
+}
+
+func (uc *AuthUsecase) DeleteSecret(ctx context.Context, username string) error {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	if err := uc.repo.DeleteSecret(ctx, username); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
 }

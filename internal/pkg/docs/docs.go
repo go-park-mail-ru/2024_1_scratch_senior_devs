@@ -34,6 +34,24 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/auth/disable_2fa": {
+            "delete": {
+                "description": "Remove secret for QR-code from database",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Disable second factor",
+                "operationId": "disable-second-factor",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/api/auth/get_qr": {
             "get": {
                 "description": "Generate QR code for 2FA",

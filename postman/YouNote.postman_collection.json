@@ -453,6 +453,36 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "disable_2fa",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE1NDQxMTUsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.1Q4wvjK0QXho8J_N0bC9xZ0eKyimvYGh86mOb25yKZQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://{{HOST}}/api/auth/disable_2fa",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"disable_2fa"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

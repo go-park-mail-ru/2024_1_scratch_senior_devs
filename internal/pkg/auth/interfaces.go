@@ -32,6 +32,7 @@ type AuthUsecase interface {
 	UpdateProfile(context.Context, uuid.UUID, models.ProfileUpdatePayload) (models.User, error)
 	UpdateProfileAvatar(context.Context, uuid.UUID, io.ReadSeeker, string) (models.User, error)
 	GenerateAndUpdateSecret(context.Context, string) ([]byte, error)
+	DeleteSecret(context.Context, string) error
 }
 
 type AuthRepo interface {
@@ -41,6 +42,7 @@ type AuthRepo interface {
 	UpdateProfile(context.Context, models.User) error
 	UpdateProfileAvatar(context.Context, uuid.UUID, string) error
 	UpdateSecret(context.Context, string, string) error
+	DeleteSecret(context.Context, string) error
 }
 
 type BlockerUsecase interface {

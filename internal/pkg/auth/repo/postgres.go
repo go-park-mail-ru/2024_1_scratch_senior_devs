@@ -18,7 +18,8 @@ const (
 	getUserByUsername   = "SELECT id, description, password_hash, create_time, image_path, secret FROM users WHERE username = $1;"
 	updateProfile       = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
 	updateProfileAvatar = "UPDATE users SET image_path = $1 WHERE id = $2;"
-	updateSecret        = "UPDATE users SET secret = $1 WHERE username = $2;" //nolint:gosec
+	updateSecret        = "UPDATE users SET secret = $1 WHERE username = $2;"   //nolint:gosec
+	deleteSecret        = "UPDATE users SET secret = NULL WHERE username = $1;" //nolint:gosec
 )
 
 type AuthRepo struct {
@@ -147,6 +148,19 @@ func (repo *AuthRepo) UpdateSecret(ctx context.Context, username string, secret 
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateSecret, secret, username)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *AuthRepo) DeleteSecret(ctx context.Context, username string) error {
+	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	_, err := repo.db.Exec(ctx, deleteSecret, username)
 	if err != nil {
 		logger.Error(err.Error())
 		return err

@@ -53,6 +53,20 @@ func (mr *MockAuthUsecaseMockRecorder) CheckUser(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUser", reflect.TypeOf((*MockAuthUsecase)(nil).CheckUser), arg0, arg1)
 }
 
+// DeleteSecret mocks base method.
+func (m *MockAuthUsecase) DeleteSecret(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSecret", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSecret indicates an expected call of DeleteSecret.
+func (mr *MockAuthUsecaseMockRecorder) DeleteSecret(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSecret", reflect.TypeOf((*MockAuthUsecase)(nil).DeleteSecret), arg0, arg1)
+}
+
 // GenerateAndUpdateSecret mocks base method.
 func (m *MockAuthUsecase) GenerateAndUpdateSecret(arg0 context.Context, arg1 string) ([]byte, error) {
 	m.ctrl.T.Helper()
@@ -167,6 +181,20 @@ func (m *MockAuthRepo) CreateUser(arg0 context.Context, arg1 models.User) error 
 func (mr *MockAuthRepoMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAuthRepo)(nil).CreateUser), arg0, arg1)
+}
+
+// DeleteSecret mocks base method.
+func (m *MockAuthRepo) DeleteSecret(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSecret", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSecret indicates an expected call of DeleteSecret.
+func (mr *MockAuthRepoMockRecorder) DeleteSecret(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSecret", reflect.TypeOf((*MockAuthRepo)(nil).DeleteSecret), arg0, arg1)
 }
 
 // GetUserById mocks base method.

@@ -102,6 +102,7 @@ func main() {
 		auth.Handle("/logout", JwtMiddleware(http.HandlerFunc(AuthDelivery.LogOut))).Methods(http.MethodDelete, http.MethodOptions)
 		auth.Handle("/check_user", JwtMiddleware(http.HandlerFunc(AuthDelivery.CheckUser))).Methods(http.MethodGet, http.MethodOptions)
 		auth.Handle("/get_qr", JwtMiddleware(http.HandlerFunc(AuthDelivery.GetQRCode))).Methods(http.MethodGet, http.MethodOptions)
+		auth.Handle("/disable_2fa", JwtMiddleware(http.HandlerFunc(AuthDelivery.DisableSecondFactor))).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
 	note := r.PathPrefix("/note").Subrouter()

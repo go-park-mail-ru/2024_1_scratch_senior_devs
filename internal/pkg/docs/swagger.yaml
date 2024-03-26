@@ -93,6 +93,18 @@ paths:
       summary: Check user
       tags:
       - auth
+  /api/auth/disable_2fa:
+    delete:
+      description: Remove secret for QR-code from database
+      operationId: disable-second-factor
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+      summary: Disable second factor
+      tags:
+      - auth
   /api/auth/get_qr:
     get:
       description: Generate QR code for 2FA
