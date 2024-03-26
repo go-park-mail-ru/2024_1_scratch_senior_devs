@@ -60,11 +60,12 @@ func main() {
 	}
 	defer db.Close()
 
-	redisDB := redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: os.Getenv("REDIS_PASSWORD"),
-		DB:       0,
-	})
+	redisOpts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		logger.Info("error connecting to redis: " + err.Error())
+		return
+	}
+	redisDB := redis.NewClient(redisOpts)
 
 	JwtMiddleware := protection.CreateJwtMiddleware(logger)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(logger)
