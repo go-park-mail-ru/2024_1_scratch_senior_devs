@@ -12,10 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/cors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
 
 	"github.com/gorilla/mux"
@@ -67,7 +66,8 @@ func main() {
 
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
 
-	JwtMiddleware := jwt.CreateJwtMiddleware(logger)
+	JwtMiddleware := protection.CreateJwtMiddleware(logger)
+	CsrfMiddleware := protection.CreateCsrfMiddleware(logger)
 	RecoverMiddleware := recover.CreateRecoverMiddleware(logger)
 
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger)
@@ -87,7 +87,11 @@ func main() {
 		w.WriteHeader(http.StatusNotFound)
 	})
 
-	r.Use(cors.CorsMiddleware, log.LogMiddleware, RecoverMiddleware)
+	r.Use(
+		protection.CorsMiddleware,
+		log.LogMiddleware,
+		RecoverMiddleware,
+	)
 
 	r.PathPrefix("/swagger").Handler(httpSwagger.Handler(
 		httpSwagger.DeepLinking(true),
@@ -99,14 +103,14 @@ func main() {
 	{
 		auth.Handle("/signup", http.HandlerFunc(AuthDelivery.SignUp)).Methods(http.MethodPost, http.MethodOptions)
 		auth.Handle("/login", http.HandlerFunc(AuthDelivery.SignIn)).Methods(http.MethodPost, http.MethodOptions)
-		auth.Handle("/logout", JwtMiddleware(http.HandlerFunc(AuthDelivery.LogOut))).Methods(http.MethodDelete, http.MethodOptions)
+		auth.Handle("/logout", JwtMiddleware(CsrfMiddleware(http.HandlerFunc(AuthDelivery.LogOut)))).Methods(http.MethodDelete, http.MethodOptions)
 		auth.Handle("/check_user", JwtMiddleware(http.HandlerFunc(AuthDelivery.CheckUser))).Methods(http.MethodGet, http.MethodOptions)
 		auth.Handle("/get_qr", JwtMiddleware(http.HandlerFunc(AuthDelivery.GetQRCode))).Methods(http.MethodGet, http.MethodOptions)
-		auth.Handle("/disable_2fa", JwtMiddleware(http.HandlerFunc(AuthDelivery.DisableSecondFactor))).Methods(http.MethodDelete, http.MethodOptions)
+		auth.Handle("/disable_2fa", JwtMiddleware(CsrfMiddleware(http.HandlerFunc(AuthDelivery.DisableSecondFactor)))).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
-	note.Use(JwtMiddleware)
+	note.Use(JwtMiddleware, CsrfMiddleware)
 	{
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
@@ -116,7 +120,7 @@ func main() {
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
-	profile.Use(jwt.ReadAndCloseBody, JwtMiddleware)
+	profile.Use(protection.ReadAndCloseBody, JwtMiddleware, CsrfMiddleware)
 	{
 		profile.Handle("/get", http.HandlerFunc(AuthDelivery.GetProfile)).Methods(http.MethodGet, http.MethodOptions)
 		profile.Handle("/update", http.HandlerFunc(AuthDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)

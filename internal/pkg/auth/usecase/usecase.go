@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
@@ -57,14 +57,14 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		return models.User{}, "", currentTime, auth.ErrCreatingUser
 	}
 
-	token, err := jwt.GenToken(newUser, JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(newUser, JWTLifeTime)
 	if err != nil {
-		logger.Error("middleware.GenToken error: " + err.Error())
+		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
 	}
 
 	logger.Info("success")
-	return newUser, token, expTime, nil
+	return newUser, jwtToken, expTime, nil
 }
 
 func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
@@ -96,14 +96,14 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		}
 	}
 
-	token, err := jwt.GenToken(user, JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(user, JWTLifeTime)
 	if err != nil {
-		logger.Error("middleware.GenToken error: " + err.Error())
+		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
 	}
 
 	logger.Info("success")
-	return user, token, expTime, nil
+	return user, jwtToken, expTime, nil
 }
 
 func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User, error) {

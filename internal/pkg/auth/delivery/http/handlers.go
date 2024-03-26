@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
@@ -64,15 +65,17 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUser, token, expTime, err := h.uc.SignUp(r.Context(), userData)
+	newUser, jwtToken, expTime, err := h.uc.SignUp(r.Context(), userData)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrCreatingUser.Error())
 		return
 	}
 
-	http.SetCookie(w, cookie.GenTokenCookie(token, expTime))
-	w.Header().Set("Authorization", "Bearer "+token)
+	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime))
+	w.Header().Set("Authorization", "Bearer "+jwtToken)
+
+	protection.SetCsrfToken(w)
 
 	if err := response.WriteResponseData(w, newUser, http.StatusCreated); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
@@ -116,8 +119,11 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	http.SetCookie(w, cookie.DelTokenCookie())
+	http.SetCookie(w, cookie.DelJwtTokenCookie())
 	w.Header().Del("Authorization")
+
+	http.SetCookie(w, cookie.DelCsrfTokenCookie())
+	w.Header().Del("X-CSRF-Token")
 
 	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
@@ -152,7 +158,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
+	user, jwtToken, expTime, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
 		if errors.Is(err, auth.ErrFirstFactorPassed) {
 			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
@@ -165,8 +171,10 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Authorization", "Bearer "+token)
-	http.SetCookie(w, cookie.GenTokenCookie(token, exp))
+	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime))
+	w.Header().Set("Authorization", "Bearer "+jwtToken)
+
+	protection.SetCsrfToken(w)
 
 	if err := response.WriteResponseData(w, user, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
