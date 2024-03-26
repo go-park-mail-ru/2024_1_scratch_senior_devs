@@ -45,9 +45,18 @@ func init() {
 // @description 	API for YouNote service
 // @host 			you-note.ru
 func main() {
+	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("error opening log file: " + err.Error())
+		return
+	}
+	defer logFile.Close()
+
+	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
+
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		fmt.Println(err)
+		logger.Info("error connecting to postgres: " + err.Error())
 		return
 	}
 	defer db.Close()
@@ -57,15 +66,6 @@ func main() {
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})
-
-	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer logFile.Close()
-
-	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
 
 	JwtMiddleware := jwt.CreateJwtMiddleware(logger)
 	RecoverMiddleware := recover.CreateRecoverMiddleware(logger)
