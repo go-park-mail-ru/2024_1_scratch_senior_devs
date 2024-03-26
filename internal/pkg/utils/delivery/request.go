@@ -1,4 +1,4 @@
-package request
+package delivery
 
 import (
 	"crypto/sha256"
@@ -20,21 +20,6 @@ func GetRequestData(r *http.Request, requestData interface{}) error {
 	}
 
 	return nil
-}
-
-func ValidateRequestData(r *http.Request) ([]byte, error) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Body.Close()
-
-	var temp interface{}
-	if err := json.Unmarshal(body, &temp); err != nil {
-		return nil, err
-	}
-
-	return body, nil
 }
 
 func GetHash(input string) string {

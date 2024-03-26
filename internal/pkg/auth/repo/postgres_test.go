@@ -3,7 +3,7 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"log/slog"
 	"os"
 	"testing"
@@ -40,7 +40,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 					userId,
 					"",
 					"testuser2",
-					request.GetHash("f28fhc2o4m3"),
+					delivery.GetHash("f28fhc2o4m3"),
 					currTime,
 					"default.jpg",
 					sql.NullString{},
@@ -63,7 +63,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 				Id:           userId,
 				Description:  "",
 				Username:     "testuser2",
-				PasswordHash: request.GetHash("f28fhc2o4m3"),
+				PasswordHash: delivery.GetHash("f28fhc2o4m3"),
 				CreateTime:   currTime,
 				ImagePath:    "default.jpg",
 				SecondFactor: "",

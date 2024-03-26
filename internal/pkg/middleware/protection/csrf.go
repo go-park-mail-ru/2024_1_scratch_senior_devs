@@ -7,7 +7,10 @@ import (
 	"github.com/satori/uuid"
 	"log/slog"
 	"net/http"
+	"slices"
 )
+
+var unsafeMethods = []string{http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch}
 
 func genCsrfToken() string {
 	return uuid.NewV4().String()
@@ -49,7 +52,7 @@ func CreateCsrfMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			csrfLogger := logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-			if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete || r.Method == http.MethodPatch {
+			if slices.Contains(unsafeMethods, r.Method) {
 				if !checkCsrfToken(csrfLogger, w, r) {
 					return
 				}
