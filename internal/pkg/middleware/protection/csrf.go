@@ -44,7 +44,7 @@ func SetCsrfToken(w http.ResponseWriter) {
 	csrfToken := genCsrfToken()
 
 	http.SetCookie(w, cookie.GenCsrfTokenCookie(csrfToken))
-	w.Header().Set("X-CSRF-Token", csrfToken)
+	w.Header().Set("X-Csrf-Token", csrfToken)
 }
 
 func CreateCsrfMiddleware(logger *slog.Logger) mux.MiddlewareFunc {

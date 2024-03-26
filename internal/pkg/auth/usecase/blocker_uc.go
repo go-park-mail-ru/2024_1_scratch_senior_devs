@@ -8,6 +8,8 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 )
 
+const maxWrongRequests = 5
+
 type BlockerUsecase struct {
 	repo   auth.BlockerRepo
 	logger *slog.Logger
@@ -31,7 +33,7 @@ func (bu *BlockerUsecase) CheckLoginAttempts(ctx context.Context, ipAddress stri
 		return err
 	}
 
-	if requestsMade > 5 {
+	if requestsMade > maxWrongRequests {
 		return errors.New("too many attempts")
 	}
 	return nil

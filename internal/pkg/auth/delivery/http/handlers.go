@@ -122,7 +122,7 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	w.Header().Del("Authorization")
 
 	http.SetCookie(w, cookie.DelCsrfTokenCookie())
-	w.Header().Del("X-CSRF-Token")
+	w.Header().Del("X-Csrf-Token")
 
 	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
