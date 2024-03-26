@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/response"
 	"github.com/skip2/go-qrcode"
 	"io"
 	"log/slog"
@@ -52,30 +52,32 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
 	userData := models.UserFormData{}
-	if err := request.GetRequestData(r, &userData); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
+	if err := delivery.GetRequestData(r, &userData); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, delivery.ParseBodyError+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
 		return
 	}
 
 	if err := userData.Validate(); err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, "validation error: "+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	newUser, token, expTime, err := h.uc.SignUp(r.Context(), userData)
+	newUser, jwtToken, expTime, err := h.uc.SignUp(r.Context(), userData)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrCreatingUser.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrCreatingUser.Error())
 		return
 	}
 
-	http.SetCookie(w, cookie.GenTokenCookie(token, expTime))
-	w.Header().Set("Authorization", "Bearer "+token)
+	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime))
+	w.Header().Set("Authorization", "Bearer "+jwtToken)
 
-	if err := response.WriteResponseData(w, newUser, http.StatusCreated); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	protection.SetCsrfToken(w)
+
+	if err := delivery.WriteResponseData(w, newUser, http.StatusCreated); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -96,7 +98,7 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 
 	_, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -116,8 +118,11 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	http.SetCookie(w, cookie.DelTokenCookie())
+	http.SetCookie(w, cookie.DelJwtTokenCookie())
 	w.Header().Del("Authorization")
+
+	http.SetCookie(w, cookie.DelCsrfTokenCookie())
+	w.Header().Del("X-Csrf-Token")
 
 	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
@@ -146,13 +151,13 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userData := models.UserFormData{}
-	if err := request.GetRequestData(r, &userData); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
+	if err := delivery.GetRequestData(r, &userData); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, delivery.ParseBodyError+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
 		return
 	}
 
-	user, token, exp, err := h.uc.SignIn(r.Context(), userData)
+	user, jwtToken, expTime, err := h.uc.SignIn(r.Context(), userData)
 	if err != nil {
 		if errors.Is(err, auth.ErrFirstFactorPassed) {
 			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
@@ -165,11 +170,13 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Authorization", "Bearer "+token)
-	http.SetCookie(w, cookie.GenTokenCookie(token, exp))
+	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime))
+	w.Header().Set("Authorization", "Bearer "+jwtToken)
 
-	if err := response.WriteResponseData(w, user, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	protection.SetCsrfToken(w)
+
+	if err := delivery.WriteResponseData(w, user, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -191,7 +198,7 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -204,8 +211,8 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := response.WriteResponseData(w, currentUser, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	if err := delivery.WriteResponseData(w, currentUser, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -230,15 +237,15 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	payload := models.ProfileUpdatePayload{}
-	if err := request.GetRequestData(r, &payload); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
+	if err := delivery.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, delivery.ParseBodyError+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrIncorrectPayload.Error())
 		return
 	}
 
@@ -249,8 +256,8 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := response.WriteResponseData(w, user, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	if err := delivery.WriteResponseData(w, user, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -276,7 +283,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -299,14 +306,14 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 	files := r.MultipartForm.File["avatar"]
 	if len(files) > 1 {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
 		return
 	}
 
 	avatar, _, err := r.FormFile("avatar")
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
 		return
 	}
 	content, err := io.ReadAll(avatar)
@@ -321,7 +328,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 	fileExtension := images.CheckFileFormat(content)
 	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
 		return
 	}
 
@@ -332,8 +339,8 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := response.WriteResponseData(w, user, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	if err := delivery.WriteResponseData(w, user, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -356,7 +363,7 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -407,7 +414,7 @@ func (h *AuthHandler) DisableSecondFactor(w http.ResponseWriter, r *http.Request
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

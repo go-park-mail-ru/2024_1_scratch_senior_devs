@@ -2,8 +2,8 @@ package recover
 
 import (
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/response"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
@@ -17,7 +17,7 @@ func CreateRecoverMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 			defer func() {
 				if err := recover(); err != nil {
 					log.LogHandlerError(recoverLogger, http.StatusInternalServerError, fmt.Sprintf("%v", err))
-					response.WriteErrorMessage(w, http.StatusInternalServerError, "internal server error")
+					delivery.WriteErrorMessage(w, http.StatusInternalServerError, "internal server error")
 					return
 				}
 			}()

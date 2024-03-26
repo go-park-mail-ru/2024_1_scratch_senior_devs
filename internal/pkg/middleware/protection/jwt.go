@@ -1,11 +1,13 @@
-package jwt
+package protection
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/gorilla/mux"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,11 +20,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
-const (
-	JwtCookie = "YouNoteJWT"
-)
-
-func GenToken(user models.User, lifeTime time.Duration) (string, error) {
+func GenJwtToken(user models.User, lifeTime time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":  user.Id,
 		"usr": user.Username,
@@ -31,7 +29,7 @@ func GenToken(user models.User, lifeTime time.Duration) (string, error) {
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
 
-func parseToken(token string) (*jwt.Token, error) {
+func parseJwtToken(token string) (*jwt.Token, error) {
 	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -83,20 +81,20 @@ func CreateJwtMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 			}
 			token := headerParts[1]
 
-			cookie, err := r.Cookie(JwtCookie)
+			jwtCookie, err := r.Cookie(cookie.JwtCookie)
 			if err != nil {
 				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "no jwt cookie: "+err.Error())
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			if cookie.Value != token {
+			if jwtCookie.Value != token {
 				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "tokens in cookie and header are different")
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
 
-			claims, err := parseToken(token)
+			claims, err := parseJwtToken(token)
 			if err != nil {
 				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "invalid token")
 				w.WriteHeader(http.StatusUnauthorized)
@@ -130,4 +128,15 @@ func CreateJwtMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func ReadAndCloseBody(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			_, _ = io.ReadAll(r.Body)
+			defer r.Body.Close()
+		}()
+
+		next.ServeHTTP(w, r)
+	})
 }

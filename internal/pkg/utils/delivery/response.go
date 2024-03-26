@@ -1,4 +1,4 @@
-package response
+package delivery
 
 import (
 	"encoding/json"
@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	ParseBodyError       = "can`t parse request body: "
+	ParseBodyError       = "can`t parse delivery body: "
 	WriteBodyError       = "can`t write response body: "
-	JwtPayloadParseError = "can`t parse JWT payload from request context"
+	JwtPayloadParseError = "can`t parse JWT payload from delivery context"
 )
 
 type ErrorResponse struct {

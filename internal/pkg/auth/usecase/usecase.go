@@ -2,11 +2,11 @@ package usecase
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/jwt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
 	"io"
 	"log/slog"
 	"os"
@@ -45,7 +45,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	newUser := models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
-		PasswordHash: request.GetHash(data.Password),
+		PasswordHash: delivery.GetHash(data.Password),
 		ImagePath:    defaultImagePath,
 		CreateTime:   currentTime,
 		SecondFactor: "",
@@ -57,14 +57,14 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		return models.User{}, "", currentTime, auth.ErrCreatingUser
 	}
 
-	token, err := jwt.GenToken(newUser, JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(newUser, JWTLifeTime)
 	if err != nil {
-		logger.Error("middleware.GenToken error: " + err.Error())
+		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
 	}
 
 	logger.Info("success")
-	return newUser, token, expTime, nil
+	return newUser, jwtToken, expTime, nil
 }
 
 func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
@@ -78,7 +78,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		logger.Error(err.Error())
 		return models.User{}, "", currentTime, auth.ErrUserNotFound
 	}
-	if user.PasswordHash != request.GetHash(data.Password) {
+	if user.PasswordHash != delivery.GetHash(data.Password) {
 		logger.Error("wrong password")
 		return models.User{}, "", currentTime, auth.ErrWrongUserData
 	}
@@ -96,14 +96,14 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		}
 	}
 
-	token, err := jwt.GenToken(user, JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(user, JWTLifeTime)
 	if err != nil {
-		logger.Error("middleware.GenToken error: " + err.Error())
+		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
 	}
 
 	logger.Info("success")
-	return user, token, expTime, nil
+	return user, jwtToken, expTime, nil
 }
 
 func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User, error) {
@@ -136,12 +136,12 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 			return models.User{}, err
 		}
 
-		if user.PasswordHash != request.GetHash(payload.Password.Old) {
+		if user.PasswordHash != delivery.GetHash(payload.Password.Old) {
 			logger.Error("wrong password")
 			return models.User{}, auth.ErrWrongPassword
 		}
 
-		user.PasswordHash = request.GetHash(payload.Password.New)
+		user.PasswordHash = delivery.GetHash(payload.Password.New)
 	}
 
 	user.Description = payload.Description

@@ -5,10 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/paging"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/request"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/response"
 	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
 
@@ -51,7 +50,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	count, offset, err := paging.GetParams(r)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "invalid parameters")
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "invalid parameters")
 		return
 	}
 
@@ -59,7 +58,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 
 	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -67,12 +66,12 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	data, err := h.uc.GetAllNotes(r.Context(), payload.Id, int64(count), int64(offset), titleSubstr)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := response.WriteResponseData(w, data, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	if err := delivery.WriteResponseData(w, data, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -98,13 +97,13 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	noteId, err := uuid.FromString(noteIdString)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
 		return
 	}
 
 	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -112,12 +111,12 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	resultNote, err := h.uc.GetNote(r.Context(), noteId, payload.Id)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
-		response.WriteErrorMessage(w, http.StatusNotFound, err.Error())
+		delivery.WriteErrorMessage(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	if err := response.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	if err := delivery.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -142,34 +141,34 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	payload := models.UpsertNoteRequest{}
-	if err := request.GetRequestData(r, &payload); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+	if err := delivery.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, delivery.ParseBodyError+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
 
 	noteData, err := json.Marshal(payload.Data)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		log.LogHandlerError(logger, http.StatusBadRequest, delivery.ParseBodyError+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
 
 	newNote, err := h.uc.CreateNote(r.Context(), jwtPayload.Id, noteData)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "invalid query")
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "invalid query")
 		return
 	}
 
-	if err := response.WriteResponseData(w, newNote, http.StatusCreated); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	if err := delivery.WriteResponseData(w, newNote, http.StatusCreated); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -197,40 +196,40 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 	noteId, err := uuid.FromString(noteIdString)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
 		return
 	}
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	payload := models.UpsertNoteRequest{}
-	if err := request.GetRequestData(r, &payload); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+	if err := delivery.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, delivery.ParseBodyError+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
 
 	noteData, err := json.Marshal(payload.Data)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, response.ParseBodyError+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
+		log.LogHandlerError(logger, http.StatusBadRequest, delivery.ParseBodyError+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "incorrect data format")
 		return
 	}
 
 	updatedNote, err := h.uc.UpdateNote(r.Context(), noteId, jwtPayload.Id, noteData)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "note not found")
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "note not found")
 		return
 	}
 
-	if err := response.WriteResponseData(w, updatedNote, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, response.WriteBodyError+err.Error())
+	if err := delivery.WriteResponseData(w, updatedNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -256,13 +255,13 @@ func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 	noteId, err := uuid.FromString(noteIdString)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
-		response.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
 		return
 	}
 
 	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, response.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -270,7 +269,7 @@ func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 	err = h.uc.DeleteNote(r.Context(), noteId, jwtPayload.Id)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
-		response.WriteErrorMessage(w, http.StatusNotFound, "note not found")
+		delivery.WriteErrorMessage(w, http.StatusNotFound, "note not found")
 		return
 	}
 
