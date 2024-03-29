@@ -1,6 +1,7 @@
 package protection
 
 import (
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/gorilla/mux"
@@ -24,7 +25,7 @@ func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request)
 		return false
 	}
 
-	csrfCookie, err := r.Cookie(cookie.CsrfCookie)
+	csrfCookie, err := r.Cookie(config.CsrfCookie)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusForbidden, "no csrf cookie: "+err.Error())
 		w.WriteHeader(http.StatusForbidden)

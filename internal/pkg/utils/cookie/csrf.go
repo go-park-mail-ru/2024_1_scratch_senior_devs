@@ -1,15 +1,14 @@
 package cookie
 
 import (
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"net/http"
 	"time"
 )
 
-const CsrfCookie = "YouNoteCSRF"
-
 func GenCsrfTokenCookie(token string) *http.Cookie {
 	return &http.Cookie{
-		Name:     CsrfCookie,
+		Name:     config.CsrfCookie,
 		Secure:   true,
 		Value:    token,
 		HttpOnly: true,
@@ -21,7 +20,7 @@ func GenCsrfTokenCookie(token string) *http.Cookie {
 
 func DelCsrfTokenCookie() *http.Cookie {
 	return &http.Cookie{
-		Name:     CsrfCookie,
+		Name:     config.CsrfCookie,
 		Secure:   true,
 		Value:    "",
 		HttpOnly: true,

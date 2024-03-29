@@ -2,11 +2,12 @@ package usecase
 
 import (
 	"context"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"io"
 	"log/slog"
 	"os"
@@ -17,11 +18,6 @@ import (
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
-)
-
-const (
-	JWTLifeTime      = 24 * time.Hour
-	defaultImagePath = "default.jpg"
 )
 
 type AuthUsecase struct {
@@ -40,13 +36,13 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
-	expTime := currentTime.Add(JWTLifeTime)
+	expTime := currentTime.Add(config.JWTLifeTime)
 
 	newUser := models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
 		PasswordHash: delivery.GetHash(data.Password),
-		ImagePath:    defaultImagePath,
+		ImagePath:    config.DefaultImagePath,
 		CreateTime:   currentTime,
 		SecondFactor: "",
 	}
@@ -57,7 +53,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		return models.User{}, "", currentTime, auth.ErrCreatingUser
 	}
 
-	jwtToken, err := protection.GenJwtToken(newUser, JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(newUser, config.JWTLifeTime)
 	if err != nil {
 		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
@@ -71,7 +67,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
-	expTime := currentTime.Add(JWTLifeTime)
+	expTime := currentTime.Add(config.JWTLifeTime)
 
 	user, err := uc.repo.GetUserByUsername(ctx, data.Username)
 	if err != nil {
@@ -96,7 +92,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		}
 	}
 
-	jwtToken, err := protection.GenJwtToken(user, JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(user, config.JWTLifeTime)
 	if err != nil {
 		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
@@ -167,7 +163,7 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 	imagesBasePath := os.Getenv("IMAGES_BASE_PATH")
 	newImagePath := uuid.NewV4().String() + extension
 
-	if err := images.WriteAvatarOnDisk(path.Join(imagesBasePath, newImagePath), avatar); err != nil {
+	if err := sources.WriteFileOnDisk(path.Join(imagesBasePath, newImagePath), avatar); err != nil {
 		logger.Error("write on disk: " + err.Error())
 		return models.User{}, err
 	}

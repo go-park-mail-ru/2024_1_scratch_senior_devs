@@ -3,12 +3,11 @@ package usecase
 import (
 	"context"
 	"errors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"log/slog"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 )
-
-const maxWrongRequests = 5
 
 type BlockerUsecase struct {
 	repo   auth.BlockerRepo
@@ -33,7 +32,7 @@ func (bu *BlockerUsecase) CheckLoginAttempts(ctx context.Context, ipAddress stri
 		return err
 	}
 
-	if requestsMade > maxWrongRequests {
+	if requestsMade > config.MaxWrongRequests {
 		return errors.New("too many attempts")
 	}
 	return nil

@@ -1,15 +1,14 @@
 package cookie
 
 import (
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"net/http"
 	"time"
 )
 
-const JwtCookie = "YouNoteJWT"
-
 func GenJwtTokenCookie(token string, expTime time.Time) *http.Cookie {
 	return &http.Cookie{
-		Name:     JwtCookie,
+		Name:     config.JwtCookie,
 		Secure:   true,
 		Value:    token,
 		HttpOnly: true,
@@ -21,7 +20,7 @@ func GenJwtTokenCookie(token string, expTime time.Time) *http.Cookie {
 
 func DelJwtTokenCookie() *http.Cookie {
 	return &http.Cookie{
-		Name:     JwtCookie,
+		Name:     config.JwtCookie,
 		Secure:   true,
 		Value:    "",
 		HttpOnly: true,

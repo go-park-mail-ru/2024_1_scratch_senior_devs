@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
@@ -227,9 +228,9 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			req := httptest.NewRequest("GET", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			ctx := context.WithValue(req.Context(), models.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
+			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
 			if tt.name == "AuthHandler_CheckUser_Fail_1" {
-				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
+				ctx = context.WithValue(req.Context(), config.PayloadContextKey, models.Note{})
 			}
 			req = req.WithContext(ctx)
 
@@ -291,9 +292,9 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 			req := httptest.NewRequest("GET", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			ctx := context.WithValue(req.Context(), models.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
+			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
 			if tt.name == "AuthHandler_GetProfile_Fail_1" {
-				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
+				ctx = context.WithValue(req.Context(), config.PayloadContextKey, models.Note{})
 			}
 			req = req.WithContext(ctx)
 

@@ -5,10 +5,6 @@ import (
 	"github.com/satori/uuid"
 )
 
-type PayloadKey string
-
-const PayloadContextKey PayloadKey = "payload"
-
 type UserFormData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

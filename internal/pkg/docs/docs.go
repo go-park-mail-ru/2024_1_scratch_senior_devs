@@ -117,13 +117,13 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     }
                 }
@@ -182,7 +182,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     }
                 }
@@ -223,7 +223,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -276,7 +276,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -312,7 +312,7 @@ const docTemplate = `{
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -321,8 +321,60 @@ const docTemplate = `{
                     "404": {
                         "description": "note not found",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/api/note/{id}/add_attach": {
+            "post": {
+                "description": "Attach new file to note",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "note"
+                ],
+                "summary": "Add attachment",
+                "operationId": "add-attach",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "attach file",
+                        "name": "attach",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attach model",
+                        "schema": {
+                            "$ref": "#/definitions/models.Attach"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large"
                     }
                 }
             }
@@ -351,7 +403,7 @@ const docTemplate = `{
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -360,7 +412,7 @@ const docTemplate = `{
                     "404": {
                         "description": "note not found",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     }
                 }
@@ -408,7 +460,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -476,7 +528,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -487,7 +539,7 @@ const docTemplate = `{
         },
         "/api/profile/update_avatar": {
             "post": {
-                "description": "Change images",
+                "description": "Change sources",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -497,8 +549,8 @@ const docTemplate = `{
                 "tags": [
                     "profile"
                 ],
-                "summary": "Update profile images",
-                "operationId": "update-profile-images",
+                "summary": "Update profile sources",
+                "operationId": "update-profile-sources",
                 "parameters": [
                     {
                         "type": "file",
@@ -518,7 +570,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -532,6 +584,28 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "delivery.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Attach": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "note_id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
         "models.NoteDataForSwagger": {
             "type": "object",
             "properties": {
@@ -637,14 +711,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "old": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
                     "type": "string"
                 }
             }

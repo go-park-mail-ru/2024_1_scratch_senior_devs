@@ -6,21 +6,17 @@ import (
 	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/images"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/skip2/go-qrcode"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
-)
-
-const (
-	maxFormDataSize = 5 * 1024 * 1024
-	qrIssuer        = "YouNote"
 )
 
 type AuthHandler struct {
@@ -46,7 +42,7 @@ func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logge
 // @Produce		json
 // @Param		credentials body		models.SignUpPayloadForSwagger	true	"registration data"
 // @Success		200			{object}	models.UserForSwagger			true	"user"
-// @Failure		400			{object}	response.ErrorResponse			true	"error"
+// @Failure		400			{object}	delivery.ErrorResponse			true	"error"
 // @Router		/api/auth/signup [post]
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -96,7 +92,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	_, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -138,8 +134,8 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Param		credentials body		models.UserFormData		true	"login data"
 // @Success		200			{object}	models.UserForSwagger	true	"user"
 // @Success		202
-// @Failure		400			{object}	response.ErrorResponse	true	"error"
-// @Failure		401			{object}	response.ErrorResponse	true	"error"
+// @Failure		400			{object}	delivery.ErrorResponse	true	"error"
+// @Failure		401			{object}	delivery.ErrorResponse	true	"error"
 // @Router		/api/auth/login [post]
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -196,7 +192,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -229,13 +225,13 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 // @Produce		json
 // @Param		credentials body		models.ProfileUpdatePayload		true	"update data"
 // @Success		200			{object}	models.UserForSwagger			true	"user"
-// @Failure		400			{object}	response.ErrorResponse			true	"error"
+// @Failure		400			{object}	delivery.ErrorResponse			true	"error"
 // @Failure		401
 // @Router		/api/profile/update [post]
 func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -266,32 +262,32 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateProfileAvatar godoc
-// @Summary		Update profile images
-// @Description	Change images
+// @Summary		Update profile sources
+// @Description	Change sources
 // @Tags 		profile
-// @ID			update-profile-images
+// @ID			update-profile-sources
 // @Accept		multipart/form-data
 // @Produce		json
 // @Param		avatar 		formData	file						true	"avatar"
 // @Success		200			{object}	models.UserForSwagger		true	"user"
-// @Failure		400			{object}	response.ErrorResponse		true	"error"
+// @Failure		400			{object}	delivery.ErrorResponse		true	"error"
 // @Failure		401
 // @Failure		413
 // @Router		/api/profile/update_avatar [post]
 func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, maxFormDataSize)
+	r.Body = http.MaxBytesReader(w, r.Body, config.AvatarMaxFormDataSize)
 	defer r.Body.Close()
 
-	err := r.ParseMultipartForm(maxFormDataSize)
+	err := r.ParseMultipartForm(config.AvatarMaxFormDataSize)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusRequestEntityTooLarge, err.Error())
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
@@ -325,7 +321,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	fileExtension := images.CheckFileFormat(content)
+	fileExtension := sources.CheckFormat(config.AvatarFileTypes, content)
 	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
 		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
@@ -361,7 +357,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -388,10 +384,10 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	secretParam.Add("secret", secret)
 
 	issuer := url.Values{}
-	issuer.Add("issuer", qrIssuer)
+	issuer.Add("issuer", config.QrIssuer)
 
 	URL.RawQuery = secretParam.Encode() + "&" + issuer.Encode()
-	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(qrIssuer), url.PathEscape(jwtPayload.Username))
+	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(config.QrIssuer), url.PathEscape(jwtPayload.Username))
 
 	var png []byte
 	png, _ = qrcode.Encode(URL.String(), qrcode.Medium, 256)
@@ -412,7 +408,7 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) DisableSecondFactor(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)

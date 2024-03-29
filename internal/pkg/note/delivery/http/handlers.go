@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"log/slog"
 	"net/http"
 
@@ -28,7 +29,7 @@ func CreateNotesHandler(uc note.NoteUsecase, logger *slog.Logger) *NoteHandler {
 }
 
 const (
-	incorrectIdErr = "incorrect id paramter"
+	incorrectIdErr = "incorrect id parameter"
 )
 
 // GetAllNotes godoc
@@ -41,7 +42,7 @@ const (
 // @Param		offset	query		int							false	"notes offset"
 // @Param		title	query		string						false	"notes title substring"
 // @Success		200		{object}	[]models.NoteForSwagger		true	"notes"
-// @Failure		400		{object}	response.ErrorResponse		true	"error"
+// @Failure		400		{object}	delivery.ErrorResponse		true	"error"
 // @Failure		401
 // @Router		/api/note/get_all [get]
 func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +57,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 
 	titleSubstr := r.URL.Query().Get("title")
 
-	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	payload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -86,9 +87,9 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 // @ID			get-note
 // @Param		id		path		string					true	"note id"
 // @Success		200		{object}	models.NoteForSwagger	true	"note"
-// @Failure		400		{object}	response.ErrorResponse	true	"incorrect id"
+// @Failure		400		{object}	delivery.ErrorResponse	true	"incorrect id"
 // @Failure		401
-// @Failure		404		{object}	response.ErrorResponse	true	"note not found"
+// @Failure		404		{object}	delivery.ErrorResponse	true	"note not found"
 // @Router		/api/note/{id} [get]
 func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -101,7 +102,7 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	payload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -133,13 +134,13 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 // @Produce		json
 // @Param    	payload		body    	models.UpsertNoteRequestForSwagger  	true  	"note data"
 // @Success		200			{object}	models.NoteForSwagger					true	"note"
-// @Failure		400			{object}	response.ErrorResponse					true	"error"
+// @Failure		400			{object}	delivery.ErrorResponse					true	"error"
 // @Failure		401
 // @Router		/api/note/add [post]
 func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -186,7 +187,7 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 // @Param		id			path		string								true	"note id"
 // @Param    	payload		body    	models.UpsertNoteRequestForSwagger	true  	"note data"
 // @Success		200			{object}	models.NoteForSwagger				true	"note"
-// @Failure		400			{object}	response.ErrorResponse				true	"error"
+// @Failure		400			{object}	delivery.ErrorResponse				true	"error"
 // @Failure		401
 // @Router		/api/note/{id}/edit [post]
 func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
@@ -200,7 +201,7 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -244,9 +245,9 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 // @ID			delete-note
 // @Param		id		path		string					true	"note id"
 // @Success		204
-// @Failure		400		{object}	response.ErrorResponse	true	"incorrect id"
+// @Failure		400		{object}	delivery.ErrorResponse	true	"incorrect id"
 // @Failure		401
-// @Failure		404		{object}	response.ErrorResponse	true	"note not found"
+// @Failure		404		{object}	delivery.ErrorResponse	true	"note not found"
 // @Router		/api/note/{id}/delete [delete]
 func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -259,7 +260,7 @@ func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtPayload, ok := r.Context().Value(models.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)

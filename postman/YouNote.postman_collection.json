@@ -483,6 +483,53 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "add_attach",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE4MzI2MzcsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.s8qzS3RdbbbxBMjzekBJbgBc_EPKAoDRYAtOgdk6V0o",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Csrf-Token",
+						"value": "75cc4bd6-4d0a-4527-b5e2-7a83d90a31a8",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "attach",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "https://{{HOST}}/api/note/0dd33f93-9918-4038-ad79-a8b3772631bb/add_attach",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"note",
+						"0dd33f93-9918-4038-ad79-a8b3772631bb",
+						"add_attach"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

@@ -29,6 +29,14 @@ CREATE TABLE IF NOT EXISTS notes (
         NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS attaches (
+    id UUID PRIMARY KEY,
+    path TEXT
+        NOT NULL
+        CONSTRAINT path_length CHECK (char_length(path) <= 255),
+    note_id UUID REFERENCES notes (id)
+        NOT NULL
+);
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

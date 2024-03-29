@@ -1,4 +1,18 @@
 definitions:
+  delivery.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  models.Attach:
+    properties:
+      id:
+        type: string
+      note_id:
+        type: string
+      path:
+        type: string
+    type: object
   models.NoteDataForSwagger:
     properties:
       content:
@@ -67,11 +81,6 @@ definitions:
       new:
         type: string
       old:
-        type: string
-    type: object
-  response.ErrorResponse:
-    properties:
-      message:
         type: string
     type: object
 host: you-note.ru
@@ -148,11 +157,11 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
       summary: Sign in
       tags:
       - auth
@@ -191,7 +200,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
       summary: Sign up
       tags:
       - auth
@@ -213,14 +222,49 @@ paths:
         "400":
           description: incorrect id
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
         "404":
           description: note not found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
       summary: Get one note
+      tags:
+      - note
+  /api/note/{id}/add_attach:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Attach new file to note
+      operationId: add-attach
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: attach file
+        in: formData
+        name: attach
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: attach model
+          schema:
+            $ref: '#/definitions/models.Attach'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "413":
+          description: Request Entity Too Large
+      summary: Add attachment
       tags:
       - note
   /api/note/{id}/delete:
@@ -239,13 +283,13 @@ paths:
         "400":
           description: incorrect id
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
         "404":
           description: note not found
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
       summary: Delete note
       tags:
       - note
@@ -277,7 +321,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Update note
@@ -306,7 +350,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Add note
@@ -341,7 +385,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Get all notes
@@ -386,7 +430,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Update profile
@@ -396,8 +440,8 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Change images
-      operationId: update-profile-images
+      description: Change sources
+      operationId: update-profile-sources
       parameters:
       - description: avatar
         in: formData
@@ -414,12 +458,12 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/response.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
         "413":
           description: Request Entity Too Large
-      summary: Update profile images
+      summary: Update profile sources
       tags:
       - profile
 swagger: "2.0"

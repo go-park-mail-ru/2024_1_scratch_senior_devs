@@ -2,15 +2,12 @@ package repo
 
 import (
 	"context"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/redis/go-redis/v9"
 	"log/slog"
 	"strconv"
-	"time"
-
-	"github.com/redis/go-redis/v9"
 )
-
-const RedisExpirationTime = time.Minute
 
 type BlockerRepo struct {
 	db     redis.Client
@@ -50,7 +47,7 @@ func (repo *BlockerRepo) IncreaseLoginAttempts(ctx context.Context, ipAddr strin
 	if err != nil {
 		logger.Error(err.Error())
 
-		_, err = repo.db.Set(ctx, ipAddr, 1, RedisExpirationTime).Result()
+		_, err = repo.db.Set(ctx, ipAddr, 1, config.RedisExpirationTime).Result()
 		if err != nil {
 			logger.Error(err.Error())
 			return err
@@ -64,7 +61,7 @@ func (repo *BlockerRepo) IncreaseLoginAttempts(ctx context.Context, ipAddr strin
 		return err
 	}
 
-	_, err = repo.db.Set(ctx, ipAddr, count+1, RedisExpirationTime).Result()
+	_, err = repo.db.Set(ctx, ipAddr, count+1, config.RedisExpirationTime).Result()
 	if err != nil {
 		logger.Error(err.Error())
 		return err

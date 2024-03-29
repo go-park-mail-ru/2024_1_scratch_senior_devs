@@ -25,6 +25,9 @@ services:
       - type: bind
         source: /opt/images/
         target: /opt/images/
+      - type: bind
+        source: /opt/attaches/
+        target: /opt/attaches/
   postgres:
     env_file:
       - .env
@@ -60,6 +63,9 @@ services:
       - type: bind
         source: /opt/public/
         target: /opt/public/
+      - type: bind
+        source: /opt/attaches/
+        target: /opt/attaches/
       - type: bind
         source: ./nginx.conf
         target: /etc/nginx/nginx.conf

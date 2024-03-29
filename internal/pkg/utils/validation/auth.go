@@ -3,17 +3,9 @@ package validation
 import (
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"strings"
 	"unicode"
-)
-
-const (
-	MinUsernameLength    = 4
-	MaxUsernameLength    = 12
-	MinPasswordLength    = 8
-	MaxPasswordLength    = 20
-	PasswordAllowedExtra = "#$%&"
-	SecretLength         = 6
 )
 
 func isEnglishLetter(c rune) bool {
@@ -31,7 +23,7 @@ func checkUsernameAllowed(value []rune) bool {
 
 func checkPasswordAllowed(value []rune) bool {
 	for _, sym := range value {
-		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(PasswordAllowedExtra, string(sym)) {
+		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(config.PasswordAllowedExtra, string(sym)) {
 			return false
 		}
 	}
@@ -50,8 +42,8 @@ func checkPasswordRequired(value []rune) bool {
 func CheckUsername(username string) error {
 	runedUsername := []rune(username)
 
-	if len(runedUsername) < MinUsernameLength || len(runedUsername) > MaxUsernameLength {
-		return fmt.Errorf("username length must be from %d to %d characters", MinUsernameLength, MaxUsernameLength)
+	if len(runedUsername) < config.MinUsernameLength || len(runedUsername) > config.MaxUsernameLength {
+		return fmt.Errorf("username length must be from %d to %d characters", config.MinUsernameLength, config.MaxUsernameLength)
 	}
 
 	if !checkUsernameAllowed(runedUsername) {
@@ -64,8 +56,8 @@ func CheckUsername(username string) error {
 func CheckPassword(password string) error {
 	runedPassword := []rune(password)
 
-	if len(runedPassword) < MinPasswordLength || len(runedPassword) > MaxPasswordLength {
-		return fmt.Errorf("password length must be from %d to %d characters", MinPasswordLength, MaxPasswordLength)
+	if len(runedPassword) < config.MinPasswordLength || len(runedPassword) > config.MaxPasswordLength {
+		return fmt.Errorf("password length must be from %d to %d characters", config.MinPasswordLength, config.MaxPasswordLength)
 	}
 
 	if !checkPasswordAllowed(runedPassword) {
@@ -86,8 +78,8 @@ func CheckSecret(secret string) error {
 		return nil
 	}
 
-	if len(runedSecret) != SecretLength {
-		return fmt.Errorf("secret length must be %d", SecretLength)
+	if len(runedSecret) != config.SecretLength {
+		return fmt.Errorf("secret length must be %d", config.SecretLength)
 	}
 
 	for _, sym := range runedSecret {

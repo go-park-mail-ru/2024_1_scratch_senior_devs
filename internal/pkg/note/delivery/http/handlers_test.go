@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -82,10 +83,10 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			defer ctrl.Finish()
 			req := httptest.NewRequest("GET", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
-			ctx := context.WithValue(req.Context(), models.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
+			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
 
 			if tt.name == "Test Unauthorized" {
-				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
+				ctx = context.WithValue(req.Context(), config.PayloadContextKey, models.Note{})
 
 			}
 			if tt.name == successTestName {
@@ -162,9 +163,9 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			defer ctrl.Finish()
 			req := httptest.NewRequest("GET", "http://example.com/api/note/c80e3ea8-0813-4731-b6ee-b41604c56f95", nil)
 			w := httptest.NewRecorder()
-			ctx := context.WithValue(req.Context(), models.PayloadContextKey, models.JwtPayload{Id: tt.userId, Username: tt.username})
+			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.userId, Username: tt.username})
 			if tt.name == "Test Unauthorized" {
-				ctx = context.WithValue(req.Context(), models.PayloadContextKey, models.Note{})
+				ctx = context.WithValue(req.Context(), config.PayloadContextKey, models.Note{})
 
 			}
 			if tt.name == successTestName {

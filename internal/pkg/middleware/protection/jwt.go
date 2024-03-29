@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/gorilla/mux"
 	"io"
@@ -81,7 +81,7 @@ func CreateJwtMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 			}
 			token := headerParts[1]
 
-			jwtCookie, err := r.Cookie(cookie.JwtCookie)
+			jwtCookie, err := r.Cookie(config.JwtCookie)
 			if err != nil {
 				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "no jwt cookie: "+err.Error())
 				w.WriteHeader(http.StatusUnauthorized)
@@ -122,7 +122,7 @@ func CreateJwtMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 
 			jwtLogger.Info("success")
 
-			ctx := context.WithValue(r.Context(), models.PayloadContextKey, payload)
+			ctx := context.WithValue(r.Context(), config.PayloadContextKey, payload)
 			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
