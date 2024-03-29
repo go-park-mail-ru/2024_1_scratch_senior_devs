@@ -119,7 +119,7 @@ func main() {
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
-	note.Use(JwtMiddleware, CsrfMiddleware)
+	note.Use(protection.ReadAndCloseBody, JwtMiddleware, CsrfMiddleware)
 	{
 		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
