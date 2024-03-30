@@ -49,7 +49,7 @@ func CreateAttachHandler(uc attach.AttachUsecase, logger *slog.Logger) *AttachHa
 func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -108,7 +108,7 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	attachModel, err := h.uc.AddAttach(r.Context(), noteId, attachFile, fileExtension)
+	attachModel, err := h.uc.AddAttach(r.Context(), noteId, jwtPayload.Id, attachFile, fileExtension)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
@@ -122,4 +122,44 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+// DeleteAttach godoc
+// @Summary		Delete attach
+// @Description	Remove attach from note
+// @Tags 		attach
+// @ID			delete-attach
+// @Param		id			path		string		true	"attach id"
+// @Success		204
+// @Failure		400			{object}	delivery.ErrorResponse			true	"incorrect id"
+// @Failure		401
+// @Failure		404			{object}	delivery.ErrorResponse			true	"not found"
+// @Router		/api/attach/delete [delete]
+func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
+	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	attachIdString := mux.Vars(r)["id"]
+	attachId, err := uuid.FromString(attachIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "attach id must be a type of uuid")
+		return
+	}
+
+	err = h.uc.DeleteAttach(r.Context(), attachId, jwtPayload.Id)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 }

@@ -16,6 +16,45 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/attach/delete": {
+            "delete": {
+                "description": "Remove attach from note",
+                "tags": [
+                    "attach"
+                ],
+                "summary": "Delete attach",
+                "operationId": "delete-attach",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "attach id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "incorrect id",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/auth/check_user": {
             "get": {
                 "description": "Get user info if user is authorized",

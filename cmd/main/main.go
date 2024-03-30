@@ -87,7 +87,7 @@ func main() {
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, logger)
-	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, logger)
+	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteRepo, logger)
 	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, logger)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
@@ -135,6 +135,12 @@ func main() {
 		profile.Handle("/get", http.HandlerFunc(AuthDelivery.GetProfile)).Methods(http.MethodGet, http.MethodOptions)
 		profile.Handle("/update", http.HandlerFunc(AuthDelivery.UpdateProfile)).Methods(http.MethodPost, http.MethodOptions)
 		profile.Handle("/update_avatar", http.HandlerFunc(AuthDelivery.UpdateProfileAvatar)).Methods(http.MethodPost, http.MethodOptions)
+	}
+
+	attach := r.PathPrefix("/attach").Subrouter()
+	attach.Use(JwtMiddleware, CsrfMiddleware)
+	{
+		attach.Handle("/{id}/delete", http.HandlerFunc(AttachDelivery.DeleteAttach)).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
 	http.Handle("/", r)

@@ -2,8 +2,10 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/satori/uuid"
@@ -14,19 +16,31 @@ import (
 )
 
 type AttachUsecase struct {
-	repo   attach.AttachRepo
-	logger *slog.Logger
+	repo     attach.AttachRepo
+	noteRepo note.NoteRepo
+	logger   *slog.Logger
 }
 
-func CreateAttachUsecase(repo attach.AttachRepo, logger *slog.Logger) *AttachUsecase {
+func CreateAttachUsecase(repo attach.AttachRepo, noteRepo note.NoteRepo, logger *slog.Logger) *AttachUsecase {
 	return &AttachUsecase{
-		repo:   repo,
-		logger: logger,
+		repo:     repo,
+		noteRepo: noteRepo,
+		logger:   logger,
 	}
 }
 
-func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, attach io.ReadSeeker, extension string) (models.Attach, error) {
+func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, attach io.ReadSeeker, extension string) (models.Attach, error) {
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	noteData, err := uc.noteRepo.ReadNote(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Attach{}, err
+	}
+	if noteData.OwnerId != userID {
+		logger.Error("user is not owner of note")
+		return models.Attach{}, errors.New("note not found")
+	}
 
 	attachBasePath := os.Getenv("ATTACHES_BASE_PATH")
 	newAttachId := uuid.NewV4()
@@ -50,4 +64,38 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, attach
 
 	logger.Info("success")
 	return newAttach, nil
+}
+
+func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, userID uuid.UUID) error {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	attachData, err := uc.repo.GetAttach(ctx, attachID)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	noteData, err := uc.noteRepo.ReadNote(ctx, attachData.NoteId)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	if noteData.OwnerId != userID {
+		logger.Error("user is not owner of note")
+		return errors.New("note not found")
+	}
+
+	err = uc.repo.DeleteAttach(ctx, attachID)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	if err := os.Remove(path.Join(os.Getenv("ATTACHES_BASE_PATH"), attachData.Path)); err != nil {
+		logger.Error(err.Error())
+	}
+
+	logger.Info("success")
+	return nil
 }

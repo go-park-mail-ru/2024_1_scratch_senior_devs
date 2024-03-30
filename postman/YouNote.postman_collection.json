@@ -530,6 +530,44 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "delete_attach",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE5MDAxMDksImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.jjWoO4xxchFBUbVOSaD-gm3VV8g9XC_Wzhf4I5J8wmg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-Csrf-Token",
+						"value": "3ddb1b9b-5372-4d66-9fce-9524ea6283bc",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{HOST}}:8080/api/attach/8bfe81d2-390b-49eb-b3d9-3e55471fb24b/delete",
+					"protocol": "http",
+					"host": [
+						"{{HOST}}"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"attach",
+						"8bfe81d2-390b-49eb-b3d9-3e55471fb24b",
+						"delete"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

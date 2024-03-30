@@ -38,18 +38,32 @@ func (m *MockAttachUsecase) EXPECT() *MockAttachUsecaseMockRecorder {
 }
 
 // AddAttach mocks base method.
-func (m *MockAttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, attach io.ReadSeeker, extension string) (models.Attach, error) {
+func (m *MockAttachUsecase) AddAttach(ctx context.Context, noteID, userID uuid.UUID, attach io.ReadSeeker, extension string) (models.Attach, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddAttach", ctx, noteID, attach, extension)
+	ret := m.ctrl.Call(m, "AddAttach", ctx, noteID, userID, attach, extension)
 	ret0, _ := ret[0].(models.Attach)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddAttach indicates an expected call of AddAttach.
-func (mr *MockAttachUsecaseMockRecorder) AddAttach(ctx, noteID, attach, extension interface{}) *gomock.Call {
+func (mr *MockAttachUsecaseMockRecorder) AddAttach(ctx, noteID, userID, attach, extension interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAttach", reflect.TypeOf((*MockAttachUsecase)(nil).AddAttach), ctx, noteID, attach, extension)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAttach", reflect.TypeOf((*MockAttachUsecase)(nil).AddAttach), ctx, noteID, userID, attach, extension)
+}
+
+// DeleteAttach mocks base method.
+func (m *MockAttachUsecase) DeleteAttach(ctx context.Context, attachID, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAttach", ctx, attachID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAttach indicates an expected call of DeleteAttach.
+func (mr *MockAttachUsecaseMockRecorder) DeleteAttach(ctx, attachID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAttach", reflect.TypeOf((*MockAttachUsecase)(nil).DeleteAttach), ctx, attachID, userID)
 }
 
 // MockAttachRepo is a mock of AttachRepo interface.
@@ -87,4 +101,33 @@ func (m *MockAttachRepo) AddAttach(ctx context.Context, attach models.Attach) er
 func (mr *MockAttachRepoMockRecorder) AddAttach(ctx, attach interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAttach", reflect.TypeOf((*MockAttachRepo)(nil).AddAttach), ctx, attach)
+}
+
+// DeleteAttach mocks base method.
+func (m *MockAttachRepo) DeleteAttach(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAttach", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAttach indicates an expected call of DeleteAttach.
+func (mr *MockAttachRepoMockRecorder) DeleteAttach(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAttach", reflect.TypeOf((*MockAttachRepo)(nil).DeleteAttach), ctx, id)
+}
+
+// GetAttach mocks base method.
+func (m *MockAttachRepo) GetAttach(ctx context.Context, id uuid.UUID) (models.Attach, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAttach", ctx, id)
+	ret0, _ := ret[0].(models.Attach)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAttach indicates an expected call of GetAttach.
+func (mr *MockAttachRepoMockRecorder) GetAttach(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttach", reflect.TypeOf((*MockAttachRepo)(nil).GetAttach), ctx, id)
 }
