@@ -10,6 +10,18 @@ jobs:
     name: linters
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          sudo apt-get install libjpeg-dev
+          sudo apt-get install libpng-dev
+          sudo apt-get install libwebp-dev
+          wget "https://github.com/libvips/libvips/releases/download/v8.12.1/vips-8.12.1.tar.gz"
+          tar xf vips-8.12.1.tar.gz
+          cd vips-8.12.1/
+          ./configure --with-png-includes --with-png-libraries --with-jpeg-includes --with-jpeg-libraries
+          make
+          sudo make install
+          sudo ldconfig
+
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
@@ -30,6 +42,20 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: '1.21'
+       - name: Run test with cover
+         run: |
+          sudo apt-get install libjpeg-dev
+          sudo apt-get install libpng-dev
+          sudo apt-get install libwebp-dev
+          wget "https://github.com/libvips/libvips/releases/download/v8.12.1/vips-8.12.1.tar.gz"
+          tar xf vips-8.12.1.tar.gz
+          cd vips-8.12.1/
+          ./configure --with-png-includes --with-png-libraries --with-jpeg-includes --with-jpeg-libraries
+          make
+          sudo make install
+          sudo ldconfig
+          cd ..
+          make test
       - name: Build
         run: go build -v ./...
       - name: Test

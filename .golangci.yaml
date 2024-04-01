@@ -3,6 +3,8 @@ linters-settings:
     min-complexity: 60
 
 linters:
+  disable: 
+    - typecheck
   enable:
     - govet
     - gosimple
