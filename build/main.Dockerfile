@@ -1,3 +1,5 @@
+FROM alpine
+
 RUN apk add build-base
 RUN apk add libwebp libwebp-tools
 
