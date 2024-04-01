@@ -3,16 +3,17 @@ package usecase
 import (
 	"context"
 	"errors"
+	"io"
+	"log/slog"
+	"os"
+	"path"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/satori/uuid"
-	"io"
-	"log/slog"
-	"os"
-	"path"
 )
 
 type AttachUsecase struct {
@@ -44,9 +45,9 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 
 	attachBasePath := os.Getenv("ATTACHES_BASE_PATH")
 	newAttachId := uuid.NewV4()
-	newAttachPath := newAttachId.String() + extension
+	newAttachPath := newAttachId.String() //+ extension
 
-	if err := sources.WriteFileOnDisk(path.Join(attachBasePath, newAttachPath), attach); err != nil {
+	if _, err := sources.WriteFileOnDisk(path.Join(attachBasePath, newAttachPath), extension, attach); err != nil {
 		logger.Error("write on disk: " + err.Error())
 		return models.Attach{}, err
 	}

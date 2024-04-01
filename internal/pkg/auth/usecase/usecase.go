@@ -2,17 +2,18 @@ package usecase
 
 import (
 	"context"
+	"io"
+	"log/slog"
+	"os"
+	"path"
+	"time"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
-	"io"
-	"log/slog"
-	"os"
-	"path"
-	"time"
 
 	"github.com/satori/uuid"
 
@@ -161,13 +162,14 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 	}
 
 	imagesBasePath := os.Getenv("IMAGES_BASE_PATH")
-	newImagePath := uuid.NewV4().String() + extension
+	imagePathNoExtension := uuid.NewV4().String() //+ ".webp" // + extension
 
-	if err := sources.WriteFileOnDisk(path.Join(imagesBasePath, newImagePath), avatar); err != nil {
+	newExtension, err := sources.WriteFileOnDisk(path.Join(imagesBasePath, imagePathNoExtension), extension, avatar)
+	if err != nil {
 		logger.Error("write on disk: " + err.Error())
 		return models.User{}, err
 	}
-
+	newImagePath := imagePathNoExtension + newExtension
 	if err := uc.repo.UpdateProfileAvatar(ctx, userID, newImagePath); err != nil {
 		logger.Error(err.Error())
 		return models.User{}, err
