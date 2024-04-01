@@ -1,4 +1,6 @@
-RUN apk add --update vips-dev
+FROM golang:1.21.0-alpine
+
+# RUN apk add --update vips-dev
 RUN apk add build-base
 RUN apk add libwebp libwebp-tools
 
