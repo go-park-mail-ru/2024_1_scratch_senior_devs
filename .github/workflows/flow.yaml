@@ -54,8 +54,6 @@ jobs:
           make
           sudo make install
           sudo ldconfig
-          cd ..
-          make test
       - name: Build
         run: go build -v ./...
       - name: Test
