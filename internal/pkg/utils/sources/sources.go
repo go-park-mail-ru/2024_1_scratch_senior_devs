@@ -1,7 +1,10 @@
 package sources
 
 import (
+	"fmt"
 	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"net/http"
 	"os"
@@ -71,7 +74,7 @@ func WriteFileOnDisk(path string, oldExtension string, resource io.ReadSeeker) (
 	var img image.Image
 	img, _, err = image.Decode(resource)
 	if err != nil {
-
+		fmt.Println(err.Error())
 		err = SaveFile(path, oldExtension, resource)
 		if err != nil {
 			return "", err

@@ -45,13 +45,14 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 
 	attachBasePath := os.Getenv("ATTACHES_BASE_PATH")
 	newAttachId := uuid.NewV4()
-	newAttachPath := newAttachId.String() //+ extension
+	newAttachPathNoExtension := newAttachId.String() //+ extension
 
-	if _, err := sources.WriteFileOnDisk(path.Join(attachBasePath, newAttachPath), extension, attach); err != nil {
+	newExtension, err := sources.WriteFileOnDisk(path.Join(attachBasePath, newAttachPathNoExtension), extension, attach)
+	if err != nil {
 		logger.Error("write on disk: " + err.Error())
 		return models.Attach{}, err
 	}
-
+	newAttachPath := newAttachPathNoExtension + newExtension
 	newAttach := models.Attach{
 		Id:     newAttachId,
 		Path:   newAttachPath,
