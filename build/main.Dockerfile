@@ -1,6 +1,6 @@
-FROM golang:1.21.0-alpine
+FROM golang:1.21.0-alpine AS builder
 
-# RUN apk add --update vips-dev
+RUN apk add --update vips-dev
 RUN apk add build-base
 RUN apk add libwebp libwebp-tools
 
