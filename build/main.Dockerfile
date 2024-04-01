@@ -1,4 +1,3 @@
-RUN apk add --update vips-dev
 RUN apk add build-base
 RUN apk add libwebp libwebp-tools
 
