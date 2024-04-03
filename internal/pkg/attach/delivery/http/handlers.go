@@ -2,6 +2,10 @@ package http
 
 import (
 	"errors"
+	"io"
+	"log/slog"
+	"net/http"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
@@ -11,9 +15,6 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
-	"io"
-	"log/slog"
-	"net/http"
 )
 
 const (
@@ -23,12 +24,14 @@ const (
 type AttachHandler struct {
 	uc     attach.AttachUsecase
 	logger *slog.Logger
+	cfg    config.AttachConfig
 }
 
-func CreateAttachHandler(uc attach.AttachUsecase, logger *slog.Logger) *AttachHandler {
+func CreateAttachHandler(uc attach.AttachUsecase, logger *slog.Logger, cfg config.AttachConfig) *AttachHandler {
 	return &AttachHandler{
 		uc:     uc,
 		logger: logger,
+		cfg:    cfg,
 	}
 }
 
@@ -64,10 +67,10 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, config.AttachMaxFormDataSize)
+	r.Body = http.MaxBytesReader(w, r.Body, h.cfg.AttachMaxFormDataSize)
 	defer r.Body.Close()
 
-	err = r.ParseMultipartForm(config.AttachMaxFormDataSize)
+	err = r.ParseMultipartForm(h.cfg.AttachMaxFormDataSize)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusRequestEntityTooLarge, err.Error())
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
@@ -101,7 +104,7 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fileExtension := sources.CheckFormat(config.AttachFileTypes, content)
+	fileExtension := sources.CheckFormat(h.cfg.AttachFileTypes, content)
 	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
 		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())

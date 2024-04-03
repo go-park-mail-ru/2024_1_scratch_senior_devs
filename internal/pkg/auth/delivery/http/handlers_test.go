@@ -4,6 +4,13 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
@@ -11,18 +18,14 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
-	"log/slog"
-	"net/http"
-	"net/http/httptest"
-	"os"
-	"testing"
-	"time"
 )
 
 var testLogger *slog.Logger
+var testConfig *config.Config
 
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	testConfig = config.LoadConfig("../../../config/config.yaml", testLogger)
 }
 
 func TestAuthHandler_SignUp(t *testing.T) {
@@ -90,7 +93,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
 			handler.SignUp(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -157,7 +160,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
 			handler.SignIn(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -186,7 +189,7 @@ func TestAuthHandler_LogOut(t *testing.T) {
 			req := httptest.NewRequest("DELETE", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
 			handler.LogOut(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -234,7 +237,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
 			handler.CheckUser(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -298,7 +301,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
 			handler.GetProfile(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)

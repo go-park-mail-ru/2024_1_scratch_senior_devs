@@ -22,14 +22,18 @@ import (
 )
 
 type AuthUsecase struct {
-	repo   auth.AuthRepo
-	logger *slog.Logger
+	repo          auth.AuthRepo
+	logger        *slog.Logger
+	cfg           config.AuthUsecaseConfig
+	cfgValidation config.UserValidationConfig
 }
 
-func CreateAuthUsecase(repo auth.AuthRepo, logger *slog.Logger) *AuthUsecase {
+func CreateAuthUsecase(repo auth.AuthRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.UserValidationConfig) *AuthUsecase {
 	return &AuthUsecase{
-		repo:   repo,
-		logger: logger,
+		repo:          repo,
+		logger:        logger,
+		cfg:           cfg,
+		cfgValidation: cfgValidation,
 	}
 }
 
@@ -37,13 +41,13 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
-	expTime := currentTime.Add(config.JWTLifeTime)
+	expTime := currentTime.Add(uc.cfg.JWTLifeTime)
 
 	newUser := models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
 		PasswordHash: delivery.GetHash(data.Password),
-		ImagePath:    config.DefaultImagePath,
+		ImagePath:    uc.cfg.DefaultImagePath,
 		CreateTime:   currentTime,
 		SecondFactor: "",
 	}
@@ -54,7 +58,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		return models.User{}, "", currentTime, auth.ErrCreatingUser
 	}
 
-	jwtToken, err := protection.GenJwtToken(newUser, config.JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(newUser, uc.cfg.JWTLifeTime)
 	if err != nil {
 		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
@@ -68,7 +72,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
-	expTime := currentTime.Add(config.JWTLifeTime)
+	expTime := currentTime.Add(uc.cfg.JWTLifeTime)
 
 	user, err := uc.repo.GetUserByUsername(ctx, data.Username)
 	if err != nil {
@@ -93,7 +97,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		}
 	}
 
-	jwtToken, err := protection.GenJwtToken(user, config.JWTLifeTime)
+	jwtToken, err := protection.GenJwtToken(user, uc.cfg.JWTLifeTime)
 	if err != nil {
 		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
@@ -128,7 +132,7 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 	}
 
 	if payload.Password.Old != "" && payload.Password.New != "" {
-		if err := payload.Validate(); err != nil {
+		if err := payload.Validate(uc.cfgValidation); err != nil {
 			logger.Error("validation error: " + err.Error())
 			return models.User{}, err
 		}

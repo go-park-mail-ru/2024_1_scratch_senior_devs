@@ -3,11 +3,22 @@ package models
 import (
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"log/slog"
+	"os"
 	"testing"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var testConfig config.UserValidationConfig
+
+func init() {
+	testLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
+	testConfig = config.LoadConfig("../pkg/config/config.yaml", testLogger).UserValidation
+}
 
 func TestValidate(t *testing.T) {
 	var tests = []struct {
@@ -33,12 +44,12 @@ func TestValidate(t *testing.T) {
 		{
 			name:        "UserFormFata_ValidateFail_2",
 			data:        UserFormData{Username: "7495123456789", Password: "nv48392fh$"},
-			expectedErr: fmt.Errorf("username length must be from %d to %d characters", config.MinUsernameLength, config.MaxUsernameLength),
+			expectedErr: fmt.Errorf("username length must be from %d to %d characters", testConfig.MinUsernameLength, testConfig.MaxUsernameLength),
 		},
 		{
 			name:        "UserFormFata_ValidateFail_3",
 			data:        UserFormData{Username: "74951234567", Password: "fn4839vjn8309jn80c39j23hfv93n309h4v"},
-			expectedErr: fmt.Errorf("password length must be from %d to %d characters", config.MinPasswordLength, config.MaxPasswordLength),
+			expectedErr: fmt.Errorf("password length must be from %d to %d characters", testConfig.MinPasswordLength, testConfig.MaxPasswordLength),
 		},
 		{
 			name:        "UserFormFata_ValidateFail_4",
@@ -54,7 +65,7 @@ func TestValidate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.data.Validate()
+			err := tt.data.Validate(testConfig)
 			assert.Equal(t, tt.expectedErr, err)
 		})
 	}

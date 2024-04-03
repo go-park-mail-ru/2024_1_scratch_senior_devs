@@ -3,6 +3,7 @@ package models
 import (
 	"html"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/validation"
 )
 
@@ -22,8 +23,8 @@ func (payload *ProfileUpdatePayload) Sanitize() {
 	payload.Password.New = html.EscapeString(payload.Password.New)
 }
 
-func (payload *ProfileUpdatePayload) Validate() error {
-	if err := validation.CheckPassword(payload.Password.New); err != nil {
+func (payload *ProfileUpdatePayload) Validate(cfg config.UserValidationConfig) error {
+	if err := validation.CheckPassword(payload.Password.New, cfg.MinPasswordLength, cfg.MaxPasswordLength, cfg.PasswordAllowedExtra); err != nil {
 		return err
 	}
 

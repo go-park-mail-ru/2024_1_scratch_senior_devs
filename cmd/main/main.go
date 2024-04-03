@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,6 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
@@ -48,7 +50,9 @@ func init() {
 // @description 	API for YouNote service
 // @host 			you-note.ru
 func main() {
+
 	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+
 	if err != nil {
 		fmt.Println("error opening log file: " + err.Error())
 		return
@@ -56,7 +60,7 @@ func main() {
 	defer logFile.Close()
 
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
-
+	cfg := config.LoadConfig("../../internal/pkg/config/config.yaml", logger)
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		logger.Info("error connecting to postgres: " + err.Error())
@@ -71,16 +75,16 @@ func main() {
 	}
 	redisDB := redis.NewClient(redisOpts)
 
-	JwtMiddleware := protection.CreateJwtMiddleware(logger)
-	CsrfMiddleware := protection.CreateCsrfMiddleware(logger)
+	JwtMiddleware := protection.CreateJwtMiddleware(logger, cfg.AuthHandler.Jwt)
+	CsrfMiddleware := protection.CreateCsrfMiddleware(logger, cfg.AuthHandler.Csrf)
 	RecoverMiddleware := recover.CreateRecoverMiddleware(logger)
 
-	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger)
-	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, logger)
+	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger, cfg.Blocker)
+	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, logger, cfg.Blocker)
 
 	AuthRepo := authRepo.CreateAuthRepo(db, logger)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger, cfg.AuthUsecase, cfg.UserValidation)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger, cfg.AuthHandler, cfg.UserValidation)
 
 	NoteRepo := noteRepo.CreateNoteRepo(db, logger)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)
@@ -88,7 +92,7 @@ func main() {
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, logger)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteRepo, logger)
-	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, logger)
+	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, logger, cfg.Attach)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 

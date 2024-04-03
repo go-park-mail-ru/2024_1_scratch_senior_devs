@@ -3,7 +3,6 @@ package validation
 import (
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"strings"
 	"unicode"
 )
@@ -21,9 +20,9 @@ func checkUsernameAllowed(value []rune) bool {
 	return true
 }
 
-func checkPasswordAllowed(value []rune) bool {
+func checkPasswordAllowed(value []rune, PasswordAllowedExtra string) bool {
 	for _, sym := range value {
-		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(config.PasswordAllowedExtra, string(sym)) {
+		if !unicode.IsDigit(sym) && !isEnglishLetter(sym) && !strings.Contains(PasswordAllowedExtra, string(sym)) {
 			return false
 		}
 	}
@@ -39,11 +38,11 @@ func checkPasswordRequired(value []rune) bool {
 	return false
 }
 
-func CheckUsername(username string) error {
+func CheckUsername(username string, MinUsernameLength int, MaxUsernameLength int) error {
 	runedUsername := []rune(username)
 
-	if len(runedUsername) < config.MinUsernameLength || len(runedUsername) > config.MaxUsernameLength {
-		return fmt.Errorf("username length must be from %d to %d characters", config.MinUsernameLength, config.MaxUsernameLength)
+	if len(runedUsername) < MinUsernameLength || len(runedUsername) > MaxUsernameLength {
+		return fmt.Errorf("username length must be from %d to %d characters", MinUsernameLength, MaxUsernameLength)
 	}
 
 	if !checkUsernameAllowed(runedUsername) {
@@ -53,14 +52,14 @@ func CheckUsername(username string) error {
 	return nil
 }
 
-func CheckPassword(password string) error {
+func CheckPassword(password string, MinPasswordLength int, MaxPasswordLength int, PasswordAllowedWxtra string) error {
 	runedPassword := []rune(password)
 
-	if len(runedPassword) < config.MinPasswordLength || len(runedPassword) > config.MaxPasswordLength {
-		return fmt.Errorf("password length must be from %d to %d characters", config.MinPasswordLength, config.MaxPasswordLength)
+	if len(runedPassword) < MinPasswordLength || len(runedPassword) > MaxPasswordLength {
+		return fmt.Errorf("password length must be from %d to %d characters", MinPasswordLength, MaxPasswordLength)
 	}
 
-	if !checkPasswordAllowed(runedPassword) {
+	if !checkPasswordAllowed(runedPassword, PasswordAllowedWxtra) {
 		return errors.New("password can only include symbols: A-Z, a-z, 0-9, #, $, %, &")
 	}
 
@@ -71,15 +70,15 @@ func CheckPassword(password string) error {
 	return nil
 }
 
-func CheckSecret(secret string) error {
+func CheckSecret(secret string, SecretLength int) error {
 	runedSecret := []rune(secret)
 
 	if len(runedSecret) == 0 {
 		return nil
 	}
 
-	if len(runedSecret) != config.SecretLength {
-		return fmt.Errorf("secret length must be %d", config.SecretLength)
+	if len(runedSecret) != SecretLength {
+		return fmt.Errorf("secret length must be %d", SecretLength)
 	}
 
 	for _, sym := range runedSecret {

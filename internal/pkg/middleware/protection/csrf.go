@@ -1,14 +1,15 @@
 package protection
 
 import (
+	"log/slog"
+	"net/http"
+	"slices"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
-	"log/slog"
-	"net/http"
-	"slices"
 )
 
 var unsafeMethods = []string{http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch}
@@ -17,7 +18,7 @@ func genCsrfToken() string {
 	return uuid.NewV4().String()
 }
 
-func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request) bool {
+func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request, cfg config.CsrfConfig) bool {
 	headerToken := r.Header.Get("X-CSRF-Token")
 	if headerToken == "" {
 		log.LogHandlerError(logger, http.StatusForbidden, "empty X-CSRF-Token header")
@@ -25,7 +26,7 @@ func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request)
 		return false
 	}
 
-	csrfCookie, err := r.Cookie(config.CsrfCookie)
+	csrfCookie, err := r.Cookie(cfg.CsrfCookie)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusForbidden, "no csrf cookie: "+err.Error())
 		w.WriteHeader(http.StatusForbidden)
@@ -41,23 +42,23 @@ func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request)
 	return true
 }
 
-func SetCsrfToken(w http.ResponseWriter) {
+func SetCsrfToken(w http.ResponseWriter, cfg config.CsrfConfig) {
 	csrfToken := genCsrfToken()
 
-	http.SetCookie(w, cookie.GenCsrfTokenCookie(csrfToken))
+	http.SetCookie(w, cookie.GenCsrfTokenCookie(csrfToken, cfg))
 	w.Header().Set("X-Csrf-Token", csrfToken)
 }
 
-func CreateCsrfMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
+func CreateCsrfMiddleware(logger *slog.Logger, cfg config.CsrfConfig) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			csrfLogger := logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
 			if slices.Contains(unsafeMethods, r.Method) {
-				if !checkCsrfToken(csrfLogger, w, r) {
+				if !checkCsrfToken(csrfLogger, w, r, cfg) {
 					return
 				}
-				SetCsrfToken(w)
+				SetCsrfToken(w, cfg)
 			}
 
 			csrfLogger.Info("success")

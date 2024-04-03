@@ -4,6 +4,11 @@ import (
 	"encoding/base32"
 	"errors"
 	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"net/url"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
@@ -13,23 +18,23 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/skip2/go-qrcode"
-	"io"
-	"log/slog"
-	"net/http"
-	"net/url"
 )
 
 type AuthHandler struct {
-	uc        auth.AuthUsecase
-	blockerUC auth.BlockerUsecase
-	logger    *slog.Logger
+	uc            auth.AuthUsecase
+	blockerUC     auth.BlockerUsecase
+	logger        *slog.Logger
+	cfg           config.AuthHandlerConfig
+	cfgValidation config.UserValidationConfig
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logger *slog.Logger) *AuthHandler {
+func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logger *slog.Logger, cfg config.AuthHandlerConfig, cfgValidation config.UserValidationConfig) *AuthHandler {
 	return &AuthHandler{
-		uc:        uc,
-		blockerUC: blockerUC,
-		logger:    logger,
+		uc:            uc,
+		blockerUC:     blockerUC,
+		logger:        logger,
+		cfg:           cfg,
+		cfgValidation: cfgValidation,
 	}
 }
 
@@ -54,7 +59,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := userData.Validate(); err != nil {
+	if err := userData.Validate(h.cfgValidation); err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, "validation error: "+err.Error())
 		delivery.WriteErrorMessage(w, http.StatusBadRequest, err.Error())
 		return
@@ -67,10 +72,10 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime))
+	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime, h.cfg.Jwt))
 	w.Header().Set("Authorization", "Bearer "+jwtToken)
 
-	protection.SetCsrfToken(w)
+	protection.SetCsrfToken(w, h.cfg.Csrf)
 
 	if err := delivery.WriteResponseData(w, newUser, http.StatusCreated); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
@@ -114,10 +119,10 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	http.SetCookie(w, cookie.DelJwtTokenCookie())
+	http.SetCookie(w, cookie.DelJwtTokenCookie(h.cfg.Jwt))
 	w.Header().Del("Authorization")
 
-	http.SetCookie(w, cookie.DelCsrfTokenCookie())
+	http.SetCookie(w, cookie.DelCsrfTokenCookie(h.cfg.Csrf))
 	w.Header().Del("X-Csrf-Token")
 
 	w.WriteHeader(http.StatusNoContent)
@@ -166,10 +171,10 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime))
+	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime, h.cfg.Jwt))
 	w.Header().Set("Authorization", "Bearer "+jwtToken)
 
-	protection.SetCsrfToken(w)
+	protection.SetCsrfToken(w, h.cfg.Csrf)
 
 	if err := delivery.WriteResponseData(w, user, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
@@ -284,10 +289,10 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, config.AvatarMaxFormDataSize)
+	r.Body = http.MaxBytesReader(w, r.Body, int64(h.cfg.AvatarMaxFormDataSize))
 	defer r.Body.Close()
 
-	err := r.ParseMultipartForm(config.AvatarMaxFormDataSize)
+	err := r.ParseMultipartForm(int64(h.cfg.AvatarMaxFormDataSize))
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusRequestEntityTooLarge, err.Error())
 		w.WriteHeader(http.StatusRequestEntityTooLarge)
@@ -321,7 +326,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	fileExtension := sources.CheckFormat(config.AvatarFileTypes, content)
+	fileExtension := sources.CheckFormat(h.cfg.AvatarFileTypes, content)
 	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
 		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
@@ -355,6 +360,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 // @Failure		401
 // @Router		/api/auth/get_qr [get]
 func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
+
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
@@ -384,10 +390,10 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 	secretParam.Add("secret", secret)
 
 	issuer := url.Values{}
-	issuer.Add("issuer", config.QrIssuer)
+	issuer.Add("issuer", h.cfg.QrIssuer)
 
 	URL.RawQuery = secretParam.Encode() + "&" + issuer.Encode()
-	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(config.QrIssuer), url.PathEscape(jwtPayload.Username))
+	URL.Path += fmt.Sprintf("/%s:%s", url.PathEscape(h.cfg.QrIssuer), url.PathEscape(jwtPayload.Username))
 
 	var png []byte
 	png, _ = qrcode.Encode(URL.String(), qrcode.Medium, 256)

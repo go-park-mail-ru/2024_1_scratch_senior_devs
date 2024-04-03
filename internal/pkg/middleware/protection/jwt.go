@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/gorilla/mux"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/gorilla/mux"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/satori/uuid"
@@ -62,7 +63,7 @@ func parseJwtPayloadFromClaims(claims *jwt.Token) (models.JwtPayload, error) {
 	}, nil
 }
 
-func CreateJwtMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
+func CreateJwtMiddleware(logger *slog.Logger, cfg config.JwtConfig) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			jwtLogger := logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
@@ -81,7 +82,7 @@ func CreateJwtMiddleware(logger *slog.Logger) mux.MiddlewareFunc {
 			}
 			token := headerParts[1]
 
-			jwtCookie, err := r.Cookie(config.JwtCookie)
+			jwtCookie, err := r.Cookie(cfg.JwtCookie)
 			if err != nil {
 				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "no jwt cookie: "+err.Error())
 				w.WriteHeader(http.StatusUnauthorized)

@@ -1,26 +1,27 @@
 package cookie
 
 import (
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"net/http"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 )
 
-func GenCsrfTokenCookie(token string) *http.Cookie {
+func GenCsrfTokenCookie(token string, cfg config.CsrfConfig) *http.Cookie {
 	return &http.Cookie{
-		Name:     config.CsrfCookie,
+		Name:     cfg.CsrfCookie,
 		Secure:   true,
 		Value:    token,
 		HttpOnly: true,
-		Expires:  time.Now().Add(24 * time.Hour).UTC(),
+		Expires:  time.Now().Add(cfg.CSRFLifeTime).UTC(),
 		Path:     "/",
 		SameSite: http.SameSiteStrictMode,
 	}
 }
 
-func DelCsrfTokenCookie() *http.Cookie {
+func DelCsrfTokenCookie(cfg config.CsrfConfig) *http.Cookie {
 	return &http.Cookie{
-		Name:     config.CsrfCookie,
+		Name:     cfg.CsrfCookie,
 		Secure:   true,
 		Value:    "",
 		HttpOnly: true,

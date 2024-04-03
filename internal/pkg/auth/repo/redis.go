@@ -2,22 +2,25 @@ package repo
 
 import (
 	"context"
+	"log/slog"
+	"strconv"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/redis/go-redis/v9"
-	"log/slog"
-	"strconv"
 )
 
 type BlockerRepo struct {
 	db     redis.Client
 	logger *slog.Logger
+	cfg    config.BlockerConfig
 }
 
-func CreateBlockerRepo(db redis.Client, logger *slog.Logger) *BlockerRepo {
+func CreateBlockerRepo(db redis.Client, logger *slog.Logger, cfg config.BlockerConfig) *BlockerRepo {
 	return &BlockerRepo{
 		db:     db,
 		logger: logger,
+		cfg:    cfg,
 	}
 }
 
@@ -47,7 +50,7 @@ func (repo *BlockerRepo) IncreaseLoginAttempts(ctx context.Context, ipAddr strin
 	if err != nil {
 		logger.Error(err.Error())
 
-		_, err = repo.db.Set(ctx, ipAddr, 1, config.RedisExpirationTime).Result()
+		_, err = repo.db.Set(ctx, ipAddr, 1, repo.cfg.RedisExpirationTime).Result()
 		if err != nil {
 			logger.Error(err.Error())
 			return err
@@ -61,7 +64,7 @@ func (repo *BlockerRepo) IncreaseLoginAttempts(ctx context.Context, ipAddr strin
 		return err
 	}
 
-	_, err = repo.db.Set(ctx, ipAddr, count+1, config.RedisExpirationTime).Result()
+	_, err = repo.db.Set(ctx, ipAddr, count+1, repo.cfg.RedisExpirationTime).Result()
 	if err != nil {
 		logger.Error(err.Error())
 		return err

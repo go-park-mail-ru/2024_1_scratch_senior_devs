@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/validation"
 	"github.com/satori/uuid"
 )
@@ -11,16 +12,16 @@ type UserFormData struct {
 	Code     string `json:"code,omitempty"`
 }
 
-func (form *UserFormData) Validate() error {
-	if err := validation.CheckUsername(form.Username); err != nil {
+func (form *UserFormData) Validate(cfg config.UserValidationConfig) error {
+	if err := validation.CheckUsername(form.Username, cfg.MinUsernameLength, cfg.MaxUsernameLength); err != nil {
 		return err
 	}
 
-	if err := validation.CheckPassword(form.Password); err != nil {
+	if err := validation.CheckPassword(form.Password, cfg.MinPasswordLength, cfg.MaxPasswordLength, cfg.PasswordAllowedExtra); err != nil {
 		return err
 	}
 
-	if err := validation.CheckSecret(form.Code); err != nil {
+	if err := validation.CheckSecret(form.Code, cfg.SecretLength); err != nil {
 		return err
 	}
 

@@ -2,12 +2,13 @@ package log
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/satori/uuid"
 	"log/slog"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/satori/uuid"
 )
 
 func GFN() string {
