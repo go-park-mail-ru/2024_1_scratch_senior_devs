@@ -101,3 +101,25 @@ func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, u
 	logger.Info("success")
 	return nil
 }
+
+func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, userID uuid.UUID) (models.Attach, error) {
+	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+
+	attachData, err := uc.repo.GetAttach(ctx, attachID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Attach{}, err
+	}
+
+	noteData, err := uc.noteRepo.ReadNote(ctx, attachData.NoteId)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Attach{}, err
+	}
+
+	if noteData.OwnerId != userID {
+		logger.Error("user is not owner of note")
+		return models.Attach{}, errors.New("note not found")
+	}
+	return attachData, nil
+}

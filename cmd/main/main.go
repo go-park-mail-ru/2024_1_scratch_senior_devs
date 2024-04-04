@@ -144,6 +144,7 @@ func main() {
 	attach := r.PathPrefix("/attach").Subrouter()
 	attach.Use(JwtMiddleware, CsrfMiddleware)
 	{
+		attach.Handle("/{id}", http.HandlerFunc(AttachDelivery.GetAttach)).Methods(http.MethodGet, http.MethodOptions)
 		attach.Handle("/{id}/delete", http.HandlerFunc(AttachDelivery.DeleteAttach)).Methods(http.MethodDelete, http.MethodOptions)
 	}
 

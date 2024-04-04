@@ -5,6 +5,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"path"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
@@ -38,7 +40,7 @@ func CreateAttachHandler(uc attach.AttachUsecase, logger *slog.Logger, cfg confi
 // AddAttach godoc
 // @Summary		Add attachment
 // @Description	Attach new file to note
-// @Tags 		note
+// @Tags 		attach
 // @ID			add-attach
 // @Accept		multipart/form-data
 // @Produce		json
@@ -165,4 +167,42 @@ func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+}
+
+// GetAttach godoc
+// @Summary		Get attach
+// @Description	Get attach if it belongs to current user
+// @Tags 		attach
+// @ID			get-attach
+// @Param		id		path		string					true	"attach id"
+// @Produce		image/webp
+// @Success		200		{file}		image/webp	true	"attach"
+// @Failure		401
+// @Router		/api/attaches/{id} [get]
+func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
+	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	attachIdString := mux.Vars(r)["id"]
+	attachId, err := uuid.FromString(attachIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		delivery.WriteErrorMessage(w, http.StatusBadRequest, "attach id must be a type of uuid")
+		return
+	}
+	attach, err := h.uc.GetAttach(r.Context(), attachId, jwtPayload.Id)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	targetPath := path.Join(os.Getenv("ATTACHES_BASE_PATH"), attach.Path)
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+	http.ServeFile(w, r, targetPath)
+
 }

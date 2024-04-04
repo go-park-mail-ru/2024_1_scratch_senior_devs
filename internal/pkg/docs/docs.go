@@ -55,6 +55,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/attaches/{id}": {
+            "get": {
+                "description": "Get attach if it belongs to current user",
+                "produces": [
+                    "image/webp"
+                ],
+                "tags": [
+                    "attach"
+                ],
+                "summary": "Get attach",
+                "operationId": "get-attach",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "attach id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attach",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/api/auth/check_user": {
             "get": {
                 "description": "Get user info if user is authorized",
@@ -376,7 +409,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "note"
+                    "attach"
                 ],
                 "summary": "Add attachment",
                 "operationId": "add-attach",

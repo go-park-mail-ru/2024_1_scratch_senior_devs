@@ -116,6 +116,28 @@ paths:
       summary: Delete attach
       tags:
       - attach
+  /api/attaches/{id}:
+    get:
+      description: Get attach if it belongs to current user
+      operationId: get-attach
+      parameters:
+      - description: attach id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/webp
+      responses:
+        "200":
+          description: attach
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+      summary: Get attach
+      tags:
+      - attach
   /api/auth/check_user:
     get:
       description: Get user info if user is authorized
@@ -292,7 +314,7 @@ paths:
           description: Request Entity Too Large
       summary: Add attachment
       tags:
-      - note
+      - attach
   /api/note/{id}/delete:
     delete:
       description: Delete selected note of current user
