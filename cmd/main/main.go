@@ -60,7 +60,7 @@ func main() {
 	defer logFile.Close()
 
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
-	cfg := config.LoadConfig("../../internal/pkg/config/config.yaml", logger)
+	cfg := config.LoadConfig(os.Getenv("CONFIG_FILE"), logger)
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		logger.Info("error connecting to postgres: " + err.Error())
