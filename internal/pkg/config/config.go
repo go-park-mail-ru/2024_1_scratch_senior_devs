@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"sync"
@@ -73,16 +72,17 @@ func LoadConfig(path string, logger *slog.Logger) *Config {
 		cfg = &Config{}
 		file, err := os.Open(path)
 		if err != nil {
-			fmt.Println("Cant open config file")
+			logger.Error("Cant open config file: " + err.Error())
 			return
 		}
 		defer file.Close()
 		d := yaml.NewDecoder(file)
 		if err := d.Decode(cfg); err != nil {
-			fmt.Println("Cant decode config", err.Error())
+			logger.Error("Cant decode config: " + err.Error())
 			return
 		}
 
 	})
+	logger.Info("Successfully loaded config")
 	return cfg
 }
