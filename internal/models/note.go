@@ -10,8 +10,21 @@ type Note struct {
 	Id         uuid.UUID `json:"id"`
 	Data       []byte    `json:"data,omitempty"`
 	CreateTime time.Time `json:"create_time"`
-	UpdateTime time.Time `json:"update_time,omitempty"`
+	UpdateTime time.Time `json:"update_time"`
 	OwnerId    uuid.UUID `json:"owner_id"`
+}
+
+type ElasticNote struct {
+	Id          uuid.UUID   `json:"id"`
+	Data        string      `json:"data,omitempty"`
+	ElasticData interface{} `json:"elastic_data,omitempty"`
+	CreateTime  time.Time   `json:"create_time"`
+	UpdateTime  time.Time   `json:"update_time"`
+	OwnerId     uuid.UUID   `json:"owner_id"`
+}
+
+type ElasticNoteUpdate struct {
+	Doc ElasticNote `json:"doc"`
 }
 
 type UpsertNoteRequest struct {

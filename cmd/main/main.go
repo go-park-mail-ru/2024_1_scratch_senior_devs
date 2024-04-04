@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/elastic/go-elasticsearch"
 	"github.com/redis/go-redis/v9"
 	"io"
 	"log/slog"
@@ -59,17 +60,25 @@ func main() {
 
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		logger.Info("error connecting to postgres: " + err.Error())
+		logger.Error("error connecting to postgres: " + err.Error())
 		return
 	}
 	defer db.Close()
 
 	redisOpts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
 	if err != nil {
-		logger.Info("error connecting to redis: " + err.Error())
+		logger.Error("error connecting to redis: " + err.Error())
 		return
 	}
 	redisDB := redis.NewClient(redisOpts)
+
+	elasticClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{os.Getenv("ELASTIC_URL")},
+	})
+	if err != nil {
+		logger.Error("error connecting to elastic: " + err.Error())
+		return
+	}
 
 	JwtMiddleware := protection.CreateJwtMiddleware(logger)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(logger)
@@ -82,7 +91,7 @@ func main() {
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger)
 
-	NoteRepo := noteRepo.CreateNoteRepo(db, logger)
+	NoteRepo := noteRepo.CreateNoteRepo(elasticClient, logger)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 

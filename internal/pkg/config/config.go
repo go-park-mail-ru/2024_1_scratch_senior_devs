@@ -51,4 +51,7 @@ const (
 
 	PayloadContextKey   PayloadKey   = "payload"
 	RequestIdContextKey RequestIdKey = "request_id"
+
+	ElasticIndexName            = "notes"
+	ElasticSearchValueMinLength = 3
 )
