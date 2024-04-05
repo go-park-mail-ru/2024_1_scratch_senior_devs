@@ -32,6 +32,9 @@ attach:
     image/jpeg: .jpeg
     image/png: .png
     video/mp4: .mp4
+elastic:
+  elastic_index_name: notes
+  elastic_search_value_min_length: 2
 
 
 
