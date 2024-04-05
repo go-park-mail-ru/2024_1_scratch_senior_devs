@@ -3,7 +3,6 @@ package config
 import (
 	"log/slog"
 	"os"
-	"sync"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -59,30 +58,26 @@ type UserValidationConfig struct {
 }
 
 const (
-	CSP                              = "default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; base-uri 'self'; form-action 'self'"
+	//CSP                              = "default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; base-uri 'self'; form-action 'self'"
 	PayloadContextKey   PayloadKey   = "payload"
 	RequestIdContextKey RequestIdKey = "request_id"
 )
 
-var cfg *Config
-var once sync.Once
-
 func LoadConfig(path string, logger *slog.Logger) *Config {
-	once.Do(func() {
-		cfg = &Config{}
-		file, err := os.Open(path)
-		if err != nil {
-			logger.Error("Cant open config file: " + err.Error())
-			return
-		}
-		defer file.Close()
-		d := yaml.NewDecoder(file)
-		if err := d.Decode(cfg); err != nil {
-			logger.Error("Cant decode config: " + err.Error())
-			return
-		}
 
-	})
+	cfg := &Config{}
+	file, err := os.Open(path)
+	if err != nil {
+		logger.Error("Cant open config file: " + err.Error())
+		return cfg
+	}
+	defer file.Close()
+	d := yaml.NewDecoder(file)
+	if err := d.Decode(cfg); err != nil {
+		logger.Error("Cant decode config: " + err.Error())
+		return cfg
+	}
+
 	logger.Info("Successfully loaded config")
 	return cfg
 }

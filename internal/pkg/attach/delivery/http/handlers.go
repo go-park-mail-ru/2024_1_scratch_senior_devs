@@ -203,6 +203,11 @@ func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
 	}
 	targetPath := path.Join(os.Getenv("ATTACHES_BASE_PATH"), attach.Path)
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
+	fileInfo, err := os.Stat(targetPath)
+	if err != nil {
+		delivery.WriteErrorMessage(w, http.StatusNotFound, "File not found")
+	}
+	w.Header().Add("etag", fileInfo.ModTime().UTC().String())
 	http.ServeFile(w, r, targetPath)
 
 }
