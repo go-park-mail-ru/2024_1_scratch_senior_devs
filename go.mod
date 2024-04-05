@@ -6,12 +6,12 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/driftprogramming/pgxpoolmock v1.1.0
-	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgtype v1.14.2
 	github.com/kolesa-team/go-webp v1.0.4
 	github.com/mailru/easyjson v0.7.7
+	github.com/olivere/elastic/v7 v7.0.32
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/satori/uuid v1.2.0

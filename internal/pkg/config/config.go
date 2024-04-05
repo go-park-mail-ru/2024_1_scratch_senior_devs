@@ -53,5 +53,5 @@ const (
 	RequestIdContextKey RequestIdKey = "request_id"
 
 	ElasticIndexName            = "notes"
-	ElasticSearchValueMinLength = 3
+	ElasticSearchValueMinLength = 2
 )

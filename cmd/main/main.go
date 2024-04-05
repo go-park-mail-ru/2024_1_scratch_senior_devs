@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/elastic/go-elasticsearch"
+	"github.com/olivere/elastic/v7"
 	"github.com/redis/go-redis/v9"
 	"io"
 	"log/slog"
@@ -72,11 +72,9 @@ func main() {
 	}
 	redisDB := redis.NewClient(redisOpts)
 
-	elasticClient, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{os.Getenv("ELASTIC_URL")},
-	})
+	elasticClient, err := elastic.NewClient(elastic.SetURL(os.Getenv("ELASTIC_URL")))
 	if err != nil {
-		logger.Error("error connecting to elastic: " + err.Error())
+		logger.Error("error connecting to elasticsearch: " + err.Error())
 		return
 	}
 
