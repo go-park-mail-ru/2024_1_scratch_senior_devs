@@ -18,7 +18,7 @@ func genCsrfToken() string {
 	return uuid.NewV4().String()
 }
 
-func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request, cfg config.CsrfConfig) bool {
+func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request) bool {
 	headerToken := r.Header.Get("X-CSRF-Token")
 	if headerToken == "" {
 		log.LogHandlerError(logger, http.StatusForbidden, "empty X-CSRF-Token header")
@@ -55,7 +55,7 @@ func CreateCsrfMiddleware(logger *slog.Logger, cfg config.CsrfConfig) mux.Middle
 			csrfLogger := logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
 			if slices.Contains(unsafeMethods, r.Method) {
-				if !checkCsrfToken(csrfLogger, w, r, cfg) {
+				if !checkCsrfToken(csrfLogger, w, r) {
 					return
 				}
 				SetCsrfToken(w, cfg)

@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -209,6 +210,8 @@ func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Add("etag", fileInfo.ModTime().UTC().String())
+	header := fmt.Sprintf("attachment; filename=\"%s\"", attach.Path)
+	w.Header().Add("Content-Disposition", header)
 	http.ServeFile(w, r, targetPath)
 
 }
