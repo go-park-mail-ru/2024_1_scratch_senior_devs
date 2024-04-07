@@ -27,19 +27,11 @@
         "type": "keyword"
       },
       "data": {
-        "type": "text"
+        "type": "text",
+        "analyzer": "ngram_analyzer"
       },
       "elastic_data": {
-        "type": "nested",
-        "properties": {
-          "key": {
-            "type": "keyword"
-          },
-          "value": {
-            "type": "text",
-            "analyzer": "ngram_analyzer"
-          }
-        }
+        "type": "text"
       },
       "create_time": {
         "type": "date"
