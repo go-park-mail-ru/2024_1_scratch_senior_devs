@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/stretchr/testify/assert"
 )
 
 var testLogger *slog.Logger
@@ -16,7 +17,7 @@ var testConfig *config.Config
 
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	testConfig = config.LoadConfig(os.Getenv("CONFIG_FILE"), testLogger)
+	testConfig = config.LoadConfig("../../config/config.yaml", testLogger)
 }
 func TestCsrfMiddleware(t *testing.T) {
 	type args struct {
@@ -35,7 +36,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodGet,
 				token:  "",
 				cookie: &http.Cookie{
-					Name:     "YouNoteCSRF",
+					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
 					Secure:   true,
 					Value:    "",
 					HttpOnly: true,
@@ -52,7 +53,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodPost,
 				token:  "",
 				cookie: &http.Cookie{
-					Name:     "YouNoteCSRF",
+					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
 					Secure:   true,
 					Value:    "",
 					HttpOnly: true,
@@ -86,7 +87,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodPost,
 				token:  "9f6eae16-9e58-481d-b4a1-ec96e3f4cb93",
 				cookie: &http.Cookie{
-					Name:     "YouNoteCSRF",
+					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
 					Secure:   true,
 					Value:    "9f6eae16-9e58-481d-a5a6-ec96e3f4cb93",
 					HttpOnly: true,
@@ -103,7 +104,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodPost,
 				token:  "9f6eae16-9e58-481d-b4a1-ec96e3f4cb93",
 				cookie: &http.Cookie{
-					Name:     "YouNoteCSRF",
+					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
 					Secure:   true,
 					Value:    "9f6eae16-9e58-481d-b4a1-ec96e3f4cb93",
 					HttpOnly: true,
@@ -126,7 +127,9 @@ func TestCsrfMiddleware(t *testing.T) {
 			req.AddCookie(tt.args.cookie)
 			mw := CreateCsrfMiddleware(testLogger, testConfig.AuthHandler.Csrf)
 			mw(http.HandlerFunc(handler)).ServeHTTP(res, req)
-			//assert.Equal(t, tt.wantStatus, response.StatusCode)
+			resp := res.Result()
+			defer resp.Body.Close()
+			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 
 		})
 	}

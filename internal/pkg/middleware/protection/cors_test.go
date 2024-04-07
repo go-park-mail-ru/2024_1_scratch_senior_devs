@@ -6,28 +6,6 @@ import (
 	"testing"
 )
 
-// func TestCorsMiddleware(t *testing.T) {
-
-// 	tests := []struct {
-// 		name string
-// 		method string
-
-// 	}{
-
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-
-// 			handler := func(w http.ResponseWriter, r *http.Request) {}
-// 			req := httptest.NewRequest(http.MethodGet, "http://www.your-domain.com/", nil)
-// 			res := httptest.NewRecorder()
-// 			handler(res, req)
-// 			CorsMiddleware(http.HandlerFunc(handler)).ServeHTTP(res, req)
-
-// 		})
-// 	}
-// }
-
 func TestCorsMiddleware(t *testing.T) {
 	type args struct {
 		next   http.Handler
