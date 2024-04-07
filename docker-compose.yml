@@ -13,6 +13,8 @@ services:
         condition: service_started
       redis:
         condition: service_started
+      elastic:
+        condition: service_healthy
     restart: always
     ports:
       - "8080:8080"
@@ -109,7 +111,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - younote-elastic-data:/var/lib/elasticsearch/data
+      - younote-elastic-data:/usr/share/elasticsearch/data
       - ./elastic.conf:/usr/local/etc/elasticsearch/elastic.conf
     ports:
       - "9200:9200"
