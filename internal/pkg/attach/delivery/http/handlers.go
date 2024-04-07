@@ -206,6 +206,7 @@ func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
 	fileInfo, err := os.Stat(targetPath)
 	if err != nil {
 		delivery.WriteErrorMessage(w, http.StatusNotFound, "File not found")
+		return
 	}
 	w.Header().Add("etag", fileInfo.ModTime().UTC().String())
 	http.ServeFile(w, r, targetPath)
