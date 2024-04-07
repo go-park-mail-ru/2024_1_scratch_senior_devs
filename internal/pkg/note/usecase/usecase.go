@@ -55,8 +55,8 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteData []byte) (models.Note, error) {
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	err := validation.CheckNoteTitle(noteData)
-	if err != nil {
+	//noteData = models.Sanitize(noteData)
+	if err := validation.CheckNoteTitle(noteData); err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}
@@ -81,8 +81,8 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID, noteData []byte) (models.Note, error) {
 	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	err := validation.CheckNoteTitle(noteData)
-	if err != nil {
+	//noteData = models.Sanitize(noteData)
+	if err := validation.CheckNoteTitle(noteData); err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}

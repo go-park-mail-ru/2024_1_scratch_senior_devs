@@ -1,6 +1,7 @@
 package models
 
 import (
+	"html"
 	"time"
 
 	"github.com/satori/uuid"
@@ -12,6 +13,10 @@ type Note struct {
 	CreateTime time.Time `json:"create_time"`
 	UpdateTime time.Time `json:"update_time"`
 	OwnerId    uuid.UUID `json:"owner_id"`
+}
+
+func Sanitize(noteData []byte) []byte {
+	return []byte(html.EscapeString(string(noteData)))
 }
 
 type ElasticNote struct {

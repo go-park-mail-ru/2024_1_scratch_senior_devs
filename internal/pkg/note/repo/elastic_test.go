@@ -1,10 +1,13 @@
 package repo
 
 //var testLogger *slog.Logger
+//var testConfig *config.Config
 //
 //func init() {
 //	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+//	testConfig = config.LoadConfig("../../config/config.yaml", testLogger)
 //}
+//
 //
 //func TestNoteRepo_ReadAllNotes(t *testing.T) {
 //	tests := []struct {

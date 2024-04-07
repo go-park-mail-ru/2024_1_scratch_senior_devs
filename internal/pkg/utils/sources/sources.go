@@ -1,7 +1,6 @@
 package sources
 
 import (
-	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
@@ -14,11 +13,13 @@ import (
 	"github.com/kolesa-team/go-webp/webp"
 )
 
+const quality = 80
+
 func CheckFormat(choice map[string]string, content []byte) string {
 	fileFormat := http.DetectContentType(content)
 
-	for mimeTime, format := range choice {
-		if strings.HasPrefix(fileFormat, mimeTime) {
+	for mimeType, format := range choice {
+		if strings.HasPrefix(fileFormat, mimeType) {
 			return format
 		}
 	}
@@ -53,14 +54,17 @@ func SaveFile(path string, extension string, resource io.ReadSeeker) error {
 		return err
 	}
 	defer file.Close()
+
 	_, err = resource.Seek(0, 0)
 	if err != nil {
 		return err
 	}
+
 	_, err = io.Copy(file, resource)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -71,19 +75,20 @@ func WriteFileOnDisk(path string, oldExtension string, resource io.ReadSeeker) (
 	if err != nil {
 		return "", err
 	}
+
 	var img image.Image
 	img, _, err = image.Decode(resource)
 	if err != nil {
-		fmt.Println(err.Error())
-		err = SaveFile(path, oldExtension, resource)
-		if err != nil {
+		if err = SaveFile(path, oldExtension, resource); err != nil {
 			return "", err
 		}
+
 		return oldExtension, nil
 	}
-	err = SaveImageAsWebp(path, img, 80)
-	if err != nil {
+
+	if err = SaveImageAsWebp(path, img, quality); err != nil {
 		return "", err
 	}
+
 	return ".webp", nil
 }
