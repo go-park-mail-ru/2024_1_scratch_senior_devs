@@ -14,7 +14,7 @@ services:
       redis:
         condition: service_started
       elastic:
-        condition: service_healthy
+        condition: service_started
     restart: always
     ports:
       - "8080:8080"
