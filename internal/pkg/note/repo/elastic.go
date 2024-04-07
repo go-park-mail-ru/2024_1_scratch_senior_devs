@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/olivere/elastic/v7"
 	"log/slog"
@@ -34,7 +33,7 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userID uuid.UUID, count 
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
 	userIdQuery := elastic.NewTermsQuery("owner_id", strings.ToLower(userID.String()))
-	searchQuery := elastic.NewNestedQuery("elastic_data", elastic.NewMatchQuery("elastic_data.value", searchValue))
+	searchQuery := elastic.NewMatchQuery("data", searchValue)
 
 	totalQuery := repo.elastic.Search().Query(elastic.NewBoolQuery().Must(userIdQuery, searchQuery))
 	if utf8.RuneCountInString(searchValue) < repo.cfg.ElasticSearchValueMinLength {
@@ -48,7 +47,7 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userID uuid.UUID, count 
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return []models.Note{}, err
+		return []models.Note{}, errors.New("can`t get response")
 	}
 
 	notes := make([]models.Note, 0)
@@ -58,7 +57,13 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userID uuid.UUID, count 
 			logger.Error(err.Error())
 			return []models.Note{}, err
 		}
-		notes = append(notes, elasticsearch.ConvertToUsualNote(note))
+		notes = append(notes, models.Note{
+			Id:         note.Id,
+			Data:       []byte(note.Data),
+			CreateTime: note.CreateTime,
+			UpdateTime: note.UpdateTime,
+			OwnerId:    note.OwnerId,
+		})
 	}
 
 	logger.Info("success")
@@ -75,7 +80,7 @@ func (repo *NoteRepo) ReadNote(ctx context.Context, noteID uuid.UUID) (models.No
 		Do(context.Background())
 	if err != nil {
 		logger.Error(err.Error())
-		return models.Note{}, err
+		return models.Note{}, errors.New("can`t get response")
 	}
 
 	if len(search.Hits.Hits) == 0 {
@@ -90,16 +95,24 @@ func (repo *NoteRepo) ReadNote(ctx context.Context, noteID uuid.UUID) (models.No
 	}
 
 	logger.Info("success")
-	return elasticsearch.ConvertToUsualNote(note), nil
+	return models.Note{
+		Id:         note.Id,
+		Data:       []byte(note.Data),
+		CreateTime: note.CreateTime,
+		UpdateTime: note.UpdateTime,
+		OwnerId:    note.OwnerId,
+	}, nil
 }
 
 func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	elasticNote, err := elasticsearch.ConvertToElasticNote(note)
-	if err != nil {
-		logger.Error(err.Error())
-		return err
+	elasticNote := models.ElasticNote{
+		Id:         note.Id,
+		Data:       string(note.Data),
+		CreateTime: note.CreateTime,
+		UpdateTime: note.UpdateTime,
+		OwnerId:    note.OwnerId,
 	}
 
 	noteJSON, err := json.Marshal(elasticNote)
@@ -121,7 +134,7 @@ func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return err
+		return errors.New("can`t get response")
 	}
 
 	logger.Info("success")
@@ -131,10 +144,12 @@ func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
 func (repo *NoteRepo) UpdateNote(ctx context.Context, note models.Note) error {
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	elasticNote, err := elasticsearch.ConvertToElasticNote(note)
-	if err != nil {
-		logger.Error(err.Error())
-		return err
+	elasticNote := models.ElasticNote{
+		Id:         note.Id,
+		Data:       string(note.Data),
+		CreateTime: note.CreateTime,
+		UpdateTime: note.UpdateTime,
+		OwnerId:    note.OwnerId,
 	}
 
 	noteJSON, err := json.Marshal(elasticNote)
@@ -156,7 +171,7 @@ func (repo *NoteRepo) UpdateNote(ctx context.Context, note models.Note) error {
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return err
+		return errors.New("can`t get response")
 	}
 
 	logger.Info("success")
@@ -173,7 +188,7 @@ func (repo *NoteRepo) DeleteNote(ctx context.Context, id uuid.UUID) error {
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return err
+		return errors.New("can`t get response")
 	}
 
 	logger.Info("success")
