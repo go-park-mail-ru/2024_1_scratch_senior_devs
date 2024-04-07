@@ -30,3 +30,4 @@ go.work
 
 local-*.*
 redis.conf
+elastic.conf

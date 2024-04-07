@@ -11,6 +11,7 @@ require (
 	github.com/jackc/pgtype v1.14.2
 	github.com/kolesa-team/go-webp v1.0.4
 	github.com/mailru/easyjson v0.7.7
+	github.com/olivere/elastic/v7 v7.0.32
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/satori/uuid v1.2.0

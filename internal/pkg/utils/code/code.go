@@ -8,13 +8,14 @@ import (
 	"math/big"
 )
 
+const secretLength = 30
+
 var alphabet = []rune("QWETYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890")
 
 func GenerateSecret() []byte {
-	size := 30
 	n := big.NewInt(int64(len(alphabet)))
 
-	secret := make([]rune, size)
+	secret := make([]rune, secretLength)
 	for i := range secret {
 		randomIndex, _ := rand.Int(rand.Reader, n)
 		secret[i] = alphabet[randomIndex.Int64()]

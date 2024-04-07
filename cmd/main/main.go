@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/olivere/elastic/v7"
 	"io"
 	"log/slog"
 	"net/http"
@@ -39,8 +40,7 @@ import (
 )
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -50,9 +50,7 @@ func init() {
 // @description 	API for YouNote service
 // @host 			you-note.ru
 func main() {
-
 	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-
 	if err != nil {
 		fmt.Println("error opening log file: " + err.Error())
 		return
@@ -61,19 +59,26 @@ func main() {
 
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
 	cfg := config.LoadConfig(os.Getenv("CONFIG_FILE"), logger)
+
 	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		logger.Info("error connecting to postgres: " + err.Error())
+		logger.Error("error connecting to postgres: " + err.Error())
 		return
 	}
 	defer db.Close()
 
 	redisOpts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
 	if err != nil {
-		logger.Info("error connecting to redis: " + err.Error())
+		logger.Error("error connecting to redis: " + err.Error())
 		return
 	}
 	redisDB := redis.NewClient(redisOpts)
+
+	elasticClient, err := elastic.NewClient(elastic.SetURL(os.Getenv("ELASTIC_URL")))
+	if err != nil {
+		logger.Error("error connecting to elasticsearch: " + err.Error())
+		return
+	}
 
 	JwtMiddleware := protection.CreateJwtMiddleware(logger, cfg.AuthHandler.Jwt)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(logger, cfg.AuthHandler.Csrf)
@@ -86,7 +91,7 @@ func main() {
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger, cfg.AuthUsecase, cfg.UserValidation)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger, cfg.AuthHandler, cfg.UserValidation)
 
-	NoteRepo := noteRepo.CreateNoteRepo(db, logger)
+	NoteRepo := noteRepo.CreateNoteRepo(elasticClient, logger, cfg.Elastic)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 

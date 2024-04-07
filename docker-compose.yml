@@ -90,6 +90,33 @@ services:
       - .env
     networks:
       - YouNote-network
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.19
+    container_name: elastic
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - http.cors.enabled=true
+      - http.cors.allow-credentials=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,X-Csrf-Token
+      - http.cors.allow-origin=/https?:\/\/localhost(:[0-9]+)?/
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - younote-elastic-data:/var/lib/elasticsearch/data
+      - ./elastic.conf:/usr/local/etc/elasticsearch/elastic.conf
+    ports:
+      - "9200:9200"
+    env_file:
+      - .env
+    networks:
+      - YouNote-network
 
 networks:
   YouNote-network:
@@ -99,3 +126,4 @@ networks:
 volumes:
   younote-db-data:
   younote-redis-data:
+  younote-elastic-data:

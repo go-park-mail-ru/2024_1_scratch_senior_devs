@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -187,6 +188,77 @@ func TestNoteHandler_GetNote(t *testing.T) {
 				d, _ := json.Marshal(tt.expectedData)
 				assert.Equal(t, w.Body.Bytes(), d)
 			}
+		})
+	}
+}
+
+func TestNoteHandler_AddNote(t *testing.T) {
+	id := uuid.NewV4()
+	currTime := time.Now().UTC()
+
+	var tests = []struct {
+		name           string
+		requestBody    string
+		noteData       []byte
+		usecaseErr     bool
+		expectedStatus int
+	}{
+		{
+			name:           "Test_NoteHandler_AddNote_Success",
+			requestBody:    `{"data":{"title": "my note"}}`,
+			noteData:       []byte(`{"title": "my note"}`),
+			usecaseErr:     false,
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Test_NoteHandler_AddNote_Fail_1",
+			requestBody:    `{"data":{"title": "my note"}`,
+			noteData:       []byte(`{"title": "my note"}`),
+			usecaseErr:     true,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Test_NoteHandler_AddNote_Fail_2",
+			requestBody:    `{"data":{"title": "my note"}}`,
+			noteData:       []byte(`{"title": "my note"}`),
+			usecaseErr:     true,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+
+			if tt.name != "Test_NoteHandler_AddNote_Fail_1" {
+				call := mockUsecase.EXPECT().CreateNote(gomock.Any(), gomock.Any(), gomock.Any())
+				if tt.usecaseErr {
+					call.Return(models.Note{}, errors.New("usecase error"))
+				} else {
+					call.Return(models.Note{
+						Id:         id,
+						Data:       tt.noteData,
+						CreateTime: currTime,
+						UpdateTime: currTime,
+						OwnerId:    id,
+					}, nil)
+				}
+			}
+
+			r := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
+			ctx := context.WithValue(r.Context(), config.PayloadContextKey, models.JwtPayload{
+				Id:       id,
+				Username: "username",
+			})
+			r = r.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			handler := CreateNotesHandler(mockUsecase, testLogger)
+			handler.AddNote(w, r)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
 		})
 	}
 }
