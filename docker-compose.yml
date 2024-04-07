@@ -126,3 +126,4 @@ networks:
 volumes:
   younote-db-data:
   younote-redis-data:
+  younote-elastic-data:
