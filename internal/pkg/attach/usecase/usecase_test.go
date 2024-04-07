@@ -3,8 +3,10 @@ package usecase
 import (
 	"context"
 	"errors"
+	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -279,6 +281,119 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 			attachData, err := uc.GetAttach(tt.args.ctx, tt.args.attachID, tt.args.userID)
 			assert.Equal(t, tt.expectedErr, err)
 			assert.Equal(t, tt.want, attachData)
+		})
+	}
+}
+
+func TestAttachUsecase_AddAttach(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	type args struct {
+		ctx       context.Context
+		noteID    uuid.UUID
+		userID    uuid.UUID
+		attach    io.ReadSeeker
+		extension string
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteRepo, args args)
+		args       args
+
+		expectedErr error
+	}{
+		{
+			name: "Test_Success",
+			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteRepo, args args) {
+				repo.EXPECT().AddAttach(ctx, gomock.Any()).Return(nil)
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+					Id:      args.noteID,
+					OwnerId: args.userID,
+				}, nil)
+			},
+			args: args{
+				ctx:       context.Background(),
+				noteID:    noteId,
+				userID:    userId,
+				attach:    strings.NewReader("test attachment"),
+				extension: ".txt",
+			},
+
+			expectedErr: nil,
+		},
+		{
+			name: "Test_Fail_AddAttach",
+			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteRepo, args args) {
+				repo.EXPECT().AddAttach(ctx, gomock.Any()).Return(errors.New("error cant add attach"))
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+					Id:      args.noteID,
+					OwnerId: args.userID,
+				}, nil)
+			},
+			args: args{
+				ctx:       context.Background(),
+				noteID:    noteId,
+				userID:    userId,
+				attach:    strings.NewReader("test attachment"),
+				extension: ".txt",
+			},
+
+			expectedErr: errors.New("error cant add attach"),
+		},
+		{
+			name: "Test_Fail_ReadNote",
+			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteRepo, args args) {
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+					Id:      args.noteID,
+					OwnerId: args.userID,
+				}, errors.New("error read note"))
+			},
+			args: args{
+				ctx:       context.Background(),
+				noteID:    noteId,
+				userID:    userId,
+				attach:    strings.NewReader("test attachment"),
+				extension: ".txt",
+			},
+
+			expectedErr: errors.New("error read note"),
+		},
+		{
+			name: "Test_Fail_NotOwner",
+			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteRepo, args args) {
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+					Id:      args.noteID,
+					OwnerId: args.noteID,
+				}, errors.New("error read note"))
+			},
+			args: args{
+				ctx:       context.Background(),
+				noteID:    noteId,
+				userID:    userId,
+				attach:    strings.NewReader("test attachment"),
+				extension: ".txt",
+			},
+
+			expectedErr: errors.New("error read note"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			noteRepo := mock_note.NewMockNoteRepo(ctl)
+			repo := mock_attach.NewMockAttachRepo(ctl)
+			uc := CreateAttachUsecase(repo, noteRepo, testLogger)
+			tt.repoMocker(context.Background(), repo, noteRepo, tt.args)
+			attach, err := uc.AddAttach(tt.args.ctx, tt.args.noteID, tt.args.userID, tt.args.attach, tt.args.extension)
+			assert.Equal(t, tt.expectedErr, err)
+			if tt.name != "Test_Fail_ReadNote" && tt.name != "Test_Fail_NotOwner" {
+				err = os.Remove(attach.Path)
+				if err != nil {
+					t.Error("Cant remove files", err.Error())
+				}
+			}
+
 		})
 	}
 }

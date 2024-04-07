@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -192,16 +195,57 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 		username       string
 		attachID       uuid.UUID
 		userID         uuid.UUID
-	}{{
-		name: "Test_Fail_MultipartProblem",
-		ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
-
+	}{
+		{
+			name: "Test_Success",
+			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
+				uc.EXPECT().AddAttach(ctx, gomock.Any(), userID, gomock.Any(), ".jpeg").Return(models.Attach{}, nil)
+			},
+			expectedStatus: http.StatusOK,
+			username:       "alla",
+			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
+			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
 		},
-		expectedStatus: http.StatusRequestEntityTooLarge,
-		username:       "alla",
-		attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
-		userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
-	},
+		{
+			name: "Test_UC_Error",
+			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
+				uc.EXPECT().AddAttach(ctx, gomock.Any(), userID, gomock.Any(), ".jpeg").Return(models.Attach{}, errors.New("error"))
+			},
+			expectedStatus: http.StatusBadRequest,
+			username:       "alla",
+			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
+			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
+		},
+		{
+			name: "Test_NoFile",
+			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
+
+			},
+			expectedStatus: http.StatusBadRequest,
+			username:       "alla",
+			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
+			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
+		},
+		{
+			name: "Test_IncorrectFileFormat",
+			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
+
+			},
+			expectedStatus: http.StatusBadRequest,
+			username:       "alla",
+			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
+			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
+		},
+		{
+			name: "Test_Fail_MultipartProblem",
+			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
+
+			},
+			expectedStatus: http.StatusRequestEntityTooLarge,
+			username:       "alla",
+			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
+			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
+		},
 
 		{
 			name: testNameUnauthorized,
@@ -225,16 +269,63 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			body := &bytes.Buffer{}
+			writer := multipart.NewWriter(body)
+
+			// Создаем HTTP request для тестирования
+			// Создаем временный файл для использования в тесте
+			fileContent := []byte{1, 2, 3, 4}
+			if tt.name == "Test_Success" || tt.name == "Test_UC_Error" {
+				fileContent = []byte{255, 216, 255, 224}
+			}
+			tmpfile, err := os.CreateTemp("", "example.jpeg")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.Remove(tmpfile.Name()) // Удаляем временный файл после завершения теста
+			if _, err := tmpfile.Write(fileContent); err != nil {
+				t.Fatal(err)
+			}
+			if err := tmpfile.Close(); err != nil {
+				t.Fatal(err)
+			}
+
+			// Создаем форму с файлом
+			fileName := "attach"
+			if tt.name == "TestNoFile" {
+				fileName = "file"
+			}
+			part, err := writer.CreateFormFile(fileName, filepath.Base(tmpfile.Name()))
+
+			if err != nil {
+				t.Fatal(err)
+			}
+			file, err := os.Open(tmpfile.Name())
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer file.Close()
+			_, err = io.Copy(part, file)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			writer.Close()
+			req := httptest.NewRequest("POST", "http://example.com/api/handler/", body)
+			req.Header.Set("Content-Type", writer.FormDataContentType())
+			if tt.name == "Test_Fail_MultipartProblem" {
+				req = httptest.NewRequest("POST", "http://example.com/api/handler/", bytes.NewBuffer([]byte{}))
+				req.Header.Set("Content-Type", "multipart/form-data; boundary=---")
+			}
 
 			ctrl := gomock.NewController(t)
 			uc := mock_attach.NewMockAttachUsecase(ctrl)
 			defer ctrl.Finish()
-			body := new(bytes.Buffer)
-			req := httptest.NewRequest("POST", "http://example.com/api/handler/", body)
+
 			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.userID, Username: tt.username})
 
 			req = req.WithContext(ctx)
-			req.Header.Set("Content-Type", "multipart/form-data; boundary=---")
+
 			if tt.name == testNameUnauthorized {
 				req = req.WithContext(context.Background())
 			}
