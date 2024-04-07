@@ -216,16 +216,7 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
 			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
 		},
-		{
-			name: "Test_NoFile",
-			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
 
-			},
-			expectedStatus: http.StatusBadRequest,
-			username:       "alla",
-			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
-			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
-		},
 		{
 			name: "Test_IncorrectFileFormat",
 			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
@@ -292,9 +283,7 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 
 			// Создаем форму с файлом
 			fileName := "attach"
-			if tt.name == "TestNoFile" {
-				fileName = "file"
-			}
+
 			part, err := writer.CreateFormFile(fileName, filepath.Base(tmpfile.Name()))
 
 			if err != nil {

@@ -26,7 +26,7 @@ func checkCsrfToken(logger *slog.Logger, w http.ResponseWriter, r *http.Request,
 		return false
 	}
 
-	csrfCookie, err := r.Cookie(cfg.CsrfCookie)
+	csrfCookie, err := r.Cookie("YouNoteCSRF")
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusForbidden, "no csrf cookie: "+err.Error())
 		w.WriteHeader(http.StatusForbidden)
