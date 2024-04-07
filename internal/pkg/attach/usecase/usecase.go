@@ -61,7 +61,7 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 
 	if err := uc.repo.AddAttach(ctx, newAttach); err != nil {
 		logger.Error(err.Error())
-		return models.Attach{}, err
+		return newAttach, err
 	}
 
 	logger.Info("success")
