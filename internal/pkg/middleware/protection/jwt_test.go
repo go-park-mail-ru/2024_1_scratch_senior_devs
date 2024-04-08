@@ -51,7 +51,7 @@ func TestJwtMiddleware(t *testing.T) {
 			}},
 			wantStatus: http.StatusUnauthorized,
 		},
-		{ //testConfig.AuthHandler.Jwt.JwtCookie
+		{
 			name: "Test_NoCookie",
 			args: args{header: "Bearer qdlwfjjvfoepwk", cookie: &http.Cookie{
 				Name:     "",
@@ -120,6 +120,32 @@ func TestJwtMiddleware(t *testing.T) {
 			resp := res.Result()
 			defer resp.Body.Close()
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+		})
+	}
+}
+
+func TestReadAndCloseBody(t *testing.T) {
+
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "Only_Test",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := func(w http.ResponseWriter, r *http.Request) {}
+			req := httptest.NewRequest(http.MethodGet, "http://www.your-domain.com/", nil)
+			res := httptest.NewRecorder()
+
+			handler(res, req)
+
+			ReadAndCloseBody(http.HandlerFunc(handler)).ServeHTTP(res, req)
+
+			_, err := req.Body.Read(nil)
+			assert.NotNil(t, err)
+
 		})
 	}
 }

@@ -308,3 +308,249 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 		})
 	}
 }
+
+func TestAuthHandler_UpdateProfile(t *testing.T) {
+
+	userID := uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79")
+	username := "user"
+	type args struct {
+		userID   uuid.UUID
+		username string
+	}
+	tests := []struct {
+		args       args
+		wantStatus int
+		name       string
+		payload    string
+		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase)
+	}{
+		{
+			name: "Test_Update_Unauthorized",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+			},
+			wantStatus: http.StatusUnauthorized,
+		},
+
+		{
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			name:    "Test_BadRequest",
+			payload: "",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			name: "Test_Success",
+			payload: `
+			{
+				"description": "slkakjckld",
+				"password": {
+				    "old": "12345678a",
+				    "new": "12345678b"
+				}
+			 }`,
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+				uc.EXPECT().UpdateProfile(ctx, userID, gomock.Any()).Return(models.User{
+					Id:           userID,
+					Description:  "slkakjckld",
+					Username:     username,
+					PasswordHash: delivery.GetHash("12345678b"),
+				}, nil)
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			name: "Test_BadRequest_2",
+			payload: `
+			{
+				"description": "slkakjckld",
+				"password": {
+				    "old": "12345678a",
+				    "new": "12345678b"
+				}
+			 }`,
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+				uc.EXPECT().UpdateProfile(ctx, userID, gomock.Any()).Return(models.User{}, errors.New("error"))
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			uc := mock_auth.NewMockAuthUsecase(ctrl)
+			blockerUc := mock_auth.NewMockBlockerUsecase(ctrl)
+			defer ctrl.Finish()
+			req := httptest.NewRequest("POST", "http://example.com/api/handler/", bytes.NewBufferString(tt.payload))
+			w := httptest.NewRecorder()
+			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: userID, Username: username})
+			req = req.WithContext(ctx)
+			if tt.name == "Test_Update_Unauthorized" {
+				req = req.WithContext(context.Background())
+			}
+
+			tt.ucMocker(req.Context(), uc, blockerUc)
+
+			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+
+			h.UpdateProfile(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
+	}
+}
+
+func TestAuthHandler_DisableSecondFactor(t *testing.T) {
+
+	userID := uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79")
+	username := "test"
+	type args struct {
+		userID   uuid.UUID
+		username string
+	}
+	tests := []struct {
+		wantStatus int
+		name       string
+		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase)
+		args       args
+	}{
+		{
+			name: "Test_Success",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+				uc.EXPECT().DeleteSecret(ctx, username).Return(nil)
+			},
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			wantStatus: http.StatusNoContent,
+		},
+		{
+			name: "Test_BadRequest",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+				uc.EXPECT().DeleteSecret(ctx, username).Return(errors.New("error"))
+			},
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Test_Unauthorized",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+
+			},
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			wantStatus: http.StatusUnauthorized,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			uc := mock_auth.NewMockAuthUsecase(ctrl)
+			blockerUc := mock_auth.NewMockBlockerUsecase(ctrl)
+			defer ctrl.Finish()
+			req := httptest.NewRequest("GET", "http://example.com/api/handler/", bytes.NewBufferString(""))
+			w := httptest.NewRecorder()
+			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: userID, Username: username})
+			req = req.WithContext(ctx)
+			if tt.name == "Test_Unauthorized" {
+				req = req.WithContext(context.Background())
+			}
+
+			tt.ucMocker(req.Context(), uc, blockerUc)
+
+			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+
+			h.DisableSecondFactor(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
+	}
+}
+
+func TestAuthHandler_GetQRCode(t *testing.T) {
+	userID := uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79")
+	username := "user2"
+	type args struct {
+		userID   uuid.UUID
+		username string
+	}
+	tests := []struct {
+		wantStatus int
+		name       string
+		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase)
+		args       args
+	}{
+		{
+			name: "Test_Success",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+				uc.EXPECT().GenerateAndUpdateSecret(ctx, username).Return([]byte{}, nil)
+			},
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Test_BadRequest",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+				uc.EXPECT().GenerateAndUpdateSecret(ctx, username).Return([]byte{}, errors.New(""))
+			},
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Test_Unauthorized",
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthUsecase, blockerUc *mock_auth.MockBlockerUsecase) {
+
+			},
+			args: args{
+				userID:   userID,
+				username: username,
+			},
+			wantStatus: http.StatusUnauthorized,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			uc := mock_auth.NewMockAuthUsecase(ctrl)
+			blockerUc := mock_auth.NewMockBlockerUsecase(ctrl)
+			defer ctrl.Finish()
+			req := httptest.NewRequest("GET", "http://example.com/api/handler/", bytes.NewBufferString(""))
+			w := httptest.NewRecorder()
+			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: userID, Username: username})
+			req = req.WithContext(ctx)
+			if tt.name == "Test_Unauthorized" {
+				req = req.WithContext(context.Background())
+			}
+
+			tt.ucMocker(req.Context(), uc, blockerUc)
+
+			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+
+			h.GetQRCode(w, req)
+			assert.Equal(t, tt.wantStatus, w.Code)
+		})
+	}
+}

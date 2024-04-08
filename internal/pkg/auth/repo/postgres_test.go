@@ -3,19 +3,19 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
+	"errors"
 	"log/slog"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/driftprogramming/pgxpoolmock"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v4"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
 var testLogger *slog.Logger
@@ -177,6 +177,215 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 			repo := CreateAuthRepo(mockPool, testLogger)
 			_, err := repo.GetUserByUsername(context.Background(), tt.username)
 
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestAuthRepo_DeleteSecret(t *testing.T) {
+
+	type args struct {
+		username string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string)
+		args           args
+		expectedErr    error
+		columns        []string
+	}{
+		{
+			name: "TestSuccess",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
+				mockPool.EXPECT().Exec(context.Background(), deleteSecondFactor, "user").Return(nil, nil).Times(1)
+
+			},
+			args: args{
+				username: "user",
+			},
+			expectedErr: nil,
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+		{
+			name: "TestFail",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
+				mockPool.EXPECT().Exec(context.Background(), deleteSecondFactor, "user").Return(nil, errors.New("error")).Times(1)
+
+			},
+			args: args{
+				username: "user",
+			},
+			expectedErr: errors.New("error"),
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			defer ctrl.Finish()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", "secret").ToPgxRows()
+
+			repo := CreateAuthRepo(mockPool, testLogger)
+			tt.mockRepoAction(mockPool, pgxRows, tt.args.username)
+			err := repo.DeleteSecret(context.Background(), tt.args.username)
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestAuthRepo_UpdateSecret(t *testing.T) {
+	type args struct {
+		username string
+		secret   string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string)
+		args           args
+		expectedErr    error
+		columns        []string
+	}{
+		{
+			name: "TestSuccess",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
+				mockPool.EXPECT().Exec(context.Background(), updateSecondFactor, "secret", "user").Return(nil, nil).Times(1)
+
+			},
+			args: args{
+				username: "user",
+				secret:   "secret",
+			},
+			expectedErr: nil,
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+		{
+			name: "TestFail",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
+				mockPool.EXPECT().Exec(context.Background(), updateSecondFactor, "secret", "user").Return(nil, errors.New("error")).Times(1)
+
+			},
+			args: args{
+				username: "user",
+				secret:   "secret",
+			},
+			expectedErr: errors.New("error"),
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			defer ctrl.Finish()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", tt.args.secret).ToPgxRows()
+
+			repo := CreateAuthRepo(mockPool, testLogger)
+			tt.mockRepoAction(mockPool, pgxRows, tt.args.username)
+			err := repo.UpdateSecret(context.Background(), tt.args.username, tt.args.secret)
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestAuthRepo_UpdateProfileAvatar(t *testing.T) {
+	userId := uuid.NewV4()
+	type args struct {
+		Id   uuid.UUID
+		path string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string)
+		args           args
+		expectedErr    error
+		columns        []string
+	}{
+		{
+			name: "TestSuccess",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
+				mockPool.EXPECT().Exec(context.Background(), updateProfileAvatar, "path", userId).Return(nil, nil).Times(1)
+
+			},
+			args: args{
+				Id:   userId,
+				path: "path",
+			},
+			expectedErr: nil,
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+		{
+			name: "TestFail",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
+				mockPool.EXPECT().Exec(context.Background(), updateProfileAvatar, "path", userId).Return(nil, errors.New("error")).Times(1)
+
+			},
+			args: args{
+				Id:   userId,
+				path: "path",
+			},
+			expectedErr: errors.New("error"),
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			defer ctrl.Finish()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(userId, "description", "", time.Now(), "", "").ToPgxRows()
+
+			repo := CreateAuthRepo(mockPool, testLogger)
+			tt.mockRepoAction(mockPool, pgxRows, tt.args.Id.String())
+			err := repo.UpdateProfileAvatar(context.Background(), tt.args.Id, tt.args.path)
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestAuthRepo_UpdateProfile(t *testing.T) {
+
+	type args struct {
+		user models.User
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, user models.User)
+		args           args
+		columns        []string
+		expectedErr    error
+	}{
+		{
+			name: "TestSuccess",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, user models.User) {
+				mockPool.EXPECT().Exec(context.Background(), updateProfile, user.Description, user.PasswordHash, user.Id).Return(nil, nil).Times(1)
+
+			},
+			args:        args{},
+			expectedErr: nil,
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+		{
+			name: "TestFail",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, user models.User) {
+				mockPool.EXPECT().Exec(context.Background(), updateProfile, user.Description, user.PasswordHash, user.Id).Return(nil, errors.New("error")).Times(1)
+
+			},
+			args:        args{},
+			expectedErr: errors.New("error"),
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			defer ctrl.Finish()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(tt.args.user.Id, "description", "", time.Now(), "", "").ToPgxRows()
+
+			repo := CreateAuthRepo(mockPool, testLogger)
+			tt.mockRepoAction(mockPool, pgxRows, tt.args.user)
+			err := repo.UpdateProfile(context.Background(), tt.args.user)
 			assert.Equal(t, tt.expectedErr, err)
 		})
 	}
