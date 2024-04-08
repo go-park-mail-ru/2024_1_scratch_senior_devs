@@ -1,0 +1,24 @@
+erDiagram
+    profile {
+        uuid id PK
+        text description
+        text username
+        text password_hash
+        timestamp create_time
+        text image_path
+        text secret
+    }
+    note {
+        uuid id PK
+        text data
+        timestamp create_time
+        timestamp update_time
+        uuid owner_id FK
+    }
+    attach {
+        uuid id PK
+        text path
+        uuid note_id FK
+    }
+    profile ||--o{ note : "1:M"
+    note ||--o{ attach : "1:M"

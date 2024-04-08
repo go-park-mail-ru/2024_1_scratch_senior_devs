@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS profile (
                     CONSTRAINT password_hash_length
                     CHECK (char_length(password_hash) <= 300),
     create_time     TIMESTAMP   NOT NULL,
-    image_path      TEXT        NOT NULL UNIQUE
+    image_path      TEXT        NOT NULL
                     DEFAULT ('default.jpg')
                     CONSTRAINT image_path_length
                     CHECK (char_length(image_path) <= 40),
