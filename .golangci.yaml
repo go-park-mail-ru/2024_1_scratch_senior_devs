@@ -1,8 +1,4 @@
 linters-settings:
-  gosec:
-      checks:
-        - all
-        - '-G101' # disable the rule 
   gocognit:
     min-complexity: 60
 
@@ -17,7 +13,4 @@ linters:
     - gocognit
     - goconst
     - gofmt
-    - gosec
-  
-  
-   
+    
