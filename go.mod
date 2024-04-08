@@ -3,7 +3,6 @@ module github.com/go-park-mail-ru/2024_1_scratch_senior_devs
 go 1.21.5
 
 require (
-	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/driftprogramming/pgxpoolmock v1.1.0
 	github.com/golang/mock v1.6.0
