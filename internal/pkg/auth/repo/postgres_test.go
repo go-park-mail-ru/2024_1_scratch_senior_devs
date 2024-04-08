@@ -89,7 +89,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 				pgxRows.Next()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"description", "username", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"description", "username", "password_hash", "create_time", "image_path", "data"},
 			expectedErr: nil,
 		},
 		{
@@ -99,7 +99,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 				pgxRows.Next()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"description", "username", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"description", "username", "password_hash", "create_time", "image_path", "data"},
 			expectedErr: nil,
 		},
 	}
@@ -111,12 +111,12 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 			defer ctrl.Finish()
 
 			description := sql.NullString{}
-			secret := sql.NullString{}
+			data := sql.NullString{}
 			if tt.name == "GetUserById_Success_2" {
 				description = sql.NullString{String: "description", Valid: true}
-				secret = sql.NullString{String: "fnwovnw", Valid: true}
+				data = sql.NullString{String: "fnwovnw", Valid: true}
 			}
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(description, "", "", time.Now(), "", secret).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(description, "", "", time.Now(), "", data).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
@@ -143,7 +143,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 				pgxRows.Next()
 			},
 			username:    "testuser",
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 			expectedErr: nil,
 		},
 		{
@@ -153,7 +153,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 				pgxRows.Next()
 			},
 			username:    "testuser",
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 			expectedErr: nil,
 		},
 	}
@@ -165,12 +165,12 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 			defer ctrl.Finish()
 
 			description := sql.NullString{}
-			secret := sql.NullString{}
+			data := sql.NullString{}
 			if tt.name == "GetUserByUsername_Success_2" {
 				description = sql.NullString{String: "description", Valid: true}
-				secret = sql.NullString{String: "fnwovnw", Valid: true}
+				data = sql.NullString{String: "fnwovnw", Valid: true}
 			}
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), description, "", time.Now(), "", secret).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), description, "", time.Now(), "", data).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.username)
 
@@ -182,7 +182,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 	}
 }
 
-func TestAuthRepo_DeleteSecret(t *testing.T) {
+func TestAuthRepo_Deletedata(t *testing.T) {
 
 	type args struct {
 		username string
@@ -204,7 +204,7 @@ func TestAuthRepo_DeleteSecret(t *testing.T) {
 				username: "user",
 			},
 			expectedErr: nil,
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 		{
 			name: "TestFail",
@@ -216,7 +216,7 @@ func TestAuthRepo_DeleteSecret(t *testing.T) {
 				username: "user",
 			},
 			expectedErr: errors.New("error"),
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 	}
 	for _, tt := range tests {
@@ -224,7 +224,7 @@ func TestAuthRepo_DeleteSecret(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", "secret").ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", "data").ToPgxRows()
 
 			repo := CreateAuthRepo(mockPool, testLogger)
 			tt.mockRepoAction(mockPool, pgxRows, tt.args.username)
@@ -234,10 +234,10 @@ func TestAuthRepo_DeleteSecret(t *testing.T) {
 	}
 }
 
-func TestAuthRepo_UpdateSecret(t *testing.T) {
+func TestAuthRepo_Updatedata(t *testing.T) {
 	type args struct {
 		username string
-		secret   string
+		data     string
 	}
 	tests := []struct {
 		name           string
@@ -249,28 +249,28 @@ func TestAuthRepo_UpdateSecret(t *testing.T) {
 		{
 			name: "TestSuccess",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
-				mockPool.EXPECT().Exec(context.Background(), updateSecondFactor, "secret", "user").Return(nil, nil).Times(1)
+				mockPool.EXPECT().Exec(context.Background(), updateSecondFactor, "data", "user").Return(nil, nil).Times(1)
 
 			},
 			args: args{
 				username: "user",
-				secret:   "secret",
+				data:     "data",
 			},
 			expectedErr: nil,
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 		{
 			name: "TestFail",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, pgxRows pgx.Rows, username string) {
-				mockPool.EXPECT().Exec(context.Background(), updateSecondFactor, "secret", "user").Return(nil, errors.New("error")).Times(1)
+				mockPool.EXPECT().Exec(context.Background(), updateSecondFactor, "data", "user").Return(nil, errors.New("error")).Times(1)
 
 			},
 			args: args{
 				username: "user",
-				secret:   "secret",
+				data:     "data",
 			},
 			expectedErr: errors.New("error"),
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 	}
 	for _, tt := range tests {
@@ -278,11 +278,11 @@ func TestAuthRepo_UpdateSecret(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", tt.args.secret).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", tt.args.data).ToPgxRows()
 
 			repo := CreateAuthRepo(mockPool, testLogger)
 			tt.mockRepoAction(mockPool, pgxRows, tt.args.username)
-			err := repo.UpdateSecret(context.Background(), tt.args.username, tt.args.secret)
+			err := repo.UpdateSecret(context.Background(), tt.args.username, tt.args.data)
 			assert.Equal(t, tt.expectedErr, err)
 		})
 	}
@@ -312,7 +312,7 @@ func TestAuthRepo_UpdateProfileAvatar(t *testing.T) {
 				path: "path",
 			},
 			expectedErr: nil,
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 		{
 			name: "TestFail",
@@ -325,7 +325,7 @@ func TestAuthRepo_UpdateProfileAvatar(t *testing.T) {
 				path: "path",
 			},
 			expectedErr: errors.New("error"),
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 	}
 	for _, tt := range tests {
@@ -363,7 +363,7 @@ func TestAuthRepo_UpdateProfile(t *testing.T) {
 			},
 			args:        args{},
 			expectedErr: nil,
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 		{
 			name: "TestFail",
@@ -373,7 +373,7 @@ func TestAuthRepo_UpdateProfile(t *testing.T) {
 			},
 			args:        args{},
 			expectedErr: errors.New("error"),
-			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "secret"},
+			columns:     []string{"id", "description", "password_hash", "create_time", "image_path", "data"},
 		},
 	}
 	for _, tt := range tests {
