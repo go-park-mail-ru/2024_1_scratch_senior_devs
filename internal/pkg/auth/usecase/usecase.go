@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"io"
 	"log/slog"
 	"os"
@@ -23,14 +24,16 @@ import (
 
 type AuthUsecase struct {
 	repo          auth.AuthRepo
+	noteRepo      note.NoteRepo
 	logger        *slog.Logger
 	cfg           config.AuthUsecaseConfig
 	cfgValidation config.UserValidationConfig
 }
 
-func CreateAuthUsecase(repo auth.AuthRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.UserValidationConfig) *AuthUsecase {
+func CreateAuthUsecase(repo auth.AuthRepo, noteRepo note.NoteRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.UserValidationConfig) *AuthUsecase {
 	return &AuthUsecase{
 		repo:          repo,
+		noteRepo:      noteRepo,
 		logger:        logger,
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
@@ -52,8 +55,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 		SecondFactor: "",
 	}
 
-	err := uc.repo.CreateUser(ctx, newUser)
-	if err != nil {
+	if err := uc.repo.CreateUser(ctx, newUser); err != nil {
 		logger.Error(err.Error())
 		return models.User{}, "", currentTime, auth.ErrCreatingUser
 	}
@@ -62,6 +64,16 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	if err != nil {
 		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
+	}
+
+	if err := uc.noteRepo.CreateNote(ctx, models.Note{
+		Id:         uuid.NewV4(),
+		Data:       uc.noteRepo.MakeHelloNoteData(newUser.Username),
+		CreateTime: currentTime,
+		UpdateTime: currentTime,
+		OwnerId:    newUser.Id,
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 
 	logger.Info("success")

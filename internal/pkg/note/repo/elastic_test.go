@@ -1,14 +1,50 @@
 package repo
 
-//var testLogger *slog.Logger
-//var testConfig *config.Config
-//
-//func init() {
-//	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-//	testConfig = config.LoadConfig("../../config/config.yaml", testLogger)
-//}
-//
-//
+import (
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/olivere/elastic/v7"
+	"github.com/stretchr/testify/assert"
+	"log/slog"
+	"os"
+	"testing"
+)
+
+var testLogger *slog.Logger
+var testConfig *config.Config
+
+func init() {
+	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	testConfig = config.LoadConfig("../../config/config.yaml", testLogger)
+}
+
+func TestNoteRepo_MakeHelloNoteData(t *testing.T) {
+	username := "testuser"
+	expected := []byte(`
+		{
+			"title": "You-note ❤️",
+			"content": [
+				{
+					"id": "1",
+					"type": "div",
+					"content": [
+						{
+							"id": "2",
+							"content": "Привет, testuser!"
+						}
+					]
+				}
+			]
+		}
+	`)
+
+	t.Run("Test_MakeHelloNoteData", func(t *testing.T) {
+		repo := CreateNoteRepo(&elastic.Client{}, testLogger, testConfig.Elastic)
+		result := repo.MakeHelloNoteData(username)
+
+		assert.Equal(t, expected, result)
+	})
+}
+
 //func TestNoteRepo_ReadAllNotes(t *testing.T) {
 //	tests := []struct {
 //		name           string

@@ -161,6 +161,20 @@ func (mr *MockNoteRepoMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteRepo)(nil).DeleteNote), arg0, arg1)
 }
 
+// MakeHelloNoteData mocks base method.
+func (m *MockNoteRepo) MakeHelloNoteData(username string) []byte {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MakeHelloNoteData", username)
+	ret0, _ := ret[0].([]byte)
+	return ret0
+}
+
+// MakeHelloNoteData indicates an expected call of MakeHelloNoteData.
+func (mr *MockNoteRepoMockRecorder) MakeHelloNoteData(username interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeHelloNoteData", reflect.TypeOf((*MockNoteRepo)(nil).MakeHelloNoteData), username)
+}
+
 // ReadAllNotes mocks base method.
 func (m *MockNoteRepo) ReadAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string) ([]models.Note, error) {
 	m.ctrl.T.Helper()

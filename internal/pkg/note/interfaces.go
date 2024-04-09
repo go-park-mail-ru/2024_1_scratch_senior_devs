@@ -23,4 +23,5 @@ type NoteRepo interface {
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
+	MakeHelloNoteData(username string) []byte
 }

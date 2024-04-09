@@ -87,13 +87,13 @@ func main() {
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger, cfg.Blocker)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, logger, cfg.Blocker)
 
-	AuthRepo := authRepo.CreateAuthRepo(db, logger)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger, cfg.AuthUsecase, cfg.UserValidation)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger, cfg.AuthHandler, cfg.UserValidation)
-
 	NoteRepo := noteRepo.CreateNoteRepo(elasticClient, logger, cfg.Elastic)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
+
+	AuthRepo := authRepo.CreateAuthRepo(db, logger)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, NoteRepo, logger, cfg.AuthUsecase, cfg.UserValidation)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger, cfg.AuthHandler, cfg.UserValidation)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, logger)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteRepo, logger)
