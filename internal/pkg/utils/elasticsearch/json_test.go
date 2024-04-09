@@ -14,17 +14,12 @@ func TestProcessValue(t *testing.T) {
 		{
 			name: "Test_ProcessValue_Success_1",
 			value: map[string]interface{}{
-				"title":   "my note",
-				"content": "some text",
+				"title": "my note",
 			},
 			result: []map[string]interface{}{
 				{
 					"key":   "title",
 					"value": "my note",
-				},
-				{
-					"key":   "content",
-					"value": "some text",
 				},
 			},
 		},

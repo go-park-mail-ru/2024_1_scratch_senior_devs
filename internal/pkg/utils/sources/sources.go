@@ -27,6 +27,7 @@ func CheckFormat(choice map[string]string, content []byte) string {
 	return ""
 }
 
+// SaveImageAsWebp godoc
 // compresses img and writes to disk as <path.webp>
 func SaveImageAsWebp(path string, img image.Image, quality float32) error {
 	file, err := os.Create(path + ".webp")
@@ -47,6 +48,7 @@ func SaveImageAsWebp(path string, img image.Image, quality float32) error {
 	return nil
 }
 
+// SaveFile godoc
 // writes resource to disk as <path+extension>
 func SaveFile(path string, extension string, resource io.ReadSeeker) error {
 	file, err := os.Create(path + extension)
@@ -68,6 +70,7 @@ func SaveFile(path string, extension string, resource io.ReadSeeker) error {
 	return nil
 }
 
+// WriteFileOnDisk godoc
 // Converts jpg/jpeg/png to webp and saves to disk
 // If cant convert to webp - just saves to disk
 func WriteFileOnDisk(path string, oldExtension string, resource io.ReadSeeker) (string, error) {

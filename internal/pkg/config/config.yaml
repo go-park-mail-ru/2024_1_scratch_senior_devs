@@ -30,6 +30,7 @@ attach:
     audio/vnd.wav: .wav
     image/gif: .gif
     image/jpeg: .jpeg
+    image/webp: .webp
     image/png: .png
     video/mp4: .mp4
 elastic:
