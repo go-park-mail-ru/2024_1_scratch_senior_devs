@@ -7,10 +7,14 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJwtMiddleware(t *testing.T) {
+	testConfig := config.JwtConfig{
+		JwtCookie: "YouNoteJWT",
+	}
 	jwt, err := GenJwtToken(models.User{}, time.Minute)
 	if err != nil {
 		testLogger.Error(err.Error())
@@ -67,7 +71,7 @@ func TestJwtMiddleware(t *testing.T) {
 		{
 			name: "Test_Cookie_And_Header_NotEqual",
 			args: args{header: "Bearer qdlwfjjvfoepwk", cookie: &http.Cookie{
-				Name:     testConfig.AuthHandler.Jwt.JwtCookie,
+				Name:     testConfig.JwtCookie,
 				Secure:   true,
 				Value:    "qdl",
 				HttpOnly: true,
@@ -80,7 +84,7 @@ func TestJwtMiddleware(t *testing.T) {
 		{
 			name: "Test_Invalid_Token",
 			args: args{header: "Bearer qdlwfjjvfoepwk", cookie: &http.Cookie{
-				Name:     testConfig.AuthHandler.Jwt.JwtCookie,
+				Name:     testConfig.JwtCookie,
 				Secure:   true,
 				Value:    "qdlwfjjvfoepwk",
 				HttpOnly: true,
@@ -94,7 +98,7 @@ func TestJwtMiddleware(t *testing.T) {
 			name: "Test_Success",
 			args: args{header: "Bearer " + jwt,
 				cookie: &http.Cookie{
-					Name:     testConfig.AuthHandler.Jwt.JwtCookie,
+					Name:     testConfig.JwtCookie,
 					Secure:   true,
 					Value:    jwt,
 					HttpOnly: true,
@@ -115,7 +119,7 @@ func TestJwtMiddleware(t *testing.T) {
 			req.AddCookie(tt.args.cookie)
 			handler(res, req)
 
-			mw := CreateJwtMiddleware(testLogger, testConfig.AuthHandler.Jwt)
+			mw := CreateJwtMiddleware(testLogger, testConfig)
 			mw(http.HandlerFunc(handler)).ServeHTTP(res, req)
 			resp := res.Result()
 			defer resp.Body.Close()

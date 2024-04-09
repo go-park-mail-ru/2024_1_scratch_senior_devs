@@ -23,11 +23,9 @@ import (
 )
 
 var testLogger *slog.Logger
-var testConfig *config.Config
 
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	testConfig = config.LoadConfig("../../../config/config.yaml", testLogger)
 }
 
 const (
@@ -36,6 +34,13 @@ const (
 )
 
 func TestAttachHandler_DeleteAttach(t *testing.T) {
+	testConfig := config.AttachConfig{
+		AttachMaxFormDataSize: 31457280,
+		AttachFileTypes: map[string]string{
+			"image/jpeg": ".jpeg",
+			"image/png":  ".png",
+		},
+	}
 
 	tests := []struct {
 		name           string
@@ -103,7 +108,7 @@ func TestAttachHandler_DeleteAttach(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, tt.attachID, tt.userID)
 
-			h := CreateAttachHandler(uc, testLogger, testConfig.Attach)
+			h := CreateAttachHandler(uc, testLogger, testConfig)
 			h.DeleteAttach(w, req)
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})
@@ -111,6 +116,13 @@ func TestAttachHandler_DeleteAttach(t *testing.T) {
 }
 
 func TestAttachHandler_GetAttach(t *testing.T) {
+	testConfig := config.AttachConfig{
+		AttachMaxFormDataSize: 31457280,
+		AttachFileTypes: map[string]string{
+			"image/jpeg": ".jpeg",
+			"image/png":  ".png",
+		},
+	}
 
 	tests := []struct {
 		name           string
@@ -179,7 +191,7 @@ func TestAttachHandler_GetAttach(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, tt.attachID, tt.userID)
 
-			h := CreateAttachHandler(uc, testLogger, testConfig.Attach)
+			h := CreateAttachHandler(uc, testLogger, testConfig)
 			h.GetAttach(w, req)
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})
@@ -187,6 +199,13 @@ func TestAttachHandler_GetAttach(t *testing.T) {
 }
 
 func TestAttachHandler_AddAttach(t *testing.T) {
+	testConfig := config.AttachConfig{
+		AttachMaxFormDataSize: 31457280,
+		AttachFileTypes: map[string]string{
+			"image/jpeg": ".jpeg",
+			"image/png":  ".png",
+		},
+	}
 
 	tests := []struct {
 		name           string
@@ -196,6 +215,16 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 		attachID       uuid.UUID
 		userID         uuid.UUID
 	}{
+		{
+			name: "Test_IncorrectFileFormat",
+			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
+
+			},
+			expectedStatus: http.StatusBadRequest,
+			username:       "alla",
+			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
+			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
+		},
 		{
 			name: "Test_Success",
 			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
@@ -217,16 +246,6 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
 		},
 
-		{
-			name: "Test_IncorrectFileFormat",
-			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
-
-			},
-			expectedStatus: http.StatusBadRequest,
-			username:       "alla",
-			attachID:       uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79"),
-			userID:         uuid.FromStringOrNil("ac5566bc-3c26-45a0-963e-b168fc34fd79"),
-		},
 		{
 			name: "Test_Fail_MultipartProblem",
 			ucMocker: func(ctx context.Context, uc *mock_attach.MockAttachUsecase, attachID uuid.UUID, userID uuid.UUID) {
@@ -326,7 +345,7 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, tt.attachID, tt.userID)
 
-			h := CreateAttachHandler(uc, testLogger, testConfig.Attach)
+			h := CreateAttachHandler(uc, testLogger, testConfig)
 			h.AddAttach(w, req)
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})

@@ -21,14 +21,37 @@ import (
 )
 
 var testLogger *slog.Logger
-var testConfig *config.Config
 
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	testConfig = config.LoadConfig("../../../config/config.yaml", testLogger)
 }
 
 func TestAuthHandler_SignUp(t *testing.T) {
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	var tests = []struct {
 		name           string
 		requestBody    string
@@ -102,6 +125,31 @@ func TestAuthHandler_SignUp(t *testing.T) {
 }
 
 func TestAuthHandler_SignIn(t *testing.T) {
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	var tests = []struct {
 		name           string
 		requestBody    string
@@ -169,6 +217,31 @@ func TestAuthHandler_SignIn(t *testing.T) {
 }
 
 func TestAuthHandler_LogOut(t *testing.T) {
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	var tests = []struct {
 		name           string
 		expectedStatus int
@@ -198,6 +271,31 @@ func TestAuthHandler_LogOut(t *testing.T) {
 }
 
 func TestAuthHandler_CheckUser(t *testing.T) {
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	var tests = []struct {
 		name           string
 		id             uuid.UUID
@@ -246,6 +344,31 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 }
 
 func TestAuthHandler_GetProfile(t *testing.T) {
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	var tests = []struct {
 		name           string
 		id             uuid.UUID
@@ -310,7 +433,31 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 }
 
 func TestAuthHandler_UpdateProfile(t *testing.T) {
-
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	userID := uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79")
 	username := "user"
 	type args struct {
@@ -412,6 +559,31 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 }
 
 func TestAuthHandler_DisableSecondFactor(t *testing.T) {
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 
 	userID := uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79")
 	username := "test"
@@ -485,6 +657,31 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 }
 
 func TestAuthHandler_GetQRCode(t *testing.T) {
+	testConfig := config.Config{
+		AuthHandler: config.AuthHandlerConfig{
+			QrIssuer:              "YouNote",
+			AvatarMaxFormDataSize: 31457280,
+			AvatarFileTypes: map[string]string{
+				"image/jpeg": ".jpeg",
+				"image/png":  ".png",
+			},
+			Jwt: config.JwtConfig{
+				JwtCookie: "YouNoteJWT",
+			},
+			Csrf: config.CsrfConfig{
+				CsrfCookie:   "YouNoteCSRF",
+				CSRFLifeTime: time.Duration(24 * time.Hour),
+			},
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	userID := uuid.FromStringOrNil("ac6966bc-3c26-45a0-963e-b168fc34fd79")
 	username := "user2"
 	type args struct {

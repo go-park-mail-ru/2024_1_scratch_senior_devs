@@ -13,13 +13,15 @@ import (
 )
 
 var testLogger *slog.Logger
-var testConfig *config.Config
 
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	testConfig = config.LoadConfig("../../config/config.yaml", testLogger)
 }
 func TestCsrfMiddleware(t *testing.T) {
+	testConfig := config.CsrfConfig{
+		CsrfCookie:   "YouNoteCSRF",
+		CSRFLifeTime: time.Duration(24 * time.Hour),
+	}
 	type args struct {
 		method string
 		token  string
@@ -36,7 +38,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodGet,
 				token:  "",
 				cookie: &http.Cookie{
-					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
+					Name:     testConfig.CsrfCookie,
 					Secure:   true,
 					Value:    "",
 					HttpOnly: true,
@@ -53,7 +55,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodPost,
 				token:  "",
 				cookie: &http.Cookie{
-					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
+					Name:     testConfig.CsrfCookie,
 					Secure:   true,
 					Value:    "",
 					HttpOnly: true,
@@ -87,7 +89,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodPost,
 				token:  "9f6eae16-9e58-481d-b4a1-ec96e3f4cb93",
 				cookie: &http.Cookie{
-					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
+					Name:     testConfig.CsrfCookie,
 					Secure:   true,
 					Value:    "9f6eae16-9e58-481d-a5a6-ec96e3f4cb93",
 					HttpOnly: true,
@@ -104,7 +106,7 @@ func TestCsrfMiddleware(t *testing.T) {
 				method: http.MethodPost,
 				token:  "9f6eae16-9e58-481d-b4a1-ec96e3f4cb93",
 				cookie: &http.Cookie{
-					Name:     testConfig.AuthHandler.Csrf.CsrfCookie,
+					Name:     testConfig.CsrfCookie,
 					Secure:   true,
 					Value:    "9f6eae16-9e58-481d-b4a1-ec96e3f4cb93",
 					HttpOnly: true,
@@ -125,7 +127,7 @@ func TestCsrfMiddleware(t *testing.T) {
 			req.Header.Add("X-Csrf-Token", tt.args.token)
 
 			req.AddCookie(tt.args.cookie)
-			mw := CreateCsrfMiddleware(testLogger, testConfig.AuthHandler.Csrf)
+			mw := CreateCsrfMiddleware(testLogger, testConfig)
 			mw(http.HandlerFunc(handler)).ServeHTTP(res, req)
 			resp := res.Result()
 			defer resp.Body.Close()

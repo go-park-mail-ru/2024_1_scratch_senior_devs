@@ -3,10 +3,12 @@ package usecase
 import (
 	"context"
 	"errors"
-	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 	"log/slog"
 	"os"
 	"testing"
+	"time"
+
+	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
@@ -19,15 +21,26 @@ import (
 )
 
 var testLogger *slog.Logger
-var testConfig *config.Config
 
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	testConfig = config.LoadConfig("../../config/config.yaml", testLogger)
 }
 
-func TestAuthUsecase_SignUp(t *testing.T) { //тут можем чекнуть по сути только наличие или отсутствие ошибки. плохой тест какой-то
-
+func TestAuthUsecase_SignUp(t *testing.T) {
+	testConfig := config.Config{
+		AuthUsecase: config.AuthUsecaseConfig{
+			DefaultImagePath: "default.jpg",
+			JWTLifeTime:      time.Duration(24 * time.Hour),
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	type args struct {
 		data models.UserFormData
 	}
@@ -93,6 +106,20 @@ func getErr(wantErr bool) error {
 }
 
 func TestAuthUsecase_SignIn(t *testing.T) {
+	testConfig := config.Config{
+		AuthUsecase: config.AuthUsecaseConfig{
+			DefaultImagePath: "default.jpg",
+			JWTLifeTime:      time.Duration(24 * time.Hour),
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	type args struct {
 		data models.UserFormData
 	}
@@ -160,6 +187,20 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 }
 
 func TestCheckUser(t *testing.T) {
+	testConfig := config.Config{
+		AuthUsecase: config.AuthUsecaseConfig{
+			DefaultImagePath: "default.jpg",
+			JWTLifeTime:      time.Duration(24 * time.Hour),
+		},
+		UserValidation: config.UserValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	type args struct {
 		id uuid.UUID
 	}

@@ -4,14 +4,21 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBlockerUsecase_CheckLoginAttempts(t *testing.T) {
-
+	testConfig := config.Config{
+		Blocker: config.BlockerConfig{
+			RedisExpirationTime: time.Duration(time.Minute),
+			MaxWrongRequests:    5,
+		},
+	}
 	type args struct {
 		ctx       context.Context
 		ipAddress string

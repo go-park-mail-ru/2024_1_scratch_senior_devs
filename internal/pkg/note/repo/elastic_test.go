@@ -1,23 +1,26 @@
 package repo
 
 import (
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/olivere/elastic/v7"
-	"github.com/stretchr/testify/assert"
 	"log/slog"
 	"os"
 	"testing"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/olivere/elastic/v7"
+	"github.com/stretchr/testify/assert"
 )
 
 var testLogger *slog.Logger
-var testConfig *config.Config
 
 func init() {
 	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	testConfig = config.LoadConfig("../../config/config.yaml", testLogger)
 }
 
 func TestNoteRepo_MakeHelloNoteData(t *testing.T) {
+	testConfig := config.ElasticConfig{
+		ElasticIndexName:            "note",
+		ElasticSearchValueMinLength: 2,
+	}
 	username := "testuser"
 	expected := []byte(`
 		{
@@ -38,7 +41,7 @@ func TestNoteRepo_MakeHelloNoteData(t *testing.T) {
 	`)
 
 	t.Run("Test_MakeHelloNoteData", func(t *testing.T) {
-		repo := CreateNoteRepo(&elastic.Client{}, testLogger, testConfig.Elastic)
+		repo := CreateNoteRepo(&elastic.Client{}, testLogger, testConfig)
 		result := repo.MakeHelloNoteData(username)
 
 		assert.Equal(t, expected, result)
