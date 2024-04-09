@@ -138,6 +138,11 @@ func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
 		return errors.New("can`t get response")
 	}
 
+	_, err = repo.elastic.Reindex().Do(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	logger.Info("success")
 	return nil
 }
