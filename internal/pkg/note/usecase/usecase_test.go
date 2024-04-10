@@ -258,3 +258,58 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 		})
 	}
 }
+
+func TestNoteUsecase_UpdateNote(t *testing.T) {
+	id := uuid.NewV4()
+
+	type args struct {
+		ctx      context.Context
+		userId   uuid.UUID
+		noteData []byte
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, repo *mock_note.MockNoteRepo)
+		args       args
+		wantErr    bool
+		want       models.Note
+	}{
+		{
+			name: "TestSuccess",
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo) {
+
+				repo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
+				repo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
+
+			},
+			args: args{
+				ctx:      context.Background(),
+				userId:   uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
+				noteData: []byte("{\"title\":\"title\"}"),
+			},
+			wantErr: false,
+			want:    models.Note{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteRepo(ctl)
+			uc := CreateNoteUsecase(repo, testLogger)
+
+			tt.repoMocker(context.Background(), repo)
+
+			got, err := uc.UpdateNote(tt.args.ctx, id, tt.args.userId, tt.args.noteData)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.UpdateNote() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
+				t.Errorf("NoteUsecase.UpdateNote() returned %v, want %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
