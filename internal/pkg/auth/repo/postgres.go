@@ -37,9 +37,9 @@ func CreateAuthRepo(db pgxtype.Querier, logger *slog.Logger) *AuthRepo {
 func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	userSecret := sql.NullString{}
-	if user.SecondFactor != "" {
-		userSecret = sql.NullString{String: string(user.SecondFactor), Valid: true}
+	userSecret := sql.NullString{
+		String: string(user.SecondFactor),
+		Valid:  user.SecondFactor != "",
 	}
 
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath, userSecret)

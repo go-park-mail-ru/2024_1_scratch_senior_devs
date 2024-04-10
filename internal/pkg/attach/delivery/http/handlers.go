@@ -13,9 +13,9 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/filework"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
 )
@@ -107,7 +107,7 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	fileExtension := sources.CheckFormat(h.cfg.AttachFileTypes, content)
+	fileExtension := filework.GetFormat(h.cfg.AttachFileTypes, content)
 	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat)

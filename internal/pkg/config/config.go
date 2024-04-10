@@ -12,12 +12,12 @@ type PayloadKey string
 type RequestIdKey string
 
 type Config struct {
-	AuthHandler    AuthHandlerConfig    `yaml:"auth_handler"`
-	AuthUsecase    AuthUsecaseConfig    `yaml:"auth_usecase"`
-	Blocker        BlockerConfig        `yaml:"blocker"`
-	UserValidation UserValidationConfig `yaml:"user_validation"`
-	Attach         AttachConfig         `yaml:"attach"`
-	Elastic        ElasticConfig        `yaml:"elastic"`
+	AuthHandler AuthHandlerConfig `yaml:"auth_handler"`
+	AuthUsecase AuthUsecaseConfig `yaml:"auth_usecase"`
+	Blocker     BlockerConfig     `yaml:"blocker"`
+	Validation  ValidationConfig  `yaml:"validation"`
+	Attach      AttachConfig      `yaml:"attach"`
+	Elastic     ElasticConfig     `yaml:"elastic"`
 }
 
 type AuthHandlerConfig struct {
@@ -52,7 +52,7 @@ type BlockerConfig struct {
 	MaxWrongRequests    int           `yaml:"max_wrong_requests"`
 }
 
-type UserValidationConfig struct {
+type ValidationConfig struct {
 	MinUsernameLength    int    `yaml:"min_username_length"`
 	MaxUsernameLength    int    `yaml:"max_username_length"`
 	MinPasswordLength    int    `yaml:"min_password_length"`

@@ -15,7 +15,7 @@ auth_usecase:
 blocker:
   redis_expiration_time: 1m0s
   max_wrong_requests: 5
-user_validation:
+validation:
   min_username_length: 4
   max_username_length: 12
   min_password_length: 8

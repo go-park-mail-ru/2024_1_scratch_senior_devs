@@ -43,7 +43,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -116,7 +116,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.Validation)
 			handler.SignUp(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -141,7 +141,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -208,7 +208,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.Validation)
 			handler.SignIn(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -233,7 +233,7 @@ func TestAuthHandler_LogOut(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -262,7 +262,7 @@ func TestAuthHandler_LogOut(t *testing.T) {
 			req := httptest.NewRequest("DELETE", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.Validation)
 			handler.LogOut(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -287,7 +287,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -335,7 +335,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.Validation)
 			handler.CheckUser(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -360,7 +360,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -424,7 +424,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, testLogger, testConfig.AuthHandler, testConfig.Validation)
 			handler.GetProfile(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -449,7 +449,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -550,7 +550,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, blockerUc)
 
-			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.Validation)
 
 			h.UpdateProfile(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)
@@ -575,7 +575,7 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -648,7 +648,7 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, blockerUc)
 
-			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.Validation)
 
 			h.DisableSecondFactor(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)
@@ -673,7 +673,7 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 				CSRFLifeTime: time.Duration(24 * time.Hour),
 			},
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -744,7 +744,7 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, blockerUc)
 
-			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.UserValidation)
+			h := CreateAuthHandler(uc, blockerUc, testLogger, testConfig.AuthHandler, testConfig.Validation)
 
 			h.GetQRCode(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)

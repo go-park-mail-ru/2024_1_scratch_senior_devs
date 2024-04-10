@@ -14,9 +14,9 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cookie"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/filework"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/skip2/go-qrcode"
 )
 
@@ -25,10 +25,10 @@ type AuthHandler struct {
 	blockerUC     auth.BlockerUsecase
 	logger        *slog.Logger
 	cfg           config.AuthHandlerConfig
-	cfgValidation config.UserValidationConfig
+	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logger *slog.Logger, cfg config.AuthHandlerConfig, cfgValidation config.UserValidationConfig) *AuthHandler {
+func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logger *slog.Logger, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
 	return &AuthHandler{
 		uc:            uc,
 		blockerUC:     blockerUC,
@@ -267,10 +267,10 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateProfileAvatar godoc
-// @Summary		Update profile sources
-// @Description	Change sources
+// @Summary		Update profile filework
+// @Description	Change filework
 // @Tags 		profile
-// @ID			update-profile-sources
+// @ID			update-profile-filework
 // @Accept		multipart/form-data
 // @Produce		json
 // @Param		avatar 		formData	file						true	"avatar"
@@ -326,7 +326,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	fileExtension := sources.CheckFormat(h.cfg.AvatarFileTypes, content)
+	fileExtension := filework.GetFormat(h.cfg.AvatarFileTypes, content)
 	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat)

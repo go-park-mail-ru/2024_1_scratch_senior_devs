@@ -11,10 +11,12 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/filework"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/satori/uuid"
 )
+
+var ErrNoteNotFound = errors.New("note not found")
 
 type AttachUsecase struct {
 	repo     attach.AttachRepo
@@ -40,14 +42,14 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 	}
 	if noteData.OwnerId != userID {
 		logger.Error("user is not owner of note")
-		return models.Attach{}, errors.New("note not found")
+		return models.Attach{}, ErrNoteNotFound
 	}
 
 	attachBasePath := os.Getenv("ATTACHES_BASE_PATH")
 	newAttachId := uuid.NewV4()
 	newAttachPathNoExtension := newAttachId.String() //+ extension
 
-	newExtension, err := sources.WriteFileOnDisk(path.Join(attachBasePath, newAttachPathNoExtension), extension, attach)
+	newExtension, err := filework.WriteFileOnDisk(path.Join(attachBasePath, newAttachPathNoExtension), extension, attach)
 	if err != nil {
 		logger.Error("write on disk: " + err.Error())
 		return models.Attach{}, err
@@ -85,7 +87,7 @@ func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, u
 
 	if noteData.OwnerId != userID {
 		logger.Error("user is not owner of note")
-		return errors.New("note not found")
+		return ErrNoteNotFound
 	}
 
 	err = uc.repo.DeleteAttach(ctx, attachID)
@@ -119,7 +121,7 @@ func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, user
 
 	if noteData.OwnerId != userID {
 		logger.Error("user is not owner of note")
-		return models.Attach{}, errors.New("note not found")
+		return models.Attach{}, ErrNoteNotFound
 	}
 	return attachData, nil
 }

@@ -23,7 +23,7 @@ func (payload *ProfileUpdatePayload) Sanitize() {
 	payload.Password.New = html.EscapeString(payload.Password.New)
 }
 
-func (payload *ProfileUpdatePayload) Validate(cfg config.UserValidationConfig) error {
+func (payload *ProfileUpdatePayload) Validate(cfg config.ValidationConfig) error {
 	if err := validation.CheckPassword(payload.Password.New, cfg.MinPasswordLength, cfg.MaxPasswordLength, cfg.PasswordAllowedExtra); err != nil {
 		return err
 	}

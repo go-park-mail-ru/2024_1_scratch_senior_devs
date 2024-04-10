@@ -12,12 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testConfigAuth config.UserValidationConfig
+var testConfigAuth config.ValidationConfig
 
 func init() {
 	testLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
-	testConfigAuth = config.LoadConfig("../pkg/config/config.yaml", testLogger).UserValidation
+	testConfigAuth = config.LoadConfig("../pkg/config/config.yaml", testLogger).Validation
 }
 
 func TestValidateAuth(t *testing.T) {

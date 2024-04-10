@@ -1,4 +1,4 @@
-package sources
+package filework
 
 import (
 	"image"
@@ -15,7 +15,7 @@ import (
 
 const quality = 80
 
-func CheckFormat(choice map[string]string, content []byte) string {
+func GetFormat(choice map[string]string, content []byte) string {
 	fileFormat := http.DetectContentType(content)
 
 	for mimeType, format := range choice {

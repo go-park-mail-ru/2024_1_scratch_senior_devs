@@ -92,8 +92,8 @@ func main() {
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 
 	AuthRepo := authRepo.CreateAuthRepo(db, logger)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, NoteRepo, logger, cfg.AuthUsecase, cfg.UserValidation)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger, cfg.AuthHandler, cfg.UserValidation)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, NoteRepo, logger, cfg.AuthUsecase, cfg.Validation)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger, cfg.AuthHandler, cfg.Validation)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, logger)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteRepo, logger)

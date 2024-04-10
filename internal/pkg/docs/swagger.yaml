@@ -488,8 +488,8 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Change sources
-      operationId: update-profile-sources
+      description: Change filework
+      operationId: update-profile-filework
       parameters:
       - description: avatar
         in: formData
@@ -511,7 +511,7 @@ paths:
           description: Unauthorized
         "413":
           description: Request Entity Too Large
-      summary: Update profile sources
+      summary: Update profile filework
       tags:
       - profile
 swagger: "2.0"

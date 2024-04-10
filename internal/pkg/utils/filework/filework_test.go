@@ -1,4 +1,4 @@
-package sources
+package filework
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-func TestCheckFormat(t *testing.T) {
+func TestGetFormat(t *testing.T) {
 	choice := map[string]string{
 		"audio/mp4":     ".mp4",
 		"audio/mpeg":    ".mp3",
@@ -44,7 +44,7 @@ func TestCheckFormat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := CheckFormat(choice, tt.content)
+			result := GetFormat(choice, tt.content)
 
 			assert.Equal(t, tt.result, result)
 		})

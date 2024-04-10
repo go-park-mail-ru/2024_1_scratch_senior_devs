@@ -12,7 +12,7 @@ type UserFormData struct {
 	Code     string `json:"code,omitempty"`
 }
 
-func (form *UserFormData) Validate(cfg config.UserValidationConfig) error {
+func (form *UserFormData) Validate(cfg config.ValidationConfig) error {
 	if err := validation.CheckUsername(form.Username, cfg.MinUsernameLength, cfg.MaxUsernameLength); err != nil {
 		return err
 	}

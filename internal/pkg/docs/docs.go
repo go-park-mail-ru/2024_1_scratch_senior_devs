@@ -611,7 +611,7 @@ const docTemplate = `{
         },
         "/api/profile/update_avatar": {
             "post": {
-                "description": "Change sources",
+                "description": "Change filework",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -621,8 +621,8 @@ const docTemplate = `{
                 "tags": [
                     "profile"
                 ],
-                "summary": "Update profile sources",
-                "operationId": "update-profile-sources",
+                "summary": "Update profile filework",
+                "operationId": "update-profile-filework",
                 "parameters": [
                     {
                         "type": "file",

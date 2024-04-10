@@ -32,7 +32,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			DefaultImagePath: "default.jpg",
 			JWTLifeTime:      time.Duration(24 * time.Hour),
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -86,7 +86,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			defer ctl.Finish()
 			repo := mockAuth.NewMockAuthRepo(ctl)
 			noteRepo := mock_note.NewMockNoteRepo(ctl)
-			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.UserValidation)
+			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 
 			tt.repoMocker(context.Background(), repo, noteRepo)
 			_, _, _, err := uc.SignUp(context.Background(), tt.args.data)
@@ -111,7 +111,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			DefaultImagePath: "default.jpg",
 			JWTLifeTime:      time.Duration(24 * time.Hour),
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -172,7 +172,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
 			noteRepo := mock_note.NewMockNoteRepo(ctrl)
-			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.UserValidation)
+			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.data.Username, responses.GetHash(tt.args.data.Password), tt.wantErr)
@@ -192,7 +192,7 @@ func TestCheckUser(t *testing.T) {
 			DefaultImagePath: "default.jpg",
 			JWTLifeTime:      time.Duration(24 * time.Hour),
 		},
-		UserValidation: config.UserValidationConfig{
+		Validation: config.ValidationConfig{
 			MinUsernameLength:    4,
 			MaxUsernameLength:    12,
 			MinPasswordLength:    8,
@@ -247,7 +247,7 @@ func TestCheckUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
 			noteRepo := mock_note.NewMockNoteRepo(ctrl)
-			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.UserValidation)
+			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.id, tt.wantErr)

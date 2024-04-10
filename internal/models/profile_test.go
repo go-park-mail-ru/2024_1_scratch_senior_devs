@@ -8,12 +8,12 @@ import (
 	"testing"
 )
 
-var testConfigProfile config.UserValidationConfig
+var testConfigProfile config.ValidationConfig
 
 func init() {
 	testLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
-	testConfigProfile = config.LoadConfig("../pkg/config/config.yaml", testLogger).UserValidation
+	testConfigProfile = config.LoadConfig("../pkg/config/config.yaml", testLogger).Validation
 }
 
 func TestValidateProfile(t *testing.T) {
