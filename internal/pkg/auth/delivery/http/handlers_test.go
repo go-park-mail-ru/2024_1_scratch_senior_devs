@@ -14,7 +14,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
@@ -109,7 +109,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     tt.username,
-					PasswordHash: delivery.GetHash(tt.password),
+					PasswordHash: responses.GetHash(tt.password),
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 			}
 
@@ -199,7 +199,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     tt.username,
-					PasswordHash: delivery.GetHash(tt.password),
+					PasswordHash: responses.GetHash(tt.password),
 				}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 			}
 
@@ -411,7 +411,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 					Id:           tt.id,
 					Description:  "",
 					Username:     tt.username,
-					PasswordHash: delivery.GetHash("fh9ch283c"),
+					PasswordHash: responses.GetHash("fh9ch283c"),
 				}, tt.usecaseErr)
 			}
 
@@ -508,7 +508,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 					Id:           userID,
 					Description:  "slkakjckld",
 					Username:     username,
-					PasswordHash: delivery.GetHash("12345678b"),
+					PasswordHash: responses.GetHash("12345678b"),
 				}, nil)
 			},
 			wantStatus: http.StatusOK,

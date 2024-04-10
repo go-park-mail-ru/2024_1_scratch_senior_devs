@@ -11,7 +11,7 @@ import (
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -175,7 +175,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.UserValidation)
 			defer ctrl.Finish()
 
-			tt.repoMocker(repo, tt.args.data.Username, delivery.GetHash(tt.args.data.Password), tt.wantErr)
+			tt.repoMocker(repo, tt.args.data.Username, responses.GetHash(tt.args.data.Password), tt.wantErr)
 			_, _, _, err := uc.SignIn(context.Background(), tt.args.data)
 
 			if (err != nil) != tt.wantErr {
@@ -217,7 +217,7 @@ func TestCheckUser(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     "testuser1",
-					PasswordHash: delivery.GetHash("f34ovin332"),
+					PasswordHash: responses.GetHash("f34ovin332"),
 				}, getErr(wantErr)).Times(1)
 			},
 			args: args{
@@ -232,7 +232,7 @@ func TestCheckUser(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     "testuser1",
-					PasswordHash: delivery.GetHash("f34ovin332"),
+					PasswordHash: responses.GetHash("f34ovin332"),
 				}, getErr(wantErr)).Times(1)
 			},
 			args: args{

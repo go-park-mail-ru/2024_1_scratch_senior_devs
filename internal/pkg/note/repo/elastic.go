@@ -5,15 +5,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/olivere/elastic/v7"
 	"log/slog"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/olivere/elastic/v7"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/satori/uuid"
+)
+
+var (
+	ErrCantGetResponse = errors.New("can`t get response")
 )
 
 type NoteRepo struct {
@@ -48,7 +53,7 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userID uuid.UUID, count 
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return []models.Note{}, errors.New("can`t get response")
+		return []models.Note{}, ErrCantGetResponse
 	}
 
 	notes := make([]models.Note, 0)
@@ -81,7 +86,7 @@ func (repo *NoteRepo) ReadNote(ctx context.Context, noteID uuid.UUID) (models.No
 		Do(context.Background())
 	if err != nil {
 		logger.Error(err.Error())
-		return models.Note{}, errors.New("can`t get response")
+		return models.Note{}, ErrCantGetResponse
 	}
 
 	if len(search.Hits.Hits) == 0 {
@@ -135,7 +140,7 @@ func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("can`t get response")
+		return ErrCantGetResponse
 	}
 
 	_, err = repo.elastic.Reindex().Do(ctx)
@@ -177,7 +182,7 @@ func (repo *NoteRepo) UpdateNote(ctx context.Context, note models.Note) error {
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("can`t get response")
+		return ErrCantGetResponse
 	}
 
 	logger.Info("success")
@@ -194,7 +199,7 @@ func (repo *NoteRepo) DeleteNote(ctx context.Context, id uuid.UUID) error {
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
-		return errors.New("can`t get response")
+		return ErrCantGetResponse
 	}
 
 	logger.Info("success")

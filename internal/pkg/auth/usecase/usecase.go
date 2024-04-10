@@ -2,18 +2,19 @@ package usecase
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"io"
 	"log/slog"
 	"os"
 	"path"
 	"time"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 
 	"github.com/satori/uuid"
@@ -49,7 +50,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	newUser := models.User{
 		Id:           uuid.NewV4(),
 		Username:     data.Username,
-		PasswordHash: delivery.GetHash(data.Password),
+		PasswordHash: responses.GetHash(data.Password),
 		ImagePath:    uc.cfg.DefaultImagePath,
 		CreateTime:   currentTime,
 		SecondFactor: "",
@@ -91,7 +92,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 		logger.Error(err.Error())
 		return models.User{}, "", currentTime, auth.ErrUserNotFound
 	}
-	if user.PasswordHash != delivery.GetHash(data.Password) {
+	if user.PasswordHash != responses.GetHash(data.Password) {
 		logger.Error("wrong password")
 		return models.User{}, "", currentTime, auth.ErrWrongUserData
 	}
@@ -149,12 +150,12 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 			return models.User{}, err
 		}
 
-		if user.PasswordHash != delivery.GetHash(payload.Password.Old) {
+		if user.PasswordHash != responses.GetHash(payload.Password.Old) {
 			logger.Error("wrong password")
 			return models.User{}, auth.ErrWrongPassword
 		}
 
-		user.PasswordHash = delivery.GetHash(payload.Password.New)
+		user.PasswordHash = responses.GetHash(payload.Password.New)
 	}
 
 	user.Description = payload.Description

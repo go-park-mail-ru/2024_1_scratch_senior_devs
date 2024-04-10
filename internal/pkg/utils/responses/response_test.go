@@ -1,10 +1,12 @@
-package delivery
+package responses
 
 import (
-	"github.com/stretchr/testify/assert"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWriteResponseData_Success(t *testing.T) {
@@ -75,7 +77,7 @@ func TestWriteErrorMessage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			WriteErrorMessage(w, http.StatusOK, "abc")
+			WriteErrorMessage(w, http.StatusOK, errors.New("err"))
 
 			assert.Equal(t, w.Code, http.StatusOK)
 		})

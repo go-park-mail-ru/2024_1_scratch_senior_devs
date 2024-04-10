@@ -11,7 +11,7 @@ import (
 
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
 	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v4"
 	"github.com/satori/uuid"
@@ -40,7 +40,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 					userId,
 					"",
 					"testuser2",
-					delivery.GetHash("f28fhc2o4m3"),
+					responses.GetHash("f28fhc2o4m3"),
 					currTime,
 					"default.jpg",
 					sql.NullString{},
@@ -63,7 +63,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 				Id:           userId,
 				Description:  "",
 				Username:     "testuser2",
-				PasswordHash: delivery.GetHash("f28fhc2o4m3"),
+				PasswordHash: responses.GetHash("f28fhc2o4m3"),
 				CreateTime:   currTime,
 				ImagePath:    "default.jpg",
 				SecondFactor: "",

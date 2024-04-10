@@ -1,11 +1,12 @@
-package delivery
+package responses
 
 import (
 	"bytes"
 	"context"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRequestData(t *testing.T) {

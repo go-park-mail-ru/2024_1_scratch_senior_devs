@@ -1,4 +1,4 @@
-package delivery
+package responses
 
 import (
 	"crypto/sha256"

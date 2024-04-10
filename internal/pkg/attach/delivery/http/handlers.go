@@ -13,8 +13,8 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/delivery"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/sources"
 	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
@@ -48,7 +48,7 @@ func CreateAttachHandler(uc attach.AttachUsecase, logger *slog.Logger, cfg confi
 // @Param		id			path		string						true	"note id"
 // @Param		attach 		formData	file						true	"attach file"
 // @Success		200			{object}	models.Attach				true	"attach model"
-// @Failure		400			{object}	delivery.ErrorResponse		true	"error"
+// @Failure		400			{object}	responses.ErrorResponse		true	"error"
 // @Failure		401
 // @Failure		413
 // @Router		/api/note/{id}/add_attach [post]
@@ -57,7 +57,7 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -66,7 +66,7 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 	noteId, err := uuid.FromString(noteIdString)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
-		delivery.WriteErrorMessage(w, http.StatusBadRequest, "note id must be a type of uuid")
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
 
@@ -88,14 +88,14 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 	files := r.MultipartForm.File["attach"]
 	if len(files) > 1 {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
-		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber)
 		return
 	}
 
 	attachFile, _, err := r.FormFile("attach")
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFilesNumber)
 		return
 	}
 	content, err := io.ReadAll(attachFile)
@@ -110,7 +110,7 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 	fileExtension := sources.CheckFormat(h.cfg.AttachFileTypes, content)
 	if fileExtension == "" {
 		log.LogHandlerError(logger, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
-		delivery.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrWrongFileFormat)
 		return
 	}
 
@@ -121,8 +121,8 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := delivery.WriteResponseData(w, attachModel, http.StatusOK); err != nil {
-		log.LogHandlerError(logger, http.StatusInternalServerError, delivery.WriteBodyError+err.Error())
+	if err := responses.WriteResponseData(w, attachModel, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -137,16 +137,16 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 // @ID			delete-attach
 // @Param		id			path		string		true	"attach id"
 // @Success		204
-// @Failure		400			{object}	delivery.ErrorResponse			true	"incorrect id"
+// @Failure		400			{object}	responses.ErrorResponse			true	"incorrect id"
 // @Failure		401
-// @Failure		404			{object}	delivery.ErrorResponse			true	"not found"
+// @Failure		404			{object}	responses.ErrorResponse			true	"not found"
 // @Router		/api/attach/delete [delete]
 func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -155,7 +155,7 @@ func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
 	attachId, err := uuid.FromString(attachIdString)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
-		delivery.WriteErrorMessage(w, http.StatusBadRequest, "attach id must be a type of uuid")
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("attach id must be a type of uuid"))
 		return
 	}
 
@@ -185,7 +185,7 @@ func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
-		log.LogHandlerError(logger, http.StatusUnauthorized, delivery.JwtPayloadParseError)
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -193,7 +193,7 @@ func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
 	attachId, err := uuid.FromString(attachIdString)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
-		delivery.WriteErrorMessage(w, http.StatusBadRequest, "attach id must be a type of uuid")
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("attach id must be a type of uuid"))
 		return
 	}
 	attach, err := h.uc.GetAttach(r.Context(), attachId, jwtPayload.Id)
@@ -206,7 +206,7 @@ func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 	fileInfo, err := os.Stat(targetPath)
 	if err != nil {
-		delivery.WriteErrorMessage(w, http.StatusNotFound, "File not found")
+		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("file not found"))
 		return
 	}
 	w.Header().Add("etag", fileInfo.ModTime().UTC().String())

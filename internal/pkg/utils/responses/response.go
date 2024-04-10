@@ -1,4 +1,4 @@
-package delivery
+package responses
 
 import (
 	"encoding/json"
@@ -32,7 +32,7 @@ func WriteResponseData(w http.ResponseWriter, responseData interface{}, successS
 	return nil
 }
 
-func WriteErrorMessage(w http.ResponseWriter, statusCode int, message string) {
+func WriteErrorMessage(w http.ResponseWriter, statusCode int, err error) {
 	w.WriteHeader(statusCode)
-	_, _ = fmt.Fprintf(w, `{"message":"%s"}`, message)
+	_, _ = fmt.Fprintf(w, `{"message":"%s"}`, err.Error())
 }
