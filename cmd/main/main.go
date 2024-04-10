@@ -84,19 +84,20 @@ func main() {
 	CsrfMiddleware := protection.CreateCsrfMiddleware(logger, cfg.AuthHandler.Csrf)
 	RecoverMiddleware := recover.CreateRecoverMiddleware(logger)
 
+	NoteBaseRepo := noteRepo.CreateNotePostgres(db, logger)
+	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, logger, cfg.Elastic)
+	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, logger, cfg.Elastic)
+	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
+
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger, cfg.Blocker)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, logger, cfg.Blocker)
 
-	NoteRepo := noteRepo.CreateNoteRepo(elasticClient, logger, cfg.Elastic)
-	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteRepo, logger)
-	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
-
 	AuthRepo := authRepo.CreateAuthRepo(db, logger)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, NoteRepo, logger, cfg.AuthUsecase, cfg.Validation)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, NoteSearchRepo, logger, cfg.AuthUsecase, cfg.Validation)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, logger, cfg.AuthHandler, cfg.Validation)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, logger)
-	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteRepo, logger)
+	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo, logger)
 	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, logger, cfg.Attach)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()

@@ -25,13 +25,13 @@ import (
 
 type AuthUsecase struct {
 	repo          auth.AuthRepo
-	noteRepo      note.NoteRepo
+	noteRepo      note.NoteSearchRepo
 	logger        *slog.Logger
 	cfg           config.AuthUsecaseConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthUsecase(repo auth.AuthRepo, noteRepo note.NoteRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.ValidationConfig) *AuthUsecase {
+func CreateAuthUsecase(repo auth.AuthRepo, noteRepo note.NoteSearchRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.ValidationConfig) *AuthUsecase {
 	return &AuthUsecase{
 		repo:          repo,
 		noteRepo:      noteRepo,

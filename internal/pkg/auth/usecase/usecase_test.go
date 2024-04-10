@@ -46,13 +46,13 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context.Context, *mockAuth.MockAuthRepo, *mock_note.MockNoteRepo)
+		repoMocker func(context.Context, *mockAuth.MockAuthRepo, *mock_note.MockNoteSearchRepo)
 		args       args
 		wantErr    bool
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteRepo) {
+			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteSearchRepo) {
 				repo.EXPECT().CreateUser(ctx, gomock.Any()).Return(nil).Times(1)
 				noteRepo.EXPECT().CreateNote(ctx, gomock.Any()).Return(nil).Times(1)
 				noteRepo.EXPECT().MakeHelloNoteData(gomock.Any()).Return([]byte{}).Times(1)
@@ -67,7 +67,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 		},
 		{
 			name: "TestFail",
-			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteRepo) {
+			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteSearchRepo) {
 				repo.EXPECT().CreateUser(ctx, gomock.Any()).Return(errors.New("error creating user")).Times(1)
 			},
 			args: args{
@@ -85,7 +85,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
 			repo := mockAuth.NewMockAuthRepo(ctl)
-			noteRepo := mock_note.NewMockNoteRepo(ctl)
+			noteRepo := mock_note.NewMockNoteSearchRepo(ctl)
 			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 
 			tt.repoMocker(context.Background(), repo, noteRepo)
@@ -171,7 +171,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			noteRepo := mock_note.NewMockNoteRepo(ctrl)
+			noteRepo := mock_note.NewMockNoteSearchRepo(ctrl)
 			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
@@ -246,7 +246,7 @@ func TestCheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			noteRepo := mock_note.NewMockNoteRepo(ctrl)
+			noteRepo := mock_note.NewMockNoteSearchRepo(ctrl)
 			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 

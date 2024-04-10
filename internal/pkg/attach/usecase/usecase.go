@@ -20,11 +20,11 @@ var ErrNoteNotFound = errors.New("note not found")
 
 type AttachUsecase struct {
 	repo     attach.AttachRepo
-	noteRepo note.NoteRepo
+	noteRepo note.NoteBaseRepo
 	logger   *slog.Logger
 }
 
-func CreateAttachUsecase(repo attach.AttachRepo, noteRepo note.NoteRepo, logger *slog.Logger) *AttachUsecase {
+func CreateAttachUsecase(repo attach.AttachRepo, noteRepo note.NoteBaseRepo, logger *slog.Logger) *AttachUsecase {
 	return &AttachUsecase{
 		repo:     repo,
 		noteRepo: noteRepo,

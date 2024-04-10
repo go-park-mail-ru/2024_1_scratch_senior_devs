@@ -17,9 +17,16 @@ type NoteUsecase interface {
 	DeleteNote(context.Context, uuid.UUID, uuid.UUID) error
 }
 
-type NoteRepo interface {
-	ReadAllNotes(context.Context, uuid.UUID, int64, int64, string) ([]models.Note, error)
+type NoteBaseRepo interface {
+	ReadAllNotes(context.Context, uuid.UUID, int64, int64) ([]models.Note, error)
 	ReadNote(context.Context, uuid.UUID) (models.Note, error)
+	CreateNote(context.Context, models.Note) error
+	UpdateNote(context.Context, models.Note) error
+	DeleteNote(context.Context, uuid.UUID) error
+}
+
+type NoteSearchRepo interface {
+	SearchNotes(context.Context, uuid.UUID, int64, int64, string) ([]models.Note, error)
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
