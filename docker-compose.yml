@@ -2,6 +2,7 @@ version: "3.3"
 
 services:
   main:
+    container_name: main
     build:
       context: .
       dockerfile: ./build/main.Dockerfile
@@ -10,11 +11,25 @@ services:
     depends_on:
       postgres:
         condition: service_started
+      redis:
+        condition: service_started
+      elastic:
+        condition: service_started
     restart: always
     ports:
       - "8080:8080"
     networks:
       - YouNote-network
+    volumes:
+      - type: bind
+        source: /var/log/
+        target: /var/log/
+      - type: bind
+        source: /opt/images/
+        target: /opt/images/
+      - type: bind
+        source: /opt/attaches/
+        target: /opt/attaches/
   postgres:
     env_file:
       - .env
@@ -30,8 +45,87 @@ services:
       - YouNote-network
     volumes:
       - ./build/sql/create_tables.sql:/docker-entrypoint-initdb.d/initdb.sql
+      - younote-db-data:/var/lib/postgresql/data
+  proxy:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - type: bind
+        source: /etc/letsencrypt/live/you-note.ru/fullchain.pem
+        target: /etc/letsencrypt/live/you-note.ru/fullchain.pem
+      - type: bind
+        source: /etc/letsencrypt/live/you-note.ru/privkey.pem
+        target: /etc/letsencrypt/live/you-note.ru/privkey.pem
+      - type: bind
+        source: /var/log/nginx/
+        target: /var/log/nginx/
+      - type: bind
+        source: /opt/images/
+        target: /opt/images/
+      - type: bind
+        source: /opt/public/
+        target: /opt/public/
+      - type: bind
+        source: /opt/attaches/
+        target: /opt/attaches/
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/nginx.conf
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      - YouNote-network
+  redis:
+    container_name: redis
+    image: redis:latest
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - younote-redis-data:/var/lib/redis/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "127.0.0.1:6379:6379"
+    env_file:
+      - .env
+    networks:
+      - YouNote-network
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.19
+    container_name: elastic
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - http.cors.enabled=true
+      - http.cors.allow-credentials=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,X-Csrf-Token
+      - http.cors.allow-origin=/http?:\/\/localhost(:[0-9]+)?/
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - younote-elastic-data:/usr/share/elasticsearch/data
+      - ./elastic.conf:/usr/local/etc/elasticsearch/elastic.conf
+    ports:
+      - "9200:9200"
+    env_file:
+      - .env
+    networks:
+      - YouNote-network
 
 networks:
   YouNote-network:
     name: YouNote-network
     driver: bridge
+
+volumes:
+  younote-db-data:
+  younote-redis-data:
+  younote-elastic-data:

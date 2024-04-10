@@ -3,9 +3,16 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils"
-	"github.com/satori/uuid"
+	"log/slog"
+	"os"
 	"testing"
+	"time"
+
+	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
+	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mockAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
@@ -13,21 +20,42 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestAuthUsecase_SignUp(t *testing.T) { //тут можем чекнуть по сути только наличие или отсутствие ошибки. плохой тест какой-то
+var testLogger *slog.Logger
 
+func init() {
+	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+}
+
+func TestAuthUsecase_SignUp(t *testing.T) {
+	testConfig := config.Config{
+		AuthUsecase: config.AuthUsecaseConfig{
+			DefaultImagePath: "default.jpg",
+			JWTLifeTime:      time.Duration(24 * time.Hour),
+		},
+		Validation: config.ValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	type args struct {
 		data models.UserFormData
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context.Context, *mockAuth.MockAuthRepo)
+		repoMocker func(context.Context, *mockAuth.MockAuthRepo, *mock_note.MockNoteRepo)
 		args       args
 		wantErr    bool
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo) {
+			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteRepo) {
 				repo.EXPECT().CreateUser(ctx, gomock.Any()).Return(nil).Times(1)
+				noteRepo.EXPECT().CreateNote(ctx, gomock.Any()).Return(nil).Times(1)
+				noteRepo.EXPECT().MakeHelloNoteData(gomock.Any()).Return([]byte{}).Times(1)
 			},
 			args: args{
 				data: models.UserFormData{
@@ -38,8 +66,8 @@ func TestAuthUsecase_SignUp(t *testing.T) { //тут можем чекнуть �
 			wantErr: false,
 		},
 		{
-			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo) {
+			name: "TestFail",
+			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteRepo) {
 				repo.EXPECT().CreateUser(ctx, gomock.Any()).Return(errors.New("error creating user")).Times(1)
 			},
 			args: args{
@@ -57,9 +85,10 @@ func TestAuthUsecase_SignUp(t *testing.T) { //тут можем чекнуть �
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
 			repo := mockAuth.NewMockAuthRepo(ctl)
-			uc := CreateAuthUsecase(repo)
+			noteRepo := mock_note.NewMockNoteRepo(ctl)
+			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 
-			tt.repoMocker(context.Background(), repo)
+			tt.repoMocker(context.Background(), repo, noteRepo)
 			_, _, _, err := uc.SignUp(context.Background(), tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AuthUsecase.SignUp() error = %v, wantErr %v", err, tt.wantErr)
@@ -77,6 +106,20 @@ func getErr(wantErr bool) error {
 }
 
 func TestAuthUsecase_SignIn(t *testing.T) {
+	testConfig := config.Config{
+		AuthUsecase: config.AuthUsecaseConfig{
+			DefaultImagePath: "default.jpg",
+			JWTLifeTime:      time.Duration(24 * time.Hour),
+		},
+		Validation: config.ValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	type args struct {
 		data models.UserFormData
 	}
@@ -128,10 +171,11 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			uc := CreateAuthUsecase(repo)
+			noteRepo := mock_note.NewMockNoteRepo(ctrl)
+			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
-			tt.repoMocker(repo, tt.args.data.Username, utils.GetHash(tt.args.data.Password), tt.wantErr)
+			tt.repoMocker(repo, tt.args.data.Username, responses.GetHash(tt.args.data.Password), tt.wantErr)
 			_, _, _, err := uc.SignIn(context.Background(), tt.args.data)
 
 			if (err != nil) != tt.wantErr {
@@ -143,6 +187,20 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 }
 
 func TestCheckUser(t *testing.T) {
+	testConfig := config.Config{
+		AuthUsecase: config.AuthUsecaseConfig{
+			DefaultImagePath: "default.jpg",
+			JWTLifeTime:      time.Duration(24 * time.Hour),
+		},
+		Validation: config.ValidationConfig{
+			MinUsernameLength:    4,
+			MaxUsernameLength:    12,
+			MinPasswordLength:    8,
+			MaxPasswordLength:    20,
+			PasswordAllowedExtra: "$%&#",
+			SecretLength:         6,
+		},
+	}
 	type args struct {
 		id uuid.UUID
 	}
@@ -159,7 +217,7 @@ func TestCheckUser(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     "testuser1",
-					PasswordHash: utils.GetHash("f34ovin332"),
+					PasswordHash: responses.GetHash("f34ovin332"),
 				}, getErr(wantErr)).Times(1)
 			},
 			args: args{
@@ -174,7 +232,7 @@ func TestCheckUser(t *testing.T) {
 					Id:           uuid.NewV4(),
 					Description:  "",
 					Username:     "testuser1",
-					PasswordHash: utils.GetHash("f34ovin332"),
+					PasswordHash: responses.GetHash("f34ovin332"),
 				}, getErr(wantErr)).Times(1)
 			},
 			args: args{
@@ -188,7 +246,8 @@ func TestCheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			uc := CreateAuthUsecase(repo)
+			noteRepo := mock_note.NewMockNoteRepo(ctrl)
+			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.id, tt.wantErr)

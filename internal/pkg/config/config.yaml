@@ -1,0 +1,45 @@
+auth_handler:
+  avatar_max_form_data_size:  31457280 #5 * 1024 * 1024
+  avatar_file_types:
+    image/jpeg: .jpeg
+    image/png: .png    
+  qr_issuer: YouNote
+  jwt:
+    jwt_cookie: YouNoteJWT
+  csrf:
+    csrf_cookie: YouNoteCSRF
+    csrf_lifetime: 24h0m0s
+auth_usecase:
+  default_image_path: default.jpg
+  jwt_lifetime: 24h0m0s
+blocker:
+  redis_expiration_time: 1m0s
+  max_wrong_requests: 5
+validation:
+  min_username_length: 4
+  max_username_length: 12
+  min_password_length: 8
+  max_password_length: 20
+  password_allowed_extra: $%&#
+  secret_length: 6
+attach:
+  attach_max_form_data_size: 31457280 # 30 * 1024 * 1024
+  attach_file_types:
+    audio/mp4: .mp4
+    audio/mpeg: .mp3
+    audio/vnd.wav: .wav
+    image/gif: .gif
+    image/jpeg: .jpeg
+    image/webp: .webp
+    image/png: .png
+    video/mp4: .mp4
+elastic:
+  elastic_index_name: notes
+  elastic_search_value_min_length: 2
+
+
+
+
+
+
+

@@ -1,12 +1,31 @@
 definitions:
-  models.Note:
+  delivery.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  models.Attach:
+    properties:
+      id:
+        type: string
+      note_id:
+        type: string
+      path:
+        type: string
+    type: object
+  models.NoteDataForSwagger:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
+  models.NoteForSwagger:
     properties:
       create_time:
         type: string
       data:
-        items:
-          type: integer
-        type: array
+        $ref: '#/definitions/models.NoteDataForSwagger'
       id:
         type: string
       owner_id:
@@ -14,7 +33,26 @@ definitions:
       update_time:
         type: string
     type: object
-  models.User:
+  models.ProfileUpdatePayload:
+    properties:
+      description:
+        type: string
+      password:
+        $ref: '#/definitions/models.passwords'
+    type: object
+  models.SignUpPayloadForSwagger:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UpsertNoteRequestForSwagger:
+    properties:
+      data:
+        $ref: '#/definitions/models.NoteDataForSwagger'
+    type: object
+  models.UserForSwagger:
     properties:
       create_time:
         type: string
@@ -24,35 +62,122 @@ definitions:
         type: string
       image_path:
         type: string
+      second_factor:
+        type: boolean
       username:
         type: string
     type: object
-  utils.ErrorResponse:
+  models.UserFormData:
     properties:
-      message:
+      code:
+        type: string
+      password:
+        type: string
+      username:
         type: string
     type: object
-host: you-note.ru:8080
+  models.passwords:
+    properties:
+      new:
+        type: string
+      old:
+        type: string
+    type: object
+host: you-note.ru
 info:
   contact: {}
   description: API for YouNote service
   title: YouNote API
   version: "1.0"
 paths:
+  /api/attach/delete:
+    delete:
+      description: Remove attach from note
+      operationId: delete-attach
+      parameters:
+      - description: attach id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: incorrect id
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+      summary: Delete attach
+      tags:
+      - attach
+  /api/attaches/{id}:
+    get:
+      description: Get attach if it belongs to current user
+      operationId: get-attach
+      parameters:
+      - description: attach id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/webp
+      responses:
+        "200":
+          description: attach
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+      summary: Get attach
+      tags:
+      - attach
   /api/auth/check_user:
     get:
       description: Get user info if user is authorized
       operationId: check-user
-      produces:
-      - application/json
       responses:
         "200":
-          description: user
-          schema:
-            $ref: '#/definitions/models.User'
+          description: OK
         "401":
           description: Unauthorized
       summary: Check user
+      tags:
+      - auth
+  /api/auth/disable_2fa:
+    delete:
+      description: Remove secret for QR-code from database
+      operationId: disable-second-factor
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+      summary: Disable second factor
+      tags:
+      - auth
+  /api/auth/get_qr:
+    get:
+      description: Generate QR code for 2FA
+      operationId: get-qr-code
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: QR-code
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+      summary: Get QR code
       tags:
       - auth
   /api/auth/login:
@@ -62,29 +187,29 @@ paths:
       description: Login as a user
       operationId: sign-in
       parameters:
-      - description: username
+      - description: login data
         in: body
-        name: username
+        name: credentials
         required: true
         schema:
-          type: string
-      - description: password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/models.UserFormData'
       produces:
       - application/json
       responses:
         "200":
           description: user
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserForSwagger'
+        "202":
+          description: Accepted
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: error
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
       summary: Sign in
       tags:
       - auth
@@ -95,6 +220,8 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Unauthorized
       summary: Log out
       tags:
       - auth
@@ -105,36 +232,195 @@ paths:
       description: Add a new user to the database
       operationId: sign-up
       parameters:
-      - description: username
+      - description: registration data
         in: body
-        name: username
+        name: credentials
         required: true
         schema:
-          type: string
-      - description: password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/models.SignUpPayloadForSwagger'
       produces:
       - application/json
       responses:
         "200":
           description: user
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserForSwagger'
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
       summary: Sign up
       tags:
       - auth
+  /api/note/{id}:
+    get:
+      description: Get one of notes of current user
+      operationId: get-note
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.NoteForSwagger'
+        "400":
+          description: incorrect id
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "404":
+          description: note not found
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+      summary: Get one note
+      tags:
+      - note
+  /api/note/{id}/add_attach:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Attach new file to note
+      operationId: add-attach
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: attach file
+        in: formData
+        name: attach
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: attach model
+          schema:
+            $ref: '#/definitions/models.Attach'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "413":
+          description: Request Entity Too Large
+      summary: Add attachment
+      tags:
+      - attach
+  /api/note/{id}/delete:
+    delete:
+      description: Delete selected note of current user
+      operationId: delete-note
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: incorrect id
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "404":
+          description: note not found
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+      summary: Delete note
+      tags:
+      - note
+  /api/note/{id}/edit:
+    post:
+      consumes:
+      - application/json
+      description: Create new note to current user
+      operationId: update-note
+      parameters:
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: note data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpsertNoteRequestForSwagger'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.NoteForSwagger'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+      summary: Update note
+      tags:
+      - note
+  /api/note/add:
+    post:
+      consumes:
+      - application/json
+      description: Create new note to current user
+      operationId: add-note
+      parameters:
+      - description: note data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpsertNoteRequestForSwagger'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.NoteForSwagger'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+      summary: Add note
+      tags:
+      - note
   /api/note/get_all:
     get:
       description: Get a list of notes of current user
       operationId: get-all-notes
+      parameters:
+      - description: notes count
+        in: query
+        name: count
+        type: integer
+      - description: notes offset
+        in: query
+        name: offset
+        type: integer
+      - description: notes title substring
+        in: query
+        name: title
+        type: string
       produces:
       - application/json
       responses:
@@ -142,15 +428,90 @@ paths:
           description: notes
           schema:
             items:
-              $ref: '#/definitions/models.Note'
+              $ref: '#/definitions/models.NoteForSwagger'
             type: array
         "400":
           description: error
           schema:
-            $ref: '#/definitions/utils.ErrorResponse'
+            $ref: '#/definitions/delivery.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Get all notes
       tags:
       - note
+  /api/profile/get:
+    get:
+      description: Get user info if user is authorized
+      operationId: get-profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.UserForSwagger'
+        "401":
+          description: Unauthorized
+      summary: Get profile
+      tags:
+      - profile
+  /api/profile/update:
+    post:
+      consumes:
+      - application/json
+      description: Change password and/or description
+      operationId: update-profile
+      parameters:
+      - description: update data
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.ProfileUpdatePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.UserForSwagger'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+      summary: Update profile
+      tags:
+      - profile
+  /api/profile/update_avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Change filework
+      operationId: update-profile-filework
+      parameters:
+      - description: avatar
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user
+          schema:
+            $ref: '#/definitions/models.UserForSwagger'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/delivery.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "413":
+          description: Request Entity Too Large
+      summary: Update profile filework
+      tags:
+      - profile
 swagger: "2.0"

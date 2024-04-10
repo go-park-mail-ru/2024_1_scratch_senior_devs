@@ -16,12 +16,81 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/attach/delete": {
+            "delete": {
+                "description": "Remove attach from note",
+                "tags": [
+                    "attach"
+                ],
+                "summary": "Delete attach",
+                "operationId": "delete-attach",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "attach id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "incorrect id",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/attaches/{id}": {
+            "get": {
+                "description": "Get attach if it belongs to current user",
+                "produces": [
+                    "image/webp"
+                ],
+                "tags": [
+                    "attach"
+                ],
+                "summary": "Get attach",
+                "operationId": "get-attach",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "attach id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attach",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
         "/api/auth/check_user": {
             "get": {
                 "description": "Get user info if user is authorized",
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "auth"
                 ],
@@ -29,10 +98,52 @@ const docTemplate = `{
                 "operationId": "check-user",
                 "responses": {
                     "200": {
-                        "description": "user",
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/auth/disable_2fa": {
+            "delete": {
+                "description": "Remove secret for QR-code from database",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Disable second factor",
+                "operationId": "disable-second-factor",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/auth/get_qr": {
+            "get": {
+                "description": "Generate QR code for 2FA",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get QR code",
+                "operationId": "get-qr-code",
+                "responses": {
+                    "200": {
+                        "description": "QR-code",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "type": "file"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -56,21 +167,12 @@ const docTemplate = `{
                 "operationId": "sign-in",
                 "parameters": [
                     {
-                        "description": "username",
-                        "name": "username",
+                        "description": "login data",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.UserFormData"
                         }
                     }
                 ],
@@ -78,13 +180,22 @@ const docTemplate = `{
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
+                    },
+                    "202": {
+                        "description": "Accepted"
                     },
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     }
                 }
@@ -101,6 +212,9 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -121,21 +235,12 @@ const docTemplate = `{
                 "operationId": "sign-up",
                 "parameters": [
                     {
-                        "description": "username",
-                        "name": "username",
+                        "description": "registration data",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.SignUpPayloadForSwagger"
                         }
                     }
                 ],
@@ -143,14 +248,58 @@ const docTemplate = `{
                     "200": {
                         "description": "user",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserForSwagger"
                         }
                     },
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/api/note/add": {
+            "post": {
+                "description": "Create new note to current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "note"
+                ],
+                "summary": "Add note",
+                "operationId": "add-note",
+                "parameters": [
+                    {
+                        "description": "note data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpsertNoteRequestForSwagger"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.NoteForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -166,20 +315,40 @@ const docTemplate = `{
                 ],
                 "summary": "Get all notes",
                 "operationId": "get-all-notes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "notes count",
+                        "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "notes offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "notes title substring",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "notes",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Note"
+                                "$ref": "#/definitions/models.NoteForSwagger"
                             }
                         }
                     },
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorResponse"
+                            "$ref": "#/definitions/delivery.ErrorResponse"
                         }
                     },
                     "401": {
@@ -187,20 +356,347 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/note/{id}": {
+            "get": {
+                "description": "Get one of notes of current user",
+                "tags": [
+                    "note"
+                ],
+                "summary": "Get one note",
+                "operationId": "get-note",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.NoteForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "incorrect id",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "note not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/note/{id}/add_attach": {
+            "post": {
+                "description": "Attach new file to note",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "attach"
+                ],
+                "summary": "Add attachment",
+                "operationId": "add-attach",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "attach file",
+                        "name": "attach",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attach model",
+                        "schema": {
+                            "$ref": "#/definitions/models.Attach"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large"
+                    }
+                }
+            }
+        },
+        "/api/note/{id}/delete": {
+            "delete": {
+                "description": "Delete selected note of current user",
+                "tags": [
+                    "note"
+                ],
+                "summary": "Delete note",
+                "operationId": "delete-note",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "incorrect id",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "note not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/note/{id}/edit": {
+            "post": {
+                "description": "Create new note to current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "note"
+                ],
+                "summary": "Update note",
+                "operationId": "update-note",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "note data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpsertNoteRequestForSwagger"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.NoteForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/profile/get": {
+            "get": {
+                "description": "Get user info if user is authorized",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Get profile",
+                "operationId": "get-profile",
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserForSwagger"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/profile/update": {
+            "post": {
+                "description": "Change password and/or description",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Update profile",
+                "operationId": "update-profile",
+                "parameters": [
+                    {
+                        "description": "update data",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ProfileUpdatePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/profile/update_avatar": {
+            "post": {
+                "description": "Change filework",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Update profile filework",
+                "operationId": "update-profile-filework",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "avatar",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large"
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "models.Note": {
+        "delivery.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Attach": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "note_id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NoteDataForSwagger": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NoteForSwagger": {
             "type": "object",
             "properties": {
                 "create_time": {
                     "type": "string"
                 },
                 "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "$ref": "#/definitions/models.NoteDataForSwagger"
                 },
                 "id": {
                     "type": "string"
@@ -213,7 +709,37 @@ const docTemplate = `{
                 }
             }
         },
-        "models.User": {
+        "models.ProfileUpdatePayload": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "password": {
+                    "$ref": "#/definitions/models.passwords"
+                }
+            }
+        },
+        "models.SignUpPayloadForSwagger": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpsertNoteRequestForSwagger": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.NoteDataForSwagger"
+                }
+            }
+        },
+        "models.UserForSwagger": {
             "type": "object",
             "properties": {
                 "create_time": {
@@ -228,15 +754,35 @@ const docTemplate = `{
                 "image_path": {
                     "type": "string"
                 },
+                "second_factor": {
+                    "type": "boolean"
+                },
                 "username": {
                     "type": "string"
                 }
             }
         },
-        "utils.ErrorResponse": {
+        "models.UserFormData": {
             "type": "object",
             "properties": {
-                "message": {
+                "code": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.passwords": {
+            "type": "object",
+            "properties": {
+                "new": {
+                    "type": "string"
+                },
+                "old": {
                     "type": "string"
                 }
             }
@@ -247,7 +793,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "you-note.ru:8080",
+	Host:             "you-note.ru",
 	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "YouNote API",

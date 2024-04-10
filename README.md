@@ -2,4 +2,7 @@
 Проект Notion команды Scratch Senior Devs 💥
 
 ## Ссылка на деплой
-[YouNote](http://you-note.ru:8010/)
+[YouNote](https://you-note.ru)
+
+## Swagger документация API
+[swagger](https://you-note.ru/api/swagger/index.html)

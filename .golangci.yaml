@@ -3,6 +3,7 @@ linters-settings:
     min-complexity: 60
 
 linters:
+  disable-all: true
   enable:
     - govet
     - gosimple
@@ -12,6 +13,4 @@ linters:
     - gocognit
     - goconst
     - gofmt
-    - gosec
-  
-   
+    

@@ -36,19 +36,78 @@ func (m *MockNoteUsecase) EXPECT() *MockNoteUsecaseMockRecorder {
 	return m.recorder
 }
 
-// GetAllNotes mocks base method.
-func (m *MockNoteUsecase) GetAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64) ([]models.Note, error) {
+// CreateNote mocks base method.
+func (m *MockNoteUsecase) CreateNote(arg0 context.Context, arg1 uuid.UUID, arg2 []byte) (models.Note, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllNotes", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateNote indicates an expected call of CreateNote.
+func (mr *MockNoteUsecaseMockRecorder) CreateNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockNoteUsecase)(nil).CreateNote), arg0, arg1, arg2)
+}
+
+// DeleteNote mocks base method.
+func (m *MockNoteUsecase) DeleteNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNote", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNote indicates an expected call of DeleteNote.
+func (mr *MockNoteUsecaseMockRecorder) DeleteNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteUsecase)(nil).DeleteNote), arg0, arg1, arg2)
+}
+
+// GetAllNotes mocks base method.
+func (m *MockNoteUsecase) GetAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string) ([]models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllNotes", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].([]models.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllNotes indicates an expected call of GetAllNotes.
-func (mr *MockNoteUsecaseMockRecorder) GetAllNotes(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockNoteUsecaseMockRecorder) GetAllNotes(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllNotes", reflect.TypeOf((*MockNoteUsecase)(nil).GetAllNotes), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllNotes", reflect.TypeOf((*MockNoteUsecase)(nil).GetAllNotes), arg0, arg1, arg2, arg3, arg4)
+}
+
+// GetNote mocks base method.
+func (m *MockNoteUsecase) GetNote(arg0 context.Context, arg1, arg2 uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNote", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNote indicates an expected call of GetNote.
+func (mr *MockNoteUsecaseMockRecorder) GetNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteUsecase)(nil).GetNote), arg0, arg1, arg2)
+}
+
+// UpdateNote mocks base method.
+func (m *MockNoteUsecase) UpdateNote(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 []byte) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNote", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateNote indicates an expected call of UpdateNote.
+func (mr *MockNoteUsecaseMockRecorder) UpdateNote(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteUsecase)(nil).UpdateNote), arg0, arg1, arg2, arg3)
 }
 
 // MockNoteRepo is a mock of NoteRepo interface.
@@ -74,17 +133,88 @@ func (m *MockNoteRepo) EXPECT() *MockNoteRepoMockRecorder {
 	return m.recorder
 }
 
-// ReadAllNotes mocks base method.
-func (m *MockNoteRepo) ReadAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64) ([]models.Note, error) {
+// CreateNote mocks base method.
+func (m *MockNoteRepo) CreateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadAllNotes", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateNote indicates an expected call of CreateNote.
+func (mr *MockNoteRepoMockRecorder) CreateNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockNoteRepo)(nil).CreateNote), arg0, arg1)
+}
+
+// DeleteNote mocks base method.
+func (m *MockNoteRepo) DeleteNote(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNote", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNote indicates an expected call of DeleteNote.
+func (mr *MockNoteRepoMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteRepo)(nil).DeleteNote), arg0, arg1)
+}
+
+// MakeHelloNoteData mocks base method.
+func (m *MockNoteRepo) MakeHelloNoteData(username string) []byte {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MakeHelloNoteData", username)
+	ret0, _ := ret[0].([]byte)
+	return ret0
+}
+
+// MakeHelloNoteData indicates an expected call of MakeHelloNoteData.
+func (mr *MockNoteRepoMockRecorder) MakeHelloNoteData(username interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeHelloNoteData", reflect.TypeOf((*MockNoteRepo)(nil).MakeHelloNoteData), username)
+}
+
+// ReadAllNotes mocks base method.
+func (m *MockNoteRepo) ReadAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string) ([]models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadAllNotes", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].([]models.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReadAllNotes indicates an expected call of ReadAllNotes.
-func (mr *MockNoteRepoMockRecorder) ReadAllNotes(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockNoteRepoMockRecorder) ReadAllNotes(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAllNotes", reflect.TypeOf((*MockNoteRepo)(nil).ReadAllNotes), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAllNotes", reflect.TypeOf((*MockNoteRepo)(nil).ReadAllNotes), arg0, arg1, arg2, arg3, arg4)
+}
+
+// ReadNote mocks base method.
+func (m *MockNoteRepo) ReadNote(arg0 context.Context, arg1 uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadNote", arg0, arg1)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadNote indicates an expected call of ReadNote.
+func (mr *MockNoteRepoMockRecorder) ReadNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteRepo)(nil).ReadNote), arg0, arg1)
+}
+
+// UpdateNote mocks base method.
+func (m *MockNoteRepo) UpdateNote(arg0 context.Context, arg1 models.Note) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNote", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateNote indicates an expected call of UpdateNote.
+func (mr *MockNoteRepoMockRecorder) UpdateNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteRepo)(nil).UpdateNote), arg0, arg1)
 }

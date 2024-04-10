@@ -15,7 +15,8 @@
 						"exec": [
 							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -24,7 +25,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"test_user_8\",\r\n    \"password\": \"12345678a\"\r\n}",
+					"raw": "{\r\n    \"username\": \"testuser\",\r\n    \"password\": \"12345678a\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -32,12 +33,11 @@
 					}
 				},
 				"url": {
-					"raw": "http://{{HOST}}:8080/api/auth/signup",
-					"protocol": "http",
+					"raw": "https://{{HOST}}/api/auth/signup",
+					"protocol": "https",
 					"host": [
 						"{{HOST}}"
 					],
-					"port": "8080",
 					"path": [
 						"api",
 						"auth",
@@ -54,7 +54,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"test_user_4\",\r\n    \"password\": \"12345678a\"\r\n}",
+					"raw": "{\r\n    \"username\": \"test_user\",\r\n    \"password\": \"12345678a\",\r\n    \"code\": \"111111\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -62,47 +62,15 @@
 					}
 				},
 				"url": {
-					"raw": "http://{{HOST}}:8080/api/auth/login",
-					"protocol": "http",
+					"raw": "https://{{HOST}}/api/auth/login",
+					"protocol": "https",
 					"host": [
 						"{{HOST}}"
 					],
-					"port": "8080",
 					"path": [
 						"api",
 						"auth",
 						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "check_user",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDk1NTIwMTMsImlkIjoiOGZkNThjNDMtNWM0My00MTg4LTg2ZTEtN2Y5MWEzOGIwYjRiIiwidXNyIjoidGVzdF91c2VyXzQifQ.xFJECGg2gzB-NLQxobjm9PVSqFFG7QGAF_LmdffU8n8",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://{{HOST}}:8080/api/auth/check_user",
-					"protocol": "http",
-					"host": [
-						"{{HOST}}"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"auth",
-						"check_user"
 					]
 				}
 			},
@@ -116,7 +84,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDk1NTIwMTMsImlkIjoiOGZkNThjNDMtNWM0My00MTg4LTg2ZTEtN2Y5MWEzOGIwYjRiIiwidXNyIjoidGVzdF91c2VyXzQifQ.xFJECGg2gzB-NLQxobjm9PVSqFFG7QGAF_LmdffU8n8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTEzMTM1MTEsImlkIjoiZTFiOTQ1MjAtNTNmZi00MjM4LWJlN2QtMGExZWMxMTY0Yzg4IiwidXNyIjoibWloYWlsNiJ9.kMQRMs31uhUg2OBjCYEzvyWwmMp9bQpI5SML0Dx_yY8",
 							"type": "string"
 						}
 					]
@@ -124,16 +92,45 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://{{HOST}}:8080/api/auth/logout",
-					"protocol": "http",
+					"raw": "https://{{HOST}}/api/auth/logout",
+					"protocol": "https",
 					"host": [
 						"{{HOST}}"
 					],
-					"port": "8080",
 					"path": [
 						"api",
 						"auth",
 						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "check_user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA0MjE5NDIsImlkIjoiY2Y0YmY0MzEtY2EzNC00OTk1LWI1NzMtNWNhZTI3MTcyNzhlIiwidXNyIjoibWloYWkifQ.8R5jgEuTydzq7CS0HtFBstLRAbdSHP2BSnfRkYF9qZw",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{HOST}}/api/auth/check_user",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"check_user"
 					]
 				}
 			},
@@ -147,7 +144,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDk1NTIwMTMsImlkIjoiOGZkNThjNDMtNWM0My00MTg4LTg2ZTEtN2Y5MWEzOGIwYjRiIiwidXNyIjoidGVzdF91c2VyXzQifQ.xFJECGg2gzB-NLQxobjm9PVSqFFG7QGAF_LmdffU8n8",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA4Nzk1OTksImlkIjoiNTUxMGUzOTEtMzBlYS00NDhkLWIzNjYtZTQ1YTg1MGJhYTRmIiwidXNyIjoieWFyaWsifQ.HKlebdOkMCnTCagy46RMSMR2vSDvbpft3NHQPalber8",
 							"type": "string"
 						}
 					]
@@ -155,7 +152,408 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://{{HOST}}:8080/api/note/get_all",
+					"raw": "https://{{HOST}}/api/note/get_all?count=100",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"note",
+						"get_all"
+					],
+					"query": [
+						{
+							"key": "count",
+							"value": "100"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_note",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA0MjE5NDIsImlkIjoiY2Y0YmY0MzEtY2EzNC00OTk1LWI1NzMtNWNhZTI3MTcyNzhlIiwidXNyIjoibWloYWkifQ.8R5jgEuTydzq7CS0HtFBstLRAbdSHP2BSnfRkYF9qZw",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{HOST}}/api/note/abe0ce71-504a-407d-b458-a8f8d0573001",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"note",
+						"abe0ce71-504a-407d-b458-a8f8d0573001"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add_note",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTEzMTQzNDIsImlkIjoiZTFiOTQ1MjAtNTNmZi00MjM4LWJlN2QtMGExZWMxMTY0Yzg4IiwidXNyIjoibWloYWlsNiJ9.94tXhsVF1yAwu7-8yAWZQ1ewL6PFnVBlvciJ_HPq6sA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": {\r\n        \"title\": \"title of my note\",\r\n        \"content\": \"my text of my note\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{HOST}}/api/note/add",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"note",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "edit_note",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA1MzI3MTUsImlkIjoiY2Y0YmY0MzEtY2EzNC00OTk1LWI1NzMtNWNhZTI3MTcyNzhlIiwidXNyIjoibWloYWkifQ.s0yqfgXvOkMAMbzpDmpVWuXrCTO-lte7IUfHmEswzvE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": {\r\n        \"title\": \"my note\",\r\n        \"content\": \"my text of my note\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{HOST}}/api/note/7df13635-193d-4270-a178-4a36fb800c1e/edit",
+					"protocol": "http",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"note",
+						"7df13635-193d-4270-a178-4a36fb800c1e",
+						"edit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_note",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA1MzI3MTUsImlkIjoiY2Y0YmY0MzEtY2EzNC00OTk1LWI1NzMtNWNhZTI3MTcyNzhlIiwidXNyIjoibWloYWkifQ.s0yqfgXvOkMAMbzpDmpVWuXrCTO-lte7IUfHmEswzvE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://{{HOST}}/api/note/7df13635-193d-4270-a178-4a36fb800c1e/delete",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"note",
+						"7df13635-193d-4270-a178-4a36fb800c1e",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_profile",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTEzMDg2NjIsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.1G_bsTEVBN5On-cAmXuMlb0bAEFvMQHOqE2k4qCGer0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{HOST}}/api/profile/get",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"profile",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "profile_update",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA2OTY2MzEsImlkIjoiYzU3ZmZiMWEtZGU5ZS00YjhjLTgzYzQtNzBiY2M3Yjk5NjE1IiwidXNyIjoibWloYWlsIn0.bmTdLCGUj1VXlmhaTHeQ3-PATXZWt8IBG5yiEwZ-H-Q",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"description\": \"\",\r\n    \"password\": {\r\n        \"old\": \"12345678a\",\r\n        \"new\": \"12345678b\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{HOST}}/api/profile/update",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"profile",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "profile_avatar_update",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTEzMDQ5NjUsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.lsZtLEhlqMumJD6e4r19iAu5v9w2RfmCA0STLzfAMzI",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "avatar",
+							"type": "file",
+							"src": "postman-cloud:///1eee9d53-c9fb-4730-8f27-24b048a15ad8"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://{{HOST}}/api/profile/update_avatar",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"profile",
+						"update_avatar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_qr",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTEzMTM1NjYsImlkIjoiZTFiOTQ1MjAtNTNmZi00MjM4LWJlN2QtMGExZWMxMTY0Yzg4IiwidXNyIjoibWloYWlsNiJ9.WzPoIyf5aqhm69ETstqOViOLn_i4mgOkBG8GieMsink",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{HOST}}/api/auth/get_qr",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"get_qr"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "disable_2fa",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE1NDQxMTUsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.1Q4wvjK0QXho8J_N0bC9xZ0eKyimvYGh86mOb25yKZQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://{{HOST}}/api/auth/disable_2fa",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"disable_2fa"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add_attach",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE4MzI2MzcsImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.s8qzS3RdbbbxBMjzekBJbgBc_EPKAoDRYAtOgdk6V0o",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Csrf-Token",
+						"value": "75cc4bd6-4d0a-4527-b5e2-7a83d90a31a8",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "attach",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "https://{{HOST}}/api/note/0dd33f93-9918-4038-ad79-a8b3772631bb/add_attach",
+					"protocol": "https",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"api",
+						"note",
+						"0dd33f93-9918-4038-ad79-a8b3772631bb",
+						"add_attach"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_attach",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTE5MDAxMDksImlkIjoiNTcyNDdkZDItYjc2OC00NjY1LWEyOTAtOGRhZDk1MDY2MTZhIiwidXNyIjoibWl6aGd1biJ9.jjWoO4xxchFBUbVOSaD-gm3VV8g9XC_Wzhf4I5J8wmg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-Csrf-Token",
+						"value": "3ddb1b9b-5372-4d66-9fce-9524ea6283bc",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{HOST}}:8080/api/attach/8bfe81d2-390b-49eb-b3d9-3e55471fb24b/delete",
 					"protocol": "http",
 					"host": [
 						"{{HOST}}"
@@ -163,8 +561,9 @@
 					"port": "8080",
 					"path": [
 						"api",
-						"note",
-						"get_all"
+						"attach",
+						"8bfe81d2-390b-49eb-b3d9-3e55471fb24b",
+						"delete"
 					]
 				}
 			},
