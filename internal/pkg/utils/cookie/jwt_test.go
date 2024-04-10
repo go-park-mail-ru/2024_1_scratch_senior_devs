@@ -1,8 +1,6 @@
 package cookie
 
 import (
-	"log/slog"
-	"os"
 	"testing"
 	"time"
 
@@ -10,15 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testConfig config.JwtConfig
-
-func init() {
-	testLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-
-	testConfig = config.LoadConfig("", testLogger).AuthHandler.Jwt
-}
-
 func TestGenTokenCookie(t *testing.T) {
+	testConfig := config.JwtConfig{
+		JwtCookie: "YouNoteJWT",
+	}
+
 	var tests = []struct {
 		name    string
 		token   string
@@ -41,6 +35,10 @@ func TestGenTokenCookie(t *testing.T) {
 }
 
 func TestDelTokenCookie(t *testing.T) {
+	testConfig := config.JwtConfig{
+		JwtCookie: "YouNoteJWT",
+	}
+
 	var tests = []struct {
 		name string
 	}{

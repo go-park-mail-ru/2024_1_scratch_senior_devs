@@ -3,20 +3,19 @@ package models
 import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"log/slog"
-	"os"
 	"testing"
 )
 
-var testConfigProfile config.ValidationConfig
-
-func init() {
-	testLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-
-	testConfigProfile = config.LoadConfig("../pkg/config/config.yaml", testLogger).Validation
-}
-
 func TestValidateProfile(t *testing.T) {
+	testConfigAuth := config.ValidationConfig{
+		MinUsernameLength:    4,
+		MaxUsernameLength:    12,
+		MinPasswordLength:    8,
+		MaxPasswordLength:    20,
+		PasswordAllowedExtra: "$%&#",
+		SecretLength:         6,
+	}
+
 	var tests = []struct {
 		name  string
 		data  ProfileUpdatePayload

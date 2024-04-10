@@ -3,24 +3,22 @@ package models
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"os"
-	"testing"
-
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var testConfigAuth config.ValidationConfig
-
-func init() {
-	testLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-
-	testConfigAuth = config.LoadConfig("../pkg/config/config.yaml", testLogger).Validation
-}
-
 func TestValidateAuth(t *testing.T) {
+	testConfigAuth := config.ValidationConfig{
+		MinUsernameLength:    4,
+		MaxUsernameLength:    12,
+		MinPasswordLength:    8,
+		MaxPasswordLength:    20,
+		PasswordAllowedExtra: "$%&#",
+		SecretLength:         6,
+	}
+
 	var tests = []struct {
 		name        string
 		data        UserFormData
