@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"log/slog"
 	"strings"
 	"unicode/utf8"
@@ -63,13 +64,7 @@ func (repo *NoteRepo) ReadAllNotes(ctx context.Context, userID uuid.UUID, count 
 			logger.Error(err.Error())
 			return []models.Note{}, err
 		}
-		notes = append(notes, models.Note{
-			Id:         note.Id,
-			Data:       []byte(note.Data),
-			CreateTime: note.CreateTime,
-			UpdateTime: note.UpdateTime,
-			OwnerId:    note.OwnerId,
-		})
+		notes = append(notes, elasticsearch.ConvertToUsualNote(note))
 	}
 
 	logger.Info("success")
@@ -101,25 +96,13 @@ func (repo *NoteRepo) ReadNote(ctx context.Context, noteID uuid.UUID) (models.No
 	}
 
 	logger.Info("success")
-	return models.Note{
-		Id:         note.Id,
-		Data:       []byte(note.Data),
-		CreateTime: note.CreateTime,
-		UpdateTime: note.UpdateTime,
-		OwnerId:    note.OwnerId,
-	}, nil
+	return elasticsearch.ConvertToUsualNote(note), nil
 }
 
 func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	elasticNote := models.ElasticNote{
-		Id:         note.Id,
-		Data:       string(note.Data),
-		CreateTime: note.CreateTime,
-		UpdateTime: note.UpdateTime,
-		OwnerId:    note.OwnerId,
-	}
+	elasticNote := elasticsearch.ConvertToElasticNote(note)
 
 	noteJSON, err := json.Marshal(elasticNote)
 	if err != nil {
@@ -155,13 +138,7 @@ func (repo *NoteRepo) CreateNote(ctx context.Context, note models.Note) error {
 func (repo *NoteRepo) UpdateNote(ctx context.Context, note models.Note) error {
 	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
 
-	elasticNote := models.ElasticNote{
-		Id:         note.Id,
-		Data:       string(note.Data),
-		CreateTime: note.CreateTime,
-		UpdateTime: note.UpdateTime,
-		OwnerId:    note.OwnerId,
-	}
+	elasticNote := elasticsearch.ConvertToElasticNote(note)
 
 	noteJSON, err := json.Marshal(elasticNote)
 	if err != nil {

@@ -20,16 +20,15 @@ func Sanitize(noteData []byte) []byte {
 }
 
 type ElasticNote struct {
-	Id          uuid.UUID   `json:"id"`
-	Data        string      `json:"data,omitempty"`
-	ElasticData interface{} `json:"elastic_data,omitempty"`
-	CreateTime  time.Time   `json:"create_time"`
-	UpdateTime  time.Time   `json:"update_time"`
-	OwnerId     uuid.UUID   `json:"owner_id"`
+	Id         uuid.UUID `json:"id"`
+	Data       string    `json:"data,omitempty"`
+	CreateTime time.Time `json:"create_time"`
+	UpdateTime time.Time `json:"update_time"`
+	OwnerId    uuid.UUID `json:"owner_id"`
 }
 
-type ElasticNoteUpdate struct {
-	Doc ElasticNote `json:"doc"`
+type NoteUpdate struct {
+	Doc Note `json:"doc"`
 }
 
 type UpsertNoteRequest struct {

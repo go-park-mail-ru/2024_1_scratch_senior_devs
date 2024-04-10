@@ -30,9 +30,6 @@
         "type": "text",
         "analyzer": "ngram_analyzer"
       },
-      "elastic_data": {
-        "type": "text"
-      },
       "create_time": {
         "type": "date"
       },
