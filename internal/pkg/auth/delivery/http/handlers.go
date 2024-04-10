@@ -145,7 +145,7 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 
-	if err := h.blockerUC.CheckLoginAttempts(r.Context(), r.RemoteAddr); err != nil {
+	if err := h.blockerUC.CheckLoginAttempts(r.Context(), r.Header.Get("X-Real-IP")); err != nil {
 		log.LogHandlerError(logger, http.StatusTooManyRequests, err.Error())
 		w.WriteHeader(http.StatusTooManyRequests)
 		return

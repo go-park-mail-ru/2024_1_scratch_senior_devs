@@ -102,8 +102,8 @@ services:
       - http.cors.enabled=true
       - http.cors.allow-credentials=true
       - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,X-Csrf-Token
-      - http.cors.allow-origin=/https?:\/\/localhost(:[0-9]+)?/
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.cors.allow-origin=/http?:\/\/localhost(:[0-9]+)?/
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - ELASTIC_USERNAME=${ELASTIC_USERNAME}
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     ulimits:
