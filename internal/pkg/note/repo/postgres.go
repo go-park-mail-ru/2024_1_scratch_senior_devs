@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 ORDER BY update_time ASC LIMIT $2 OFFSET $3;"
+	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 ORDER BY update_time DESC LIMIT $2 OFFSET $3;"
 	getNote     = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE id = $1;"
 	createNote  = "INSERT INTO notes(id, data, create_time, update_time, owner_id) VALUES ($1, $2::json, $3, $4, $5);"
 	updateNote  = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
