@@ -45,7 +45,7 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 		Index(repo.cfg.ElasticIndexName).
 		From(int(offset)).
 		Size(int(count)).
-		Sort("update_time", true).
+		Sort("update_time", false).
 		Do(ctx)
 	if err != nil {
 		logger.Error(err.Error())
