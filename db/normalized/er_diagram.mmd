@@ -10,14 +10,14 @@ erDiagram
     }
     note {
         uuid id PK
-        text data
+        text note_data
         timestamp create_time
         timestamp update_time
         uuid owner_id FK
     }
     attach {
         uuid id PK
-        text path
+        text file_path
         uuid note_id FK
     }
     profile ||--o{ note : "1:M"

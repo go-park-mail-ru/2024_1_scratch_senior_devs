@@ -14,14 +14,14 @@ erDiagram
     }
     note {
         uuid id PK
-        text data
+        text note_data
         timestamp create_time
         timestamp update_time
         uuid owner_id FK
     }
     attach {
         uuid id PK
-        text path
+        text file_path
         uuid note_id FK
     }
     profile ||--o{ note : "1:M"
@@ -30,58 +30,51 @@ erDiagram
 
 ## Описание таблиц
 ### profile
-Таблица profile содержит данные пользователей:<br/>
-id - идентификатор пользователя<br/>
-description - описание в профиле пользователя<br/>
-username - логин пользователя, а также его имя в сервисе<br/>
-password_hash - хэш пароля пользователя<br/>
-create_time - дата и время регистрации<br/>
-image_path - путь до файла аватарки пользователя<br/>
-secret - секрет для генерации QR-кода для двухфакторной аутентификации<br/>
+Таблица profile содержит данные пользователей:
+- id - идентификатор пользователя
+- description - описание в профиле пользователя
+- username - логин пользователя, а также его имя в сервисе
+- password_hash - хэш пароля пользователя
+- create_time - дата и время регистрации
+- image_path - путь до файла аватарки пользователя
+- secret - секрет для генерации QR-кода для двухфакторной аутентификации
 
 ### note
-Таблица note отвечает за хранение заметок:<br/>
-id - идентификатор заметки<br/>
-data - содержимое заметки<br/>
-create_time - дата и время создания заметки<br/>
-update_time - дата и время последнего изменения заметки<br/>
-owner_id - идентификатор пользователя, который является создателем заметки<br/>
+Таблица note отвечает за хранение заметок:
+- id - идентификатор заметки
+- data - содержимое заметки
+- create_time - дата и время создания заметки
+- update_time - дата и время последнего изменения заметки
+- owner_id - идентификатор пользователя, который является создателем заметки
 
 ### attach
-В таблице attach хранятся сведения о вложениях заметок:<br/>
-id - идентификатор вложения<br/>
-path - путь до файла на сервере<br/>
-note_id - идентификатор заметки, к которой это вложение прикреплено<br/>
+В таблице attach хранятся сведения о вложениях заметок:
+- id - идентификатор вложения
+- path - путь до файла на сервер
+- note_id - идентификатор заметки, к которой это вложение прикреплено
 
 ## Нормализация
 ### Функциональные зависимости:
-profile:<br/>
-{id} -> description, username, password_hash, create_time, image_path, secret<br/>
-{username} -> id, description, password_hash, create_time, image_path, secret<br/>
-{password_hash} -> id, description, username, create_time, image_path, secret<br/>
-{create_time} -> id, description, username, password_hash, image_path, secret<br/>
-{image_path} -> id, description, username, password_hash, create_time, secret<br/>
-{secret} -> id, description, username, password_hash, create_time, image_path<br/>
+**profile:**
+- {id} -> description, username, password_hash, create_time, image_path, secret
+- {username} -> id, description, password_hash, create_time, image_path, secret
 
-note:<br/>
-{id} -> data, create_time, update_time, owner_id<br/>
-{owner_id} -> id, data, create_time, update_time<br/>
-{create_time} -> id, data, update_time, owner_id<br/>
-{update_time} -> id, data, create_time, owner_id<br/>
+**note:**
+- {id} -> data, create_time, update_time, owner_id
 
-attach:
-{id} -> path, note_id<br/>
-{note_id} -> id, path<br/>
+**attach:**
+- {id} -> path, note_id
+- {path} -> id, note_id
 
 ### Проверка нормальных форм:
-Первая нормальная форма (1NF):<br/>
+- **Первая нормальная форма (1NF):**
 В схеме каждый атрибут является атомарным, так что она соответствует 1NF.<br/>
 
-Вторая нормальная форма (2NF):<br/>
+- **Вторая нормальная форма (2NF):**
 В схеме каждый неключевой атрибут зависит от всего первичного ключа, поэтому она соответствует 2NF.<br/>
 
-Третья нормальная форма (3NF):<br/>
+- **Третья нормальная форма (3NF):**
 В схеме нет транзитивных зависимостей, так как каждый атрибут функционально зависит только от ключа и не от других атрибутов.<br/>
 
-Нормальная форма Бойса-Кодда (BCNF):<br/>
+- **Нормальная форма Бойса-Кодда (BCNF)**:
 В схеме все функциональные зависимости либо тривиальны, либо ключевые, поэтому она соответствует BCNF.<br/>

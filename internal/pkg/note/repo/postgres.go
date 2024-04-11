@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 AND LOWER(data->>'title') LIKE LOWER($2) ORDER BY update_time DESC LIMIT $3 OFFSET $4;"
-	getNote     = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE id = $1;"
-	createNote  = "INSERT INTO notes(id, data, create_time, update_time, owner_id) VALUES ($1, $2, $3, $4, $5);"
-	updateNote  = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
+	getAllNotes = "SELECT id, note_data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 AND LOWER(note_data->>'title') LIKE LOWER($2) ORDER BY update_time DESC LIMIT $3 OFFSET $4;"
+	getNote     = "SELECT id, note_data, create_time, update_time, owner_id FROM notes WHERE id = $1;"
+	createNote  = "INSERT INTO notes(id, note_data, create_time, update_time, owner_id) VALUES ($1, $2, $3, $4, $5);"
+	updateNote  = "UPDATE notes SET note_data = $1, update_time = $2 WHERE id = $3; "
 	deleteNote  = "DELETE FROM notes WHERE id = $1;"
 )
 

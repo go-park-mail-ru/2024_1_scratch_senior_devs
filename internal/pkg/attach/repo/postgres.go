@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	getAttach    = "SELECT id, path, note_id FROM attaches WHERE id = $1;"
-	createAttach = "INSERT INTO attaches(id, path, note_id) VALUES ($1, $2, $3);"
+	getAttach    = "SELECT id, file_path, note_id FROM attaches WHERE id = $1;"
+	createAttach = "INSERT INTO attaches(id, file_path, note_id) VALUES ($1, $2, $3);"
 	deleteAttach = "DELETE FROM attaches WHERE id = $1;"
 )
 
