@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS attaches (
     path TEXT
         NOT NULL
         CONSTRAINT path_length CHECK (char_length(path) <= 255),
-    note_id UUID REFERENCES notes (id)
+    note_id UUID REFERENCES notes (id) ON DELETE CASCADE
         NOT NULL
 );
 
