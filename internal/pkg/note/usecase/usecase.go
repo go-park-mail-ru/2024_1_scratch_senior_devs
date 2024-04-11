@@ -89,7 +89,6 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	}
 	if err := uc.searchRepo.CreateNote(ctx, newNote); err != nil {
 		logger.Error(err.Error())
-		return models.Note{}, err
 	}
 
 	logger.Info("success")
@@ -119,7 +118,6 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId
 	}
 	if err := uc.searchRepo.UpdateNote(ctx, updatedNote); err != nil {
 		logger.Error(err.Error())
-		return models.Note{}, err
 	}
 
 	logger.Info("success")
@@ -141,7 +139,6 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId
 	}
 	if err := uc.searchRepo.DeleteNote(ctx, noteId); err != nil {
 		logger.Error(err.Error())
-		return err
 	}
 
 	logger.Info("success")

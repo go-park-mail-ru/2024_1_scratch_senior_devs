@@ -38,14 +38,14 @@ CREATE TABLE IF NOT EXISTS attaches (
         NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS outbox (
-    id UUID PRIMARY KEY,
-    action TEXT -- "create" / "update" / "delete"
-        NOT NULL
-        CONSTRAINT action_length CHECK (char_length(action) <= 10),
-    note_id UUID
-        NOT NULL
-);
+-- CREATE TABLE IF NOT EXISTS outbox (
+--     id UUID PRIMARY KEY,
+--     action TEXT -- "create" / "update" / "delete"
+--         NOT NULL
+--         CONSTRAINT action_length CHECK (char_length(action) <= 10),
+--     note_id UUID
+--         NOT NULL
+-- );
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
