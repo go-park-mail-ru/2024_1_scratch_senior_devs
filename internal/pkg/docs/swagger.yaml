@@ -90,7 +90,7 @@ info:
   title: YouNote API
   version: "1.0"
 paths:
-  /api/attach/delete:
+  /api/attach/{id}/delete:
     delete:
       description: Remove attach from note
       operationId: delete-attach

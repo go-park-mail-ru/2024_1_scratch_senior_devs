@@ -140,7 +140,7 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 // @Failure		400			{object}	responses.ErrorResponse			true	"incorrect id"
 // @Failure		401
 // @Failure		404			{object}	responses.ErrorResponse			true	"not found"
-// @Router		/api/attach/delete [delete]
+// @Router		/api/attach/{id}/delete [delete]
 func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
 	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
 

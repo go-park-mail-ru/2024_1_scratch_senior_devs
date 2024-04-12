@@ -16,7 +16,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/attach/delete": {
+        "/api/attach/{id}/delete": {
             "delete": {
                 "description": "Remove attach from note",
                 "tags": [

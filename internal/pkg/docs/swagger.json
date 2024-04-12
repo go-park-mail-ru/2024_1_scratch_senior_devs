@@ -8,7 +8,7 @@
     },
     "host": "you-note.ru",
     "paths": {
-        "/api/attach/delete": {
+        "/api/attach/{id}/delete": {
             "delete": {
                 "description": "Remove attach from note",
                 "tags": [
