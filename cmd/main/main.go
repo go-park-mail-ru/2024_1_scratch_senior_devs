@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -86,7 +87,7 @@ func main() {
 
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db, logger)
 	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, logger, cfg.Elastic)
-	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, logger, cfg.Elastic)
+	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, logger, cfg.Elastic, &sync.WaitGroup{})
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
 
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger, cfg.Blocker)

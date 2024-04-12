@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -114,7 +115,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 			defer ctl.Finish()
 			baseRepo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			Usecase := CreateNoteUsecase(baseRepo, searchRepo, testLogger, elasticConfig)
+			Usecase := CreateNoteUsecase(baseRepo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), baseRepo, searchRepo, tt.args.userId, tt.args.count, tt.args.offset)
 			got, err := Usecase.GetAllNotes(context.Background(), tt.args.userId, tt.args.count, tt.args.offset, "")
@@ -201,7 +202,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig)
+			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, tt.args.noteId)
 
@@ -256,7 +257,7 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig)
+			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
@@ -316,7 +317,7 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig)
+			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
@@ -376,7 +377,7 @@ func TestNoteUsecase_DeleteNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig)
+			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 

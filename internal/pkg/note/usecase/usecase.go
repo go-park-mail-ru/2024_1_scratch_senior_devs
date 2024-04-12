@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"log/slog"
+	"sync"
 	"time"
 	"unicode/utf8"
 
@@ -22,14 +23,16 @@ type NoteUsecase struct {
 	searchRepo note.NoteSearchRepo
 	logger     *slog.Logger
 	cfg        config.ElasticConfig
+	wg         *sync.WaitGroup
 }
 
-func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, logger *slog.Logger, cfg config.ElasticConfig) *NoteUsecase {
+func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, logger *slog.Logger, cfg config.ElasticConfig, wg *sync.WaitGroup) *NoteUsecase {
 	return &NoteUsecase{
 		baseRepo:   baseRepo,
 		searchRepo: searchRepo,
 		logger:     logger,
 		cfg:        cfg,
+		wg:         wg,
 	}
 }
 
@@ -87,9 +90,15 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}
-	if err := uc.searchRepo.CreateNote(ctx, newNote); err != nil {
-		logger.Error(err.Error())
-	}
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.CreateNote(ctx, newNote); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
 
 	logger.Info("success")
 	return newNote, nil
@@ -116,9 +125,15 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}
-	if err := uc.searchRepo.UpdateNote(ctx, updatedNote); err != nil {
-		logger.Error(err.Error())
-	}
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.UpdateNote(ctx, updatedNote); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
 
 	logger.Info("success")
 	return updatedNote, nil
@@ -137,9 +152,15 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId
 		logger.Error(err.Error())
 		return err
 	}
-	if err := uc.searchRepo.DeleteNote(ctx, noteId); err != nil {
-		logger.Error(err.Error())
-	}
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.DeleteNote(ctx, noteId); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
 
 	logger.Info("success")
 	return nil

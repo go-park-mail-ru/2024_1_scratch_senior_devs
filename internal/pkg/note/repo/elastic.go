@@ -93,10 +93,10 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error
 		return ErrCantGetResponse
 	}
 
-	_, err = repo.elastic.Reindex().Do(ctx)
-	if err != nil {
-		logger.Error(err.Error())
-	}
+	//_, err = repo.elastic.Reindex().Do(ctx)
+	//if err != nil {
+	//	logger.Error(err.Error())
+	//}
 
 	logger.Info("success")
 	return nil
