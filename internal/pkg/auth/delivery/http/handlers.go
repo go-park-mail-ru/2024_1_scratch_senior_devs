@@ -4,6 +4,7 @@ import (
 	"encoding/base32"
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"io"
 	"log/slog"
 	"net/http"
@@ -23,19 +24,41 @@ import (
 type AuthHandler struct {
 	uc            auth.AuthUsecase
 	blockerUC     auth.BlockerUsecase
+	noteUC        note.NoteUsecase
 	logger        *slog.Logger
 	cfg           config.AuthHandlerConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logger *slog.Logger, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
+func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, noteUC note.NoteUsecase, logger *slog.Logger, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
 	return &AuthHandler{
 		uc:            uc,
 		blockerUC:     blockerUC,
+		noteUC:        noteUC,
 		logger:        logger,
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
 	}
+}
+
+func makeHelloNoteData(username string) []byte {
+	return []byte(fmt.Sprintf(`
+		{
+			"title": "You-note ❤️",
+			"content": [
+				{
+					"id": "1",
+					"type": "div",
+					"content": [
+						{
+							"id": "2",
+							"content": "Привет, %s!"
+						}
+					]
+				}
+			]
+		}
+	`, username))
 }
 
 // SignUp godoc
@@ -81,6 +104,11 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+
+	_, err = h.noteUC.CreateNote(r.Context(), newUser.Id, makeHelloNoteData(newUser.Username))
+	if err != nil {
+		logger.Error(err.Error())
 	}
 
 	log.LogHandlerInfo(logger, http.StatusCreated, "success")

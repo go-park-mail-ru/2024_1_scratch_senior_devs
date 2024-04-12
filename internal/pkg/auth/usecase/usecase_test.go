@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 
-	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
-
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
 	"github.com/satori/uuid"
@@ -46,16 +44,14 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context.Context, *mockAuth.MockAuthRepo, *mock_note.MockNoteSearchRepo)
+		repoMocker func(context.Context, *mockAuth.MockAuthRepo)
 		args       args
 		wantErr    bool
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteSearchRepo) {
+			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo) {
 				repo.EXPECT().CreateUser(ctx, gomock.Any()).Return(nil).Times(1)
-				noteRepo.EXPECT().CreateNote(ctx, gomock.Any()).Return(nil).Times(1)
-				noteRepo.EXPECT().MakeHelloNoteData(gomock.Any()).Return([]byte{}).Times(1)
 			},
 			args: args{
 				data: models.UserFormData{
@@ -67,7 +63,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 		},
 		{
 			name: "TestFail",
-			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo, noteRepo *mock_note.MockNoteSearchRepo) {
+			repoMocker: func(ctx context.Context, repo *mockAuth.MockAuthRepo) {
 				repo.EXPECT().CreateUser(ctx, gomock.Any()).Return(errors.New("error creating user")).Times(1)
 			},
 			args: args{
@@ -85,10 +81,9 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
 			repo := mockAuth.NewMockAuthRepo(ctl)
-			noteRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
+			uc := CreateAuthUsecase(repo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 
-			tt.repoMocker(context.Background(), repo, noteRepo)
+			tt.repoMocker(context.Background(), repo)
 			_, _, _, err := uc.SignUp(context.Background(), tt.args.data)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AuthUsecase.SignUp() error = %v, wantErr %v", err, tt.wantErr)
@@ -171,8 +166,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			noteRepo := mock_note.NewMockNoteSearchRepo(ctrl)
-			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
+			uc := CreateAuthUsecase(repo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.data.Username, responses.GetHash(tt.args.data.Password), tt.wantErr)
@@ -246,8 +240,7 @@ func TestCheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			noteRepo := mock_note.NewMockNoteSearchRepo(ctrl)
-			uc := CreateAuthUsecase(repo, noteRepo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
+			uc := CreateAuthUsecase(repo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.id, tt.wantErr)

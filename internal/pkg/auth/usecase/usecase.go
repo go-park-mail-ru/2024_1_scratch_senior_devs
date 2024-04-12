@@ -8,8 +8,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
-
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/code"
@@ -25,16 +23,14 @@ import (
 
 type AuthUsecase struct {
 	repo          auth.AuthRepo
-	noteRepo      note.NoteSearchRepo
 	logger        *slog.Logger
 	cfg           config.AuthUsecaseConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthUsecase(repo auth.AuthRepo, noteRepo note.NoteSearchRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.ValidationConfig) *AuthUsecase {
+func CreateAuthUsecase(repo auth.AuthRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.ValidationConfig) *AuthUsecase {
 	return &AuthUsecase{
 		repo:          repo,
-		noteRepo:      noteRepo,
 		logger:        logger,
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
@@ -65,16 +61,6 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 	if err != nil {
 		logger.Error("GenJwtToken error: " + err.Error())
 		return models.User{}, "", currentTime, err
-	}
-
-	if err := uc.noteRepo.CreateNote(ctx, models.Note{
-		Id:         uuid.NewV4(),
-		Data:       uc.noteRepo.MakeHelloNoteData(newUser.Username),
-		CreateTime: currentTime,
-		UpdateTime: currentTime,
-		OwnerId:    newUser.Id,
-	}); err != nil {
-		logger.Error(err.Error())
 	}
 
 	logger.Info("success")

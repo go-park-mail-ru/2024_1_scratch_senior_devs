@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
@@ -148,24 +147,4 @@ func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {
 
 	logger.Info("success")
 	return nil
-}
-
-func (repo *NoteElastic) MakeHelloNoteData(username string) []byte {
-	return []byte(fmt.Sprintf(`
-		{
-			"title": "You-note ❤️",
-			"content": [
-				{
-					"id": "1",
-					"type": "div",
-					"content": [
-						{
-							"id": "2",
-							"content": "Привет, %s!"
-						}
-					]
-				}
-			]
-		}
-	`, username))
 }
