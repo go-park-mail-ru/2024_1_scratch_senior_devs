@@ -8,15 +8,15 @@ erDiagram
         text description
         text username
         text password_hash
-        timestamp create_time
+        timestampz created_at
         text image_path
         text secret
     }
     note {
         uuid id PK
         text note_data
-        timestamp create_time
-        timestamp update_time
+        timestampz created_at
+        timestampz updated_at
         uuid owner_id FK
     }
     attach {
@@ -35,7 +35,7 @@ erDiagram
 - description - описание в профиле пользователя
 - username - логин пользователя, а также его имя в сервисе
 - password_hash - хэш пароля пользователя
-- create_time - дата и время регистрации
+- created_at - дата и время регистрации (с таймзоной)
 - image_path - путь до файла аватарки пользователя
 - secret - секрет для генерации QR-кода для двухфакторной аутентификации
 
@@ -43,8 +43,8 @@ erDiagram
 Таблица note отвечает за хранение заметок:
 - id - идентификатор заметки
 - data - содержимое заметки
-- create_time - дата и время создания заметки
-- update_time - дата и время последнего изменения заметки
+- created_at - дата и время создания заметки (с таймзоной)
+- updated_at - дата и время последнего изменения заметки (с таймзоной)
 - owner_id - идентификатор пользователя, который является создателем заметки
 
 ### attach
@@ -56,11 +56,11 @@ erDiagram
 ## Нормализация
 ### Функциональные зависимости:
 **profile:**
-- {id} -> description, username, password_hash, create_time, image_path, secret
-- {username} -> id, description, password_hash, create_time, image_path, secret
+- {id} -> description, username, password_hash, created_at, image_path, secret
+- {username} -> id, description, password_hash, created_at, image_path, secret
 
 **note:**
-- {id} -> data, create_time, update_time, owner_id
+- {id} -> data, created_at, updated_at, owner_id
 
 **attach:**
 - {id} -> path, note_id

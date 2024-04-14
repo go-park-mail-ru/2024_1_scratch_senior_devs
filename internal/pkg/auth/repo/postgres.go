@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	createUser          = "INSERT INTO users(id, description, username, password_hash, create_time, image_path, secret) VALUES ($1, $2, $3, $4, $5, $6, $7);"
-	getUserById         = "SELECT description, username, password_hash, create_time, image_path, secret FROM users WHERE id = $1;"
-	getUserByUsername   = "SELECT id, description, password_hash, create_time, image_path, secret FROM users WHERE username = $1;"
+	createUser          = "INSERT INTO users(id, description, username, password_hash, created_at, image_path, secret) VALUES ($1, $2, $3, $4, $5, $6, $7);"
+	getUserById         = "SELECT description, username, password_hash, created_at, image_path, secret FROM users WHERE id = $1;"
+	getUserByUsername   = "SELECT id, description, password_hash, created_at, image_path, secret FROM users WHERE username = $1;"
 	updateProfile       = "UPDATE users SET description = $1, password_hash = $2 WHERE id = $3;"
 	updateProfileAvatar = "UPDATE users SET image_path = $1 WHERE id = $2;"
 	updateSecondFactor  = "UPDATE users SET secret = $1 WHERE username = $2;"

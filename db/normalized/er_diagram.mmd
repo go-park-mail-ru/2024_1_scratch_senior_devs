@@ -4,15 +4,15 @@ erDiagram
         text description
         text username
         text password_hash
-        timestamp create_time
+        timestampz created_at
         text image_path
         text secret
     }
     note {
         uuid id PK
         text note_data
-        timestamp create_time
-        timestamp update_time
+        timestampz created_at
+        timestampz updated_at
         uuid owner_id FK
     }
     attach {
