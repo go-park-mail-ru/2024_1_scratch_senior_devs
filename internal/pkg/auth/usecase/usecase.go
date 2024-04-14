@@ -23,22 +23,20 @@ import (
 
 type AuthUsecase struct {
 	repo          auth.AuthRepo
-	logger        *slog.Logger
 	cfg           config.AuthUsecaseConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthUsecase(repo auth.AuthRepo, logger *slog.Logger, cfg config.AuthUsecaseConfig, cfgValidation config.ValidationConfig) *AuthUsecase {
+func CreateAuthUsecase(repo auth.AuthRepo, cfg config.AuthUsecaseConfig, cfgValidation config.ValidationConfig) *AuthUsecase {
 	return &AuthUsecase{
 		repo:          repo,
-		logger:        logger,
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
 	}
 }
 
 func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(uc.cfg.JWTLifeTime)
@@ -68,7 +66,7 @@ func (uc *AuthUsecase) SignUp(ctx context.Context, data models.UserFormData) (mo
 }
 
 func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (models.User, string, time.Time, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	currentTime := time.Now().UTC()
 	expTime := currentTime.Add(uc.cfg.JWTLifeTime)
@@ -107,7 +105,7 @@ func (uc *AuthUsecase) SignIn(ctx context.Context, data models.UserFormData) (mo
 }
 
 func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	userData, err := uc.repo.GetUserById(ctx, id)
 	if err != nil {
@@ -120,7 +118,7 @@ func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User
 }
 
 func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payload models.ProfileUpdatePayload) (models.User, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	payload.Sanitize()
 
@@ -156,7 +154,7 @@ func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payl
 }
 
 func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, avatar io.ReadSeeker, extension string) (models.User, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	user, err := uc.repo.GetUserById(ctx, userID)
 	if err != nil {
@@ -192,7 +190,7 @@ func (uc *AuthUsecase) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID
 }
 
 func (uc *AuthUsecase) GenerateAndUpdateSecret(ctx context.Context, username string) ([]byte, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	secret := code.GenerateSecret()
 	if err := uc.repo.UpdateSecret(ctx, username, string(secret)); err != nil {
@@ -205,7 +203,7 @@ func (uc *AuthUsecase) GenerateAndUpdateSecret(ctx context.Context, username str
 }
 
 func (uc *AuthUsecase) DeleteSecret(ctx context.Context, username string) error {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	if err := uc.repo.DeleteSecret(ctx, username); err != nil {
 		logger.Error(err.Error())

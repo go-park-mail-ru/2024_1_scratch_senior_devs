@@ -83,7 +83,7 @@ func TestBlockerUsecase_CheckLoginAttempts(t *testing.T) {
 			defer ctl.Finish()
 
 			repo := mock_auth.NewMockBlockerRepo(ctl)
-			uc := CreateBlockerUsecase(repo, testLogger, testConfig.Blocker)
+			uc := CreateBlockerUsecase(repo, testConfig.Blocker)
 
 			tt.repoMocker(context.Background(), repo)
 

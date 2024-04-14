@@ -21,19 +21,17 @@ var ErrNoteNotFound = errors.New("note not found")
 type AttachUsecase struct {
 	repo     attach.AttachRepo
 	noteRepo note.NoteBaseRepo
-	logger   *slog.Logger
 }
 
-func CreateAttachUsecase(repo attach.AttachRepo, noteRepo note.NoteBaseRepo, logger *slog.Logger) *AttachUsecase {
+func CreateAttachUsecase(repo attach.AttachRepo, noteRepo note.NoteBaseRepo) *AttachUsecase {
 	return &AttachUsecase{
 		repo:     repo,
 		noteRepo: noteRepo,
-		logger:   logger,
 	}
 }
 
 func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, attach io.ReadSeeker, extension string) (models.Attach, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	noteData, err := uc.noteRepo.ReadNote(ctx, noteID)
 	if err != nil {
@@ -71,7 +69,7 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 }
 
 func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, userID uuid.UUID) error {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	attachData, err := uc.repo.GetAttach(ctx, attachID)
 	if err != nil {
@@ -105,7 +103,7 @@ func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, u
 }
 
 func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, userID uuid.UUID) (models.Attach, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	attachData, err := uc.repo.GetAttach(ctx, attachID)
 	if err != nil {

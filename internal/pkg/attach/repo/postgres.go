@@ -2,11 +2,12 @@ package repo
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
-	"log/slog"
 )
 
 const (
@@ -16,19 +17,17 @@ const (
 )
 
 type AttachRepo struct {
-	db     pgxtype.Querier
-	logger *slog.Logger
+	db pgxtype.Querier
 }
 
-func CreateAttachRepo(db pgxtype.Querier, logger *slog.Logger) *AttachRepo {
+func CreateAttachRepo(db pgxtype.Querier) *AttachRepo {
 	return &AttachRepo{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 
 func (repo *AttachRepo) GetAttach(ctx context.Context, id uuid.UUID) (models.Attach, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	attach := models.Attach{}
 
@@ -47,7 +46,7 @@ func (repo *AttachRepo) GetAttach(ctx context.Context, id uuid.UUID) (models.Att
 }
 
 func (repo *AttachRepo) AddAttach(ctx context.Context, attach models.Attach) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, createAttach, attach.Id, attach.Path, attach.NoteId)
 	if err != nil {
@@ -60,7 +59,7 @@ func (repo *AttachRepo) AddAttach(ctx context.Context, attach models.Attach) err
 }
 
 func (repo *AttachRepo) DeleteAttach(ctx context.Context, id uuid.UUID) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, deleteAttach, id)
 	if err != nil {

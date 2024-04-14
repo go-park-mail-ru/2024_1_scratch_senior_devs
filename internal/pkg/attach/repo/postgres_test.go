@@ -3,8 +3,6 @@ package repo
 import (
 	"context"
 	"errors"
-	"log/slog"
-	"os"
 	"testing"
 
 	"github.com/driftprogramming/pgxpoolmock"
@@ -14,12 +12,6 @@ import (
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 func TestAttachRepo_GetAttach(t *testing.T) {
 	tests := []struct {
@@ -50,7 +42,7 @@ func TestAttachRepo_GetAttach(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.Id)
 
-			repo := CreateAttachRepo(mockPool, testLogger)
+			repo := CreateAttachRepo(mockPool)
 			_, err := repo.GetAttach(context.Background(), tt.Id)
 
 			assert.Equal(t, tt.expectedErr, err)
@@ -92,7 +84,7 @@ func TestAttachRepo_AddAttach(t *testing.T) {
 			defer ctrl.Finish()
 			tt.mockRepoAction(mockPool)
 
-			repo := CreateAttachRepo(mockPool, testLogger)
+			repo := CreateAttachRepo(mockPool)
 			err := repo.AddAttach(context.Background(), models.Attach{
 				Id:     attachId,
 				Path:   "",
@@ -137,7 +129,7 @@ func TestAttachRepo_DeleteAttach(t *testing.T) {
 			defer ctrl.Finish()
 			tt.mockRepoAction(mockPool)
 
-			repo := CreateAttachRepo(mockPool, testLogger)
+			repo := CreateAttachRepo(mockPool)
 			err := repo.DeleteAttach(context.Background(), attachId)
 			assert.Equal(t, tt.err, err)
 		})

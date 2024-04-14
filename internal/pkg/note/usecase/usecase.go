@@ -3,11 +3,12 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"log/slog"
 	"sync"
 	"time"
 	"unicode/utf8"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/validation"
 
@@ -21,25 +22,23 @@ import (
 type NoteUsecase struct {
 	baseRepo   note.NoteBaseRepo
 	searchRepo note.NoteSearchRepo
-	logger     *slog.Logger
 	cfg        config.ElasticConfig
 	wg         *sync.WaitGroup
 }
 
-func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, logger *slog.Logger, cfg config.ElasticConfig, wg *sync.WaitGroup) *NoteUsecase {
+func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, cfg config.ElasticConfig, wg *sync.WaitGroup) *NoteUsecase {
 	return &NoteUsecase{
 		baseRepo:   baseRepo,
 		searchRepo: searchRepo,
-		logger:     logger,
 		cfg:        cfg,
 		wg:         wg,
 	}
 }
 
 func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, searchValue string) ([]models.Note, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	res := make([]models.Note, 0)
+	var res []models.Note
 	var err error
 
 	if utf8.RuneCountInString(searchValue) < uc.cfg.ElasticSearchValueMinLength {
@@ -58,7 +57,7 @@ func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count 
 }
 
 func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	resultNote, err := uc.baseRepo.ReadNote(ctx, noteId)
 	if err != nil || resultNote.OwnerId != userId {
@@ -71,7 +70,7 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 }
 
 func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteData []byte) (models.Note, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	if err := validation.CheckNoteTitle(noteData); err != nil {
 		logger.Error(err.Error())
@@ -105,7 +104,7 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 }
 
 func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID, noteData []byte) (models.Note, error) {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	if err := validation.CheckNoteTitle(noteData); err != nil {
 		logger.Error(err.Error())
@@ -140,7 +139,7 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId
 }
 
 func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID) error {
-	logger := uc.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	deletedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
 	if err != nil || deletedNote.OwnerId != ownerId {

@@ -11,21 +11,20 @@ import (
 )
 
 type BlockerRepo struct {
-	db     redis.Client
-	logger *slog.Logger
-	cfg    config.BlockerConfig
+	db  redis.Client
+	cfg config.BlockerConfig
 }
 
-func CreateBlockerRepo(db redis.Client, logger *slog.Logger, cfg config.BlockerConfig) *BlockerRepo {
+func CreateBlockerRepo(db redis.Client, cfg config.BlockerConfig) *BlockerRepo {
 	return &BlockerRepo{
-		db:     db,
-		logger: logger,
-		cfg:    cfg,
+		db: db,
+
+		cfg: cfg,
 	}
 }
 
 func (repo *BlockerRepo) GetLoginAttempts(ctx context.Context, ipAddr string) (int, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	stringCount, err := repo.db.Get(ctx, ipAddr).Result()
 	if err != nil {
@@ -44,7 +43,7 @@ func (repo *BlockerRepo) GetLoginAttempts(ctx context.Context, ipAddr string) (i
 }
 
 func (repo *BlockerRepo) IncreaseLoginAttempts(ctx context.Context, ipAddr string) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	stringCount, err := repo.db.Get(ctx, ipAddr).Result()
 	if err != nil {

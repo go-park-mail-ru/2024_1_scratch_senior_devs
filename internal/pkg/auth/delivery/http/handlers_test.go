@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
+
+	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
@@ -20,12 +19,6 @@ import (
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 func TestAuthHandler_SignUp(t *testing.T) {
 	testConfig := config.Config{
@@ -122,7 +115,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 			handler.SignUp(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -215,7 +208,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 			handler.SignIn(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -270,7 +263,7 @@ func TestAuthHandler_LogOut(t *testing.T) {
 			req := httptest.NewRequest("DELETE", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 			handler.LogOut(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -344,7 +337,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 			handler.CheckUser(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -434,7 +427,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockUsecase, mockBlocker, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 			handler.GetProfile(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -561,7 +554,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, blockerUc)
 
-			h := CreateAuthHandler(uc, blockerUc, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			h := CreateAuthHandler(uc, blockerUc, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 
 			h.UpdateProfile(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)
@@ -660,7 +653,7 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, blockerUc)
 
-			h := CreateAuthHandler(uc, blockerUc, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			h := CreateAuthHandler(uc, blockerUc, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 
 			h.DisableSecondFactor(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)
@@ -757,7 +750,7 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, blockerUc)
 
-			h := CreateAuthHandler(uc, blockerUc, mockNoteUsecase, testLogger, testConfig.AuthHandler, testConfig.Validation)
+			h := CreateAuthHandler(uc, blockerUc, mockNoteUsecase, testConfig.AuthHandler, testConfig.Validation)
 
 			h.GetQRCode(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)

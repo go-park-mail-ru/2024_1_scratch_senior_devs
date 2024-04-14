@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/olivere/elastic/v7"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/olivere/elastic/v7"
 
 	"github.com/redis/go-redis/v9"
 
@@ -81,36 +82,36 @@ func main() {
 		return
 	}
 
-	JwtMiddleware := protection.CreateJwtMiddleware(logger, cfg.AuthHandler.Jwt)
-	CsrfMiddleware := protection.CreateCsrfMiddleware(logger, cfg.AuthHandler.Csrf)
-	RecoverMiddleware := recover.CreateRecoverMiddleware(logger)
+	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
+	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 
-	NoteBaseRepo := noteRepo.CreateNotePostgres(db, logger)
-	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, logger, cfg.Elastic)
-	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, logger, cfg.Elastic, &sync.WaitGroup{})
-	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase, logger)
+	logMW := log.CreateLogMiddleware(logger, cfg.AuthHandler.Jwt)
 
-	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, logger, cfg.Blocker)
-	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, logger, cfg.Blocker)
+	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
+	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic)
+	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, cfg.Elastic, &sync.WaitGroup{})
+	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase)
 
-	AuthRepo := authRepo.CreateAuthRepo(db, logger)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, logger, cfg.AuthUsecase, cfg.Validation)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, NoteUsecase, logger, cfg.AuthHandler, cfg.Validation)
+	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker)
+	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
 
-	AttachRepo := attachRepo.CreateAttachRepo(db, logger)
-	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo, logger)
-	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, logger, cfg.Attach)
+	AuthRepo := authRepo.CreateAuthRepo(db)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, cfg.AuthUsecase, cfg.Validation)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, NoteUsecase, cfg.AuthHandler, cfg.Validation)
+
+	AttachRepo := attachRepo.CreateAttachRepo(db)
+	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
+	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, cfg.Attach)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	})
-
 	r.Use(
+		logMW,
 		protection.CorsMiddleware,
-		log.LogMiddleware,
-		RecoverMiddleware,
+		recover.RecoverMiddleware,
 	)
 
 	r.PathPrefix("/swagger").Handler(httpSwagger.Handler(

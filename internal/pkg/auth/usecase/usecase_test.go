@@ -3,8 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"log/slog"
-	"os"
 	"testing"
 	"time"
 
@@ -17,12 +15,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 func TestAuthUsecase_SignUp(t *testing.T) {
 	testConfig := config.Config{
@@ -81,7 +73,7 @@ func TestAuthUsecase_SignUp(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
 			repo := mockAuth.NewMockAuthRepo(ctl)
-			uc := CreateAuthUsecase(repo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
+			uc := CreateAuthUsecase(repo, testConfig.AuthUsecase, testConfig.Validation)
 
 			tt.repoMocker(context.Background(), repo)
 			_, _, _, err := uc.SignUp(context.Background(), tt.args.data)
@@ -166,7 +158,7 @@ func TestAuthUsecase_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			uc := CreateAuthUsecase(repo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
+			uc := CreateAuthUsecase(repo, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.data.Username, responses.GetHash(tt.args.data.Password), tt.wantErr)
@@ -240,7 +232,7 @@ func TestCheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			repo := mockAuth.NewMockAuthRepo(ctrl)
-			uc := CreateAuthUsecase(repo, testLogger, testConfig.AuthUsecase, testConfig.Validation)
+			uc := CreateAuthUsecase(repo, testConfig.AuthUsecase, testConfig.Validation)
 			defer ctrl.Finish()
 
 			tt.repoMocker(repo, tt.args.id, tt.wantErr)

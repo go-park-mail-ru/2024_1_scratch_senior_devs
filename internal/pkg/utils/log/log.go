@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"log/slog"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -34,4 +35,14 @@ func LogHandlerInfo(logger *slog.Logger, statusCode int, msg string) {
 func LogHandlerError(logger *slog.Logger, statusCode int, msg string) {
 	logger = logger.With(slog.String("status", strconv.Itoa(statusCode)))
 	logger.Error(msg)
+}
+
+func GetLoggerFromContext(ctx context.Context) *slog.Logger {
+	if logger, ok := ctx.Value(config.LoggerContextKey).(*slog.Logger); ok {
+		return logger
+	}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	logger.Error("Couldnt get logger from context")
+
+	return logger
 }

@@ -3,23 +3,16 @@ package repo
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v4"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
-	"log/slog"
-	"os"
-	"testing"
-	"time"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 func TestNoteRepo_ReadAllNotes(t *testing.T) {
 	tests := []struct {
@@ -59,7 +52,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
-			repo := CreateNotePostgres(mockPool, testLogger)
+			repo := CreateNotePostgres(mockPool)
 			_, err := repo.ReadAllNotes(context.Background(), tt.userId, int64(1), int64(0))
 
 			assert.Equal(t, tt.expectedErr, err)
@@ -106,7 +99,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.Id)
 
-			repo := CreateNotePostgres(mockPool, testLogger)
+			repo := CreateNotePostgres(mockPool)
 			_, err := repo.ReadNote(context.Background(), tt.Id)
 
 			assert.Equal(t, tt.expectedErr, err)
@@ -151,7 +144,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 
 			tt.mockRepoAction(mockPool)
 
-			repo := CreateNotePostgres(mockPool, testLogger)
+			repo := CreateNotePostgres(mockPool)
 			err := repo.CreateNote(context.Background(), models.Note{
 				Id:         Id,
 				Data:       []byte{},
@@ -202,7 +195,7 @@ func TestNoteRepo_UpdateNote(t *testing.T) {
 
 			tt.mockRepoAction(mockPool)
 
-			repo := CreateNotePostgres(mockPool, testLogger)
+			repo := CreateNotePostgres(mockPool)
 			err := repo.UpdateNote(context.Background(), models.Note{
 				Id:         Id,
 				Data:       []byte{},
@@ -247,7 +240,7 @@ func TestNoteRepo_DeleteNote(t *testing.T) {
 
 			tt.mockRepoAction(mockPool)
 
-			repo := CreateNotePostgres(mockPool, testLogger)
+			repo := CreateNotePostgres(mockPool)
 			err := repo.DeleteNote(context.Background(), Id)
 
 			assert.Equal(t, tt.err, err)

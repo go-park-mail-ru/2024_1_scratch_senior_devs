@@ -22,19 +22,17 @@ const (
 )
 
 type NotePostgres struct {
-	db     pgxtype.Querier
-	logger *slog.Logger
+	db pgxtype.Querier
 }
 
-func CreateNotePostgres(db pgxtype.Querier, logger *slog.Logger) *NotePostgres {
+func CreateNotePostgres(db pgxtype.Querier) *NotePostgres {
 	return &NotePostgres{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 
 func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	result := make([]models.Note, 0, count)
 
@@ -58,7 +56,7 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 }
 
 func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	resultNote := models.Note{}
 
@@ -80,7 +78,7 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 }
 
 func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId)
 	if err != nil {
@@ -93,7 +91,7 @@ func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) erro
 }
 
 func (repo *NotePostgres) UpdateNote(ctx context.Context, note models.Note) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateNote, note.Data, note.UpdateTime, note.Id)
 
@@ -107,7 +105,7 @@ func (repo *NotePostgres) UpdateNote(ctx context.Context, note models.Note) erro
 
 }
 func (repo *NotePostgres) DeleteNote(ctx context.Context, id uuid.UUID) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, deleteNote, id)
 	if err != nil {

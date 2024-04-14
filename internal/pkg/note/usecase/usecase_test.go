@@ -3,13 +3,12 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"log/slog"
-	"os"
 	"reflect"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
@@ -17,12 +16,6 @@ import (
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 func TestNoteUsecase_GetAllNotes(t *testing.T) {
 	elasticConfig := config.ElasticConfig{
@@ -115,7 +108,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 			defer ctl.Finish()
 			baseRepo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			Usecase := CreateNoteUsecase(baseRepo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
+			Usecase := CreateNoteUsecase(baseRepo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), baseRepo, searchRepo, tt.args.userId, tt.args.count, tt.args.offset)
 			got, err := Usecase.GetAllNotes(context.Background(), tt.args.userId, tt.args.count, tt.args.offset, "")
@@ -202,7 +195,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, tt.args.noteId)
 
@@ -257,7 +250,7 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
@@ -317,7 +310,7 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
@@ -377,7 +370,7 @@ func TestNoteUsecase_DeleteNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, testLogger, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 

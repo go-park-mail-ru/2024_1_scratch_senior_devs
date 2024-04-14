@@ -3,8 +3,9 @@ package repo
 import (
 	"context"
 	"database/sql"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"log/slog"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
@@ -23,19 +24,17 @@ const (
 )
 
 type AuthRepo struct {
-	db     pgxtype.Querier
-	logger *slog.Logger
+	db pgxtype.Querier
 }
 
-func CreateAuthRepo(db pgxtype.Querier, logger *slog.Logger) *AuthRepo {
+func CreateAuthRepo(db pgxtype.Querier) *AuthRepo {
 	return &AuthRepo{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 
 func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	userSecret := sql.NullString{
 		String: string(user.SecondFactor),
@@ -53,7 +52,7 @@ func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 }
 
 func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.User, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	resultUser := models.User{Id: id}
 	description := sql.NullString{}
@@ -86,7 +85,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 }
 
 func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	resultUser := models.User{Username: username}
 	description := sql.NullString{}
@@ -119,7 +118,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 }
 
 func (repo *AuthRepo) UpdateProfile(ctx context.Context, user models.User) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateProfile, user.Description, user.PasswordHash, user.Id)
 	if err != nil {
@@ -132,7 +131,7 @@ func (repo *AuthRepo) UpdateProfile(ctx context.Context, user models.User) error
 }
 
 func (repo *AuthRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, imagePath string) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateProfileAvatar, imagePath, userID)
 	if err != nil {
@@ -145,7 +144,7 @@ func (repo *AuthRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID,
 }
 
 func (repo *AuthRepo) UpdateSecret(ctx context.Context, username string, secret string) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, updateSecondFactor, secret, username)
 	if err != nil {
@@ -158,7 +157,7 @@ func (repo *AuthRepo) UpdateSecret(ctx context.Context, username string, secret 
 }
 
 func (repo *AuthRepo) DeleteSecret(ctx context.Context, username string) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, deleteSecondFactor, username)
 	if err != nil {

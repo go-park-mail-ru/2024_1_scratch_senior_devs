@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
+	"strings"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/olivere/elastic/v7"
-	"log/slog"
-	"strings"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/satori/uuid"
@@ -21,20 +22,18 @@ var (
 
 type NoteElastic struct {
 	elastic *elastic.Client
-	logger  *slog.Logger
 	cfg     config.ElasticConfig
 }
 
-func CreateNoteElastic(elastic *elastic.Client, logger *slog.Logger, cfg config.ElasticConfig) *NoteElastic {
+func CreateNoteElastic(elastic *elastic.Client, cfg config.ElasticConfig) *NoteElastic {
 	return &NoteElastic{
 		elastic: elastic,
-		logger:  logger,
 		cfg:     cfg,
 	}
 }
 
 func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string) ([]models.Note, error) {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	userIdQuery := elastic.NewTermsQuery("owner_id", strings.ToLower(userID.String()))
 	searchQuery := elastic.NewMatchQuery("data", searchValue)
@@ -66,7 +65,7 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 }
 
 func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	elasticNote := elasticsearch.ConvertToElasticNote(note)
 
@@ -102,7 +101,7 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error
 }
 
 func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	elasticNote := elasticsearch.ConvertToElasticNote(note)
 
@@ -134,7 +133,7 @@ func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note) error
 }
 
 func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {
-	logger := repo.logger.With(slog.String("ID", log.GetRequestId(ctx)), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.elastic.Delete().
 		Index(repo.cfg.ElasticIndexName).

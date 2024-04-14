@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -21,12 +20,6 @@ import (
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 const (
 	testNameUnauthorized = "Test_Unauthorized"
@@ -108,7 +101,7 @@ func TestAttachHandler_DeleteAttach(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, tt.attachID, tt.userID)
 
-			h := CreateAttachHandler(uc, testLogger, testConfig)
+			h := CreateAttachHandler(uc, testConfig)
 			h.DeleteAttach(w, req)
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})
@@ -191,7 +184,7 @@ func TestAttachHandler_GetAttach(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, tt.attachID, tt.userID)
 
-			h := CreateAttachHandler(uc, testLogger, testConfig)
+			h := CreateAttachHandler(uc, testConfig)
 			h.GetAttach(w, req)
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})
@@ -345,7 +338,7 @@ func TestAttachHandler_AddAttach(t *testing.T) {
 
 			tt.ucMocker(req.Context(), uc, tt.attachID, tt.userID)
 
-			h := CreateAttachHandler(uc, testLogger, testConfig)
+			h := CreateAttachHandler(uc, testConfig)
 			h.AddAttach(w, req)
 			assert.Equal(t, tt.expectedStatus, w.Code)
 		})

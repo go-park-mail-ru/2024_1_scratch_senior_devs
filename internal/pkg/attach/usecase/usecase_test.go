@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"log/slog"
 	"os"
 	"strings"
 	"testing"
@@ -17,12 +16,6 @@ import (
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 func TestAttachUsecase_DeleteAttach(t *testing.T) {
 	attachId := uuid.NewV4()
@@ -157,7 +150,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 			defer ctl.Finish()
 			noteRepo := mock_note.NewMockNoteBaseRepo(ctl)
 			repo := mock_attach.NewMockAttachRepo(ctl)
-			uc := CreateAttachUsecase(repo, noteRepo, testLogger)
+			uc := CreateAttachUsecase(repo, noteRepo)
 
 			tt.repoMocker(context.Background(), repo, noteRepo, tt.args)
 
@@ -274,7 +267,7 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 			defer ctl.Finish()
 			noteRepo := mock_note.NewMockNoteBaseRepo(ctl)
 			repo := mock_attach.NewMockAttachRepo(ctl)
-			uc := CreateAttachUsecase(repo, noteRepo, testLogger)
+			uc := CreateAttachUsecase(repo, noteRepo)
 
 			tt.repoMocker(context.Background(), repo, noteRepo)
 
@@ -383,7 +376,7 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 			defer ctl.Finish()
 			noteRepo := mock_note.NewMockNoteBaseRepo(ctl)
 			repo := mock_attach.NewMockAttachRepo(ctl)
-			uc := CreateAttachUsecase(repo, noteRepo, testLogger)
+			uc := CreateAttachUsecase(repo, noteRepo)
 			tt.repoMocker(context.Background(), repo, noteRepo, tt.args)
 			attach, err := uc.AddAttach(tt.args.ctx, tt.args.noteID, tt.args.userID, tt.args.attach, tt.args.extension)
 			assert.Equal(t, tt.expectedErr, err)
