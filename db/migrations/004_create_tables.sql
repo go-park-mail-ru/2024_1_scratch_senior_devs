@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS profile (
     password_hash   TEXT                        NOT NULL
                     CONSTRAINT password_hash_length
                     CHECK (char_length(password_hash) <= 300),
-    create_time     TIMESTAMP WITH TIME ZONE    NOT NULL,
+    created_at      TIMESTAMP WITH TIME ZONE    NOT NULL,
     image_path      TEXT                        NOT NULL
                     DEFAULT ('default.jpg')
                     CONSTRAINT image_path_length
@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS note (
     note_data   TEXT
                 CONSTRAINT data_length
                 CHECK (char_length(data) <= 4000),
-    create_time TIMESTAMP WITH TIME ZONE    NOT NULL,
-    update_time TIMESTAMP WITH TIME ZONE    NOT NULL,
+    created_at  TIMESTAMP WITH TIME ZONE    NOT NULL,
+    updated_at  TIMESTAMP WITH TIME ZONE    NOT NULL,
     owner_id    UUID                        NOT NULL
                 REFERENCES profile (id)
                 ON DELETE CASCADE
