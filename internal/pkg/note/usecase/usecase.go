@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"log/slog"
@@ -103,6 +104,11 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId
 	if err != nil || updatedNote.OwnerId != ownerId {
 		logger.Error(err.Error())
 		return models.Note{}, err
+	}
+
+	if bytes.Equal(updatedNote.Data, noteData) {
+		logger.Info("success")
+		return updatedNote, nil
 	}
 
 	updatedNote.UpdateTime = time.Now().UTC()
