@@ -19,14 +19,12 @@ import (
 )
 
 type NoteHandler struct {
-	uc     note.NoteUsecase
-	logger *slog.Logger
+	uc note.NoteUsecase
 }
 
-func CreateNotesHandler(uc note.NoteUsecase, logger *slog.Logger) *NoteHandler {
+func CreateNotesHandler(uc note.NoteUsecase) *NoteHandler {
 	return &NoteHandler{
-		uc:     uc,
-		logger: logger,
+		uc: uc,
 	}
 }
 
@@ -48,7 +46,7 @@ const (
 // @Failure		401
 // @Router		/api/note/get_all [get]
 func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	count, offset, err := paging.GetParams(r)
 	if err != nil {
@@ -94,7 +92,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 // @Failure		404		{object}	responses.ErrorResponse	true	"note not found"
 // @Router		/api/note/{id} [get]
 func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	noteIdString := mux.Vars(r)["id"]
 	noteId, err := uuid.FromString(noteIdString)
@@ -140,7 +138,7 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/note/add [post]
 func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -193,7 +191,7 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/note/{id}/edit [post]
 func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	noteIdString := mux.Vars(r)["id"]
 	noteId, err := uuid.FromString(noteIdString)
@@ -252,7 +250,7 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 // @Failure		404		{object}	responses.ErrorResponse	true	"note not found"
 // @Router		/api/note/{id}/delete [delete]
 func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	noteIdString := mux.Vars(r)["id"]
 	noteId, err := uuid.FromString(noteIdString)

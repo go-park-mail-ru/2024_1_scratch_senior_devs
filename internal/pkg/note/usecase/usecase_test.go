@@ -3,11 +3,12 @@ package usecase
 import (
 	"context"
 	"errors"
-	"log/slog"
-	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
@@ -16,13 +17,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
-
 func TestNoteUsecase_GetAllNotes(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
 
 	type args struct {
 		userId uuid.UUID
@@ -31,14 +30,14 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context context.Context, repo *mock_note.MockNoteRepo, uId uuid.UUID, count int64, offset int64)
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, uId uuid.UUID, count int64, offset int64)
 		args       args
 		want       []models.Note
 		wantErr    bool
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo, uId uuid.UUID, count int64, offset int64) {
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, uId uuid.UUID, count int64, offset int64) {
 				mockResp := []models.Note{ //мок ответа от уровня репозитория
 					{
 						Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
@@ -56,7 +55,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 					},
 				}
 
-				repo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset), "").Return(mockResp, nil).Times(1)
+				baseRepo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset)).Return(mockResp, nil).Times(1)
 			},
 			args: args{
 
@@ -84,12 +83,12 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 		},
 		{
 			name: "TestFail",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo, uId uuid.UUID, count int64, offset int64) {
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, uId uuid.UUID, count int64, offset int64) {
 				mockResp := []models.Note{ //мок ответа от уровня репозитория
 
 				}
 
-				repo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset), "").Return(mockResp, errors.New("repo error")).Times(1)
+				baseRepo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset)).Return(mockResp, errors.New("repo error")).Times(1)
 			},
 			args: args{
 
@@ -107,10 +106,11 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
-			repo := mock_note.NewMockNoteRepo(ctl)
-			Usecase := CreateNoteUsecase(repo, testLogger)
+			baseRepo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			Usecase := CreateNoteUsecase(baseRepo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
-			tt.repoMocker(context.Background(), repo, tt.args.userId, tt.args.count, tt.args.offset)
+			tt.repoMocker(context.Background(), baseRepo, searchRepo, tt.args.userId, tt.args.count, tt.args.offset)
 			got, err := Usecase.GetAllNotes(context.Background(), tt.args.userId, tt.args.count, tt.args.offset, "")
 
 			if (err != nil) != tt.wantErr {
@@ -125,6 +125,10 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 }
 
 func TestNoteUsecase_GetNote(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
 
 	type args struct {
 		ctx    context.Context
@@ -133,14 +137,14 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context context.Context, repo *mock_note.MockNoteRepo, nId uuid.UUID)
+		repoMocker func(context context.Context, repo *mock_note.MockNoteBaseRepo, nId uuid.UUID)
 		args       args
 		want       models.Note
 		wantErr    bool
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo, nId uuid.UUID) {
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, nId uuid.UUID) {
 				mockResp := models.Note{ //мок ответа от уровня репозитория
 					Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
@@ -168,7 +172,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 		},
 		{
 			name: "TestFail",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo, nId uuid.UUID) {
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, nId uuid.UUID) {
 				mockResp := models.Note{ //мок ответа от уровня репозитория
 
 				}
@@ -189,8 +193,9 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
-			repo := mock_note.NewMockNoteRepo(ctl)
-			uc := CreateNoteUsecase(repo, testLogger)
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, tt.args.noteId)
 
@@ -207,6 +212,10 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 }
 
 func TestNoteUsecase_CreateNote(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
 
 	type args struct {
 		ctx      context.Context
@@ -215,17 +224,16 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context context.Context, repo *mock_note.MockNoteRepo)
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
 		args       args
 		wantErr    bool
 		want       models.Note
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo) {
-
-				repo.EXPECT().CreateNote(ctx, gomock.Any()).Return(nil).Times(1)
-
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().CreateNote(ctx, gomock.Any()).Return(nil).Times(1)
+				searchRepo.EXPECT().CreateNote(ctx, gomock.Any()).Return(nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -240,10 +248,11 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
-			repo := mock_note.NewMockNoteRepo(ctl)
-			uc := CreateNoteUsecase(repo, testLogger)
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
-			tt.repoMocker(context.Background(), repo)
+			tt.repoMocker(context.Background(), repo, searchRepo)
 
 			got, err := uc.CreateNote(tt.args.ctx, tt.args.userId, tt.args.noteData)
 			if (err != nil) != tt.wantErr {
@@ -260,6 +269,11 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 }
 
 func TestNoteUsecase_UpdateNote(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
+
 	id := uuid.NewV4()
 
 	type args struct {
@@ -269,18 +283,17 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context context.Context, repo *mock_note.MockNoteRepo)
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
 		args       args
 		wantErr    bool
 		want       models.Note
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo) {
-
-				repo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
-				repo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
-
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
+				searchRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -295,10 +308,11 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
-			repo := mock_note.NewMockNoteRepo(ctl)
-			uc := CreateNoteUsecase(repo, testLogger)
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
-			tt.repoMocker(context.Background(), repo)
+			tt.repoMocker(context.Background(), repo, searchRepo)
 
 			got, err := uc.UpdateNote(tt.args.ctx, id, tt.args.userId, tt.args.noteData)
 			if (err != nil) != tt.wantErr {
@@ -315,6 +329,11 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 }
 
 func TestNoteUsecase_DeleteNote(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
+
 	id := uuid.NewV4()
 
 	type args struct {
@@ -324,18 +343,17 @@ func TestNoteUsecase_DeleteNote(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context context.Context, repo *mock_note.MockNoteRepo)
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
 		args       args
 		wantErr    bool
 		want       models.Note
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteRepo) {
-
-				repo.EXPECT().DeleteNote(ctx, gomock.Any()).Return(nil).Times(1)
-				repo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
-
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().DeleteNote(ctx, gomock.Any()).Return(nil).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
+				searchRepo.EXPECT().DeleteNote(ctx, gomock.Any()).Return(nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -350,10 +368,11 @@ func TestNoteUsecase_DeleteNote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctl := gomock.NewController(t)
 			defer ctl.Finish()
-			repo := mock_note.NewMockNoteRepo(ctl)
-			uc := CreateNoteUsecase(repo, testLogger)
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
-			tt.repoMocker(context.Background(), repo)
+			tt.repoMocker(context.Background(), repo, searchRepo)
 
 			err := uc.DeleteNote(tt.args.ctx, id, tt.args.userId)
 			if (err != nil) != tt.wantErr {

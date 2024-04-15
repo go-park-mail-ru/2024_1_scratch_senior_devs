@@ -5,13 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
@@ -20,12 +19,6 @@ import (
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
 )
-
-var testLogger *slog.Logger
-
-func init() {
-	testLogger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-}
 
 func TestNoteHandler_GetAllNotes(t *testing.T) {
 	const successTestName = "Test Success"
@@ -99,7 +92,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			h := CreateNotesHandler(mockUsecase, testLogger)
+			h := CreateNotesHandler(mockUsecase)
 			h.GetAllNotes(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -180,7 +173,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			if tt.name != "Test Bad Request" {
 				req = mux.SetURLVars(req, map[string]string{"id": tt.noteId.String()})
 			}
-			h := CreateNotesHandler(mockUsecase, testLogger)
+			h := CreateNotesHandler(mockUsecase)
 			h.GetNote(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -255,7 +248,7 @@ func TestNoteHandler_AddNote(t *testing.T) {
 			r = r.WithContext(ctx)
 			w := httptest.NewRecorder()
 
-			handler := CreateNotesHandler(mockUsecase, testLogger)
+			handler := CreateNotesHandler(mockUsecase)
 			handler.AddNote(w, r)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)

@@ -63,10 +63,10 @@ func parseJwtPayloadFromClaims(claims *jwt.Token) (models.JwtPayload, error) {
 	}, nil
 }
 
-func CreateJwtMiddleware(logger *slog.Logger, cfg config.JwtConfig) mux.MiddlewareFunc {
+func CreateJwtMiddleware(cfg config.JwtConfig) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			jwtLogger := logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+			jwtLogger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 			header := r.Header.Get("Authorization")
 			if header == "" {

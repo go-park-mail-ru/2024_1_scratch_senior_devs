@@ -119,7 +119,7 @@ func TestJwtMiddleware(t *testing.T) {
 			req.AddCookie(tt.args.cookie)
 			handler(res, req)
 
-			mw := CreateJwtMiddleware(testLogger, testConfig)
+			mw := CreateJwtMiddleware(testConfig)
 			mw(http.HandlerFunc(handler)).ServeHTTP(res, req)
 			resp := res.Result()
 			defer resp.Body.Close()

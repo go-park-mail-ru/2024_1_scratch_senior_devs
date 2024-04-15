@@ -127,7 +127,7 @@ func TestCsrfMiddleware(t *testing.T) {
 			req.Header.Add("X-Csrf-Token", tt.args.token)
 
 			req.AddCookie(tt.args.cookie)
-			mw := CreateCsrfMiddleware(testLogger, testConfig)
+			mw := CreateCsrfMiddleware(testConfig)
 			mw(http.HandlerFunc(handler)).ServeHTTP(res, req)
 			resp := res.Result()
 			defer resp.Body.Close()

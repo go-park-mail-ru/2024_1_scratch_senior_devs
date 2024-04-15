@@ -25,16 +25,14 @@ const (
 )
 
 type AttachHandler struct {
-	uc     attach.AttachUsecase
-	logger *slog.Logger
-	cfg    config.AttachConfig
+	uc  attach.AttachUsecase
+	cfg config.AttachConfig
 }
 
-func CreateAttachHandler(uc attach.AttachUsecase, logger *slog.Logger, cfg config.AttachConfig) *AttachHandler {
+func CreateAttachHandler(uc attach.AttachUsecase, cfg config.AttachConfig) *AttachHandler {
 	return &AttachHandler{
-		uc:     uc,
-		logger: logger,
-		cfg:    cfg,
+		uc:  uc,
+		cfg: cfg,
 	}
 }
 
@@ -53,7 +51,7 @@ func CreateAttachHandler(uc attach.AttachUsecase, logger *slog.Logger, cfg confi
 // @Failure		413
 // @Router		/api/note/{id}/add_attach [post]
 func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -140,9 +138,9 @@ func (h *AttachHandler) AddAttach(w http.ResponseWriter, r *http.Request) {
 // @Failure		400			{object}	responses.ErrorResponse			true	"incorrect id"
 // @Failure		401
 // @Failure		404			{object}	responses.ErrorResponse			true	"not found"
-// @Router		/api/attach/delete [delete]
+// @Router		/api/attach/{id}/delete [delete]
 func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -181,7 +179,7 @@ func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/attaches/{id} [get]
 func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {

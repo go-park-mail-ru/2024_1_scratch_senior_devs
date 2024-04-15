@@ -10,6 +10,7 @@ import (
 
 type PayloadKey string
 type RequestIdKey string
+type LoggerKey string
 
 type Config struct {
 	AuthHandler AuthHandlerConfig `yaml:"auth_handler"`
@@ -69,6 +70,7 @@ type ElasticConfig struct {
 const (
 	PayloadContextKey   PayloadKey   = "payload"
 	RequestIdContextKey RequestIdKey = "request_id"
+	LoggerContextKey    LoggerKey    = "logger"
 )
 
 func LoadConfig(path string, logger *slog.Logger) *Config {

@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
@@ -23,19 +25,40 @@ import (
 type AuthHandler struct {
 	uc            auth.AuthUsecase
 	blockerUC     auth.BlockerUsecase
-	logger        *slog.Logger
+	noteUC        note.NoteUsecase
 	cfg           config.AuthHandlerConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logger *slog.Logger, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
+func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, noteUC note.NoteUsecase, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
 	return &AuthHandler{
-		uc:            uc,
-		blockerUC:     blockerUC,
-		logger:        logger,
+		uc:        uc,
+		blockerUC: blockerUC,
+		noteUC:    noteUC,
+
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
 	}
+}
+
+func makeHelloNoteData(username string) []byte {
+	return []byte(fmt.Sprintf(`
+		{
+			"title": "You-note ❤️",
+			"content": [
+				{
+					"id": "1",
+					"type": "div",
+					"content": [
+						{
+							"id": "2",
+							"content": "Привет, %s!"
+						}
+					]
+				}
+			]
+		}
+	`, username))
 }
 
 // SignUp godoc
@@ -50,7 +73,7 @@ func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, logge
 // @Failure		400			{object}	responses.ErrorResponse			true	"error"
 // @Router		/api/auth/signup [post]
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	userData := models.UserFormData{}
 	if err := responses.GetRequestData(r, &userData); err != nil {
@@ -83,6 +106,11 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err = h.noteUC.CreateNote(r.Context(), newUser.Id, makeHelloNoteData(newUser.Username))
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	log.LogHandlerInfo(logger, http.StatusCreated, "success")
 }
 
@@ -95,7 +123,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/auth/check_user [get]
 func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -117,7 +145,7 @@ func (h *AuthHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/auth/logout [delete]
 func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	http.SetCookie(w, cookie.DelJwtTokenCookie(h.cfg.Jwt))
 	w.Header().Del("Authorization")
@@ -143,7 +171,7 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 // @Failure		401			{object}	responses.ErrorResponse	true	"error"
 // @Router		/api/auth/login [post]
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	if err := h.blockerUC.CheckLoginAttempts(r.Context(), r.Header.Get("X-Real-IP")); err != nil {
 		log.LogHandlerError(logger, http.StatusTooManyRequests, err.Error())
@@ -195,7 +223,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/profile/get [get]
 func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -234,7 +262,7 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/profile/update [post]
 func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -280,7 +308,7 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 // @Failure		413
 // @Router		/api/profile/update_avatar [post]
 func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -361,7 +389,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 // @Router		/api/auth/get_qr [get]
 func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -412,7 +440,7 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 // @Failure		401
 // @Router		/api/auth/disable_2fa [delete]
 func (h *AuthHandler) DisableSecondFactor(w http.ResponseWriter, r *http.Request) {
-	logger := h.logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {

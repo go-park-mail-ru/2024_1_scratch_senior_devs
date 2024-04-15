@@ -18,14 +18,70 @@ CREATE TABLE IF NOT EXISTS users (
         CONSTRAINT secret_length CHECK (char_length(secret) <= 255)
 );
 
+CREATE TABLE IF NOT EXISTS notes (
+    id UUID PRIMARY KEY,
+    data JSON,
+    create_time TIMESTAMP
+        NOT NULL,
+    update_time TIMESTAMP
+        NOT NULL,
+    owner_id UUID REFERENCES users (id)
+        NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS attaches (
     id UUID PRIMARY KEY,
     path TEXT
         NOT NULL
         CONSTRAINT path_length CHECK (char_length(path) <= 255),
-    note_id UUID
+    note_id UUID REFERENCES notes (id) ON DELETE CASCADE
         NOT NULL
 );
 
-INSERT INTO users (id, description, username, password_hash, create_time)
-    VALUES ('57247dd2-b768-4665-a290-8dad9506616a', '', 'mizhgun', 'f969248d621bcded4a3582a1c3b17a71eedfefa9120c36ee3bd1957438cd55b9', CURRENT_TIMESTAMP);
+-- CREATE TABLE IF NOT EXISTS outbox (
+--     id UUID PRIMARY KEY,
+--     action TEXT -- "create" / "update" / "delete"
+--         NOT NULL
+--         CONSTRAINT action_length CHECK (char_length(action) <= 10),
+--     note_id UUID
+--         NOT NULL
+-- );
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE OR REPLACE FUNCTION add_draft_note()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    AS $BODY$
+DECLARE
+    name_text json;
+BEGIN
+    IF NEW.id IS NOT NULL AND NEW.username IS NOT NULL THEN
+        name_text := format('{
+			"title": "You-note ❤️",
+			"content": [
+				{
+					"id": "1",
+					"type": "div",
+					"content": [
+						{
+							"id": "2",
+							"content": "Привет, %s!"
+						}
+					]
+				}
+			]
+		}', NEW.username);
+        INSERT INTO notes (id, data, create_time, update_time, owner_id)
+        VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NEW.id);
+    END IF;
+
+    RETURN NEW;
+END;
+$BODY$;
+
+CREATE OR REPLACE TRIGGER add_note_on_new_user
+    AFTER INSERT
+    ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION add_draft_note();

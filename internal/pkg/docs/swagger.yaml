@@ -1,9 +1,4 @@
 definitions:
-  delivery.ErrorResponse:
-    properties:
-      message:
-        type: string
-    type: object
   models.Attach:
     properties:
       id:
@@ -83,6 +78,11 @@ definitions:
       old:
         type: string
     type: object
+  responses.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
 host: you-note.ru
 info:
   contact: {}
@@ -90,7 +90,7 @@ info:
   title: YouNote API
   version: "1.0"
 paths:
-  /api/attach/delete:
+  /api/attach/{id}/delete:
     delete:
       description: Remove attach from note
       operationId: delete-attach
@@ -106,13 +106,13 @@ paths:
         "400":
           description: incorrect id
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
         "404":
           description: not found
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Delete attach
       tags:
       - attach
@@ -205,11 +205,11 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Sign in
       tags:
       - auth
@@ -248,7 +248,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Sign up
       tags:
       - auth
@@ -270,13 +270,13 @@ paths:
         "400":
           description: incorrect id
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
         "404":
           description: note not found
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Get one note
       tags:
       - note
@@ -307,7 +307,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
         "413":
@@ -331,13 +331,13 @@ paths:
         "400":
           description: incorrect id
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
         "404":
           description: note not found
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Delete note
       tags:
       - note
@@ -369,7 +369,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Update note
@@ -398,7 +398,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Add note
@@ -433,7 +433,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Get all notes
@@ -478,7 +478,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
       summary: Update profile
@@ -506,7 +506,7 @@ paths:
         "400":
           description: error
           schema:
-            $ref: '#/definitions/delivery.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
         "413":

@@ -16,7 +16,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/attach/delete": {
+        "/api/attach/{id}/delete": {
             "delete": {
                 "description": "Remove attach from note",
                 "tags": [
@@ -40,7 +40,7 @@ const docTemplate = `{
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -49,7 +49,7 @@ const docTemplate = `{
                     "404": {
                         "description": "not found",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -189,13 +189,13 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -254,7 +254,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -295,7 +295,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -348,7 +348,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -384,7 +384,7 @@ const docTemplate = `{
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -393,7 +393,7 @@ const docTemplate = `{
                     "404": {
                         "description": "note not found",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -439,7 +439,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -475,7 +475,7 @@ const docTemplate = `{
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -484,7 +484,7 @@ const docTemplate = `{
                     "404": {
                         "description": "note not found",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -532,7 +532,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -600,7 +600,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -642,7 +642,7 @@ const docTemplate = `{
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -656,14 +656,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "delivery.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Attach": {
             "type": "object",
             "properties": {
@@ -783,6 +775,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "old": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }

@@ -58,7 +58,7 @@ func TestAuthRepo_CreateUser(t *testing.T) {
 
 			tt.mockRepoAction(mockPool)
 
-			repo := CreateAuthRepo(mockPool, testLogger)
+			repo := CreateAuthRepo(mockPool)
 			err := repo.CreateUser(context.Background(), models.User{
 				Id:           userId,
 				Description:  "",
@@ -120,7 +120,7 @@ func TestAuthRepo_GetUserById(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
-			repo := CreateAuthRepo(mockPool, testLogger)
+			repo := CreateAuthRepo(mockPool)
 			_, err := repo.GetUserById(context.Background(), tt.userId)
 
 			assert.Equal(t, tt.expectedErr, err)
@@ -174,7 +174,7 @@ func TestAuthRepo_GetUserByUsername(t *testing.T) {
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.username)
 
-			repo := CreateAuthRepo(mockPool, testLogger)
+			repo := CreateAuthRepo(mockPool)
 			_, err := repo.GetUserByUsername(context.Background(), tt.username)
 
 			assert.Equal(t, tt.expectedErr, err)
@@ -226,7 +226,7 @@ func TestAuthRepo_Deletedata(t *testing.T) {
 			defer ctrl.Finish()
 			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", "data").ToPgxRows()
 
-			repo := CreateAuthRepo(mockPool, testLogger)
+			repo := CreateAuthRepo(mockPool)
 			tt.mockRepoAction(mockPool, pgxRows, tt.args.username)
 			err := repo.DeleteSecret(context.Background(), tt.args.username)
 			assert.Equal(t, tt.expectedErr, err)
@@ -280,7 +280,7 @@ func TestAuthRepo_Updatedata(t *testing.T) {
 			defer ctrl.Finish()
 			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "description", "", time.Now(), "", tt.args.data).ToPgxRows()
 
-			repo := CreateAuthRepo(mockPool, testLogger)
+			repo := CreateAuthRepo(mockPool)
 			tt.mockRepoAction(mockPool, pgxRows, tt.args.username)
 			err := repo.UpdateSecret(context.Background(), tt.args.username, tt.args.data)
 			assert.Equal(t, tt.expectedErr, err)
@@ -335,7 +335,7 @@ func TestAuthRepo_UpdateProfileAvatar(t *testing.T) {
 			defer ctrl.Finish()
 			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(userId, "description", "", time.Now(), "", "").ToPgxRows()
 
-			repo := CreateAuthRepo(mockPool, testLogger)
+			repo := CreateAuthRepo(mockPool)
 			tt.mockRepoAction(mockPool, pgxRows, tt.args.Id.String())
 			err := repo.UpdateProfileAvatar(context.Background(), tt.args.Id, tt.args.path)
 			assert.Equal(t, tt.expectedErr, err)
@@ -383,7 +383,7 @@ func TestAuthRepo_UpdateProfile(t *testing.T) {
 			defer ctrl.Finish()
 			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(tt.args.user.Id, "description", "", time.Now(), "", "").ToPgxRows()
 
-			repo := CreateAuthRepo(mockPool, testLogger)
+			repo := CreateAuthRepo(mockPool)
 			tt.mockRepoAction(mockPool, pgxRows, tt.args.user)
 			err := repo.UpdateProfile(context.Background(), tt.args.user)
 			assert.Equal(t, tt.expectedErr, err)

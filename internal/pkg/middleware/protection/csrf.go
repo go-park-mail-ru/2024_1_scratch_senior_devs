@@ -49,10 +49,10 @@ func SetCsrfToken(w http.ResponseWriter, cfg config.CsrfConfig) {
 	w.Header().Set("X-Csrf-Token", csrfToken)
 }
 
-func CreateCsrfMiddleware(logger *slog.Logger, cfg config.CsrfConfig) mux.MiddlewareFunc {
+func CreateCsrfMiddleware(cfg config.CsrfConfig) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			csrfLogger := logger.With(slog.String("ID", log.GetRequestId(r.Context())), slog.String("func", log.GFN()))
+			csrfLogger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 			if slices.Contains(unsafeMethods, r.Method) {
 				if !checkCsrfToken(csrfLogger, w, r, cfg) {

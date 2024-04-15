@@ -8,7 +8,7 @@
     },
     "host": "you-note.ru",
     "paths": {
-        "/api/attach/delete": {
+        "/api/attach/{id}/delete": {
             "delete": {
                 "description": "Remove attach from note",
                 "tags": [
@@ -32,7 +32,7 @@
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -41,7 +41,7 @@
                     "404": {
                         "description": "not found",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -181,13 +181,13 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -246,7 +246,7 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -287,7 +287,7 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -340,7 +340,7 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -376,7 +376,7 @@
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -385,7 +385,7 @@
                     "404": {
                         "description": "note not found",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -431,7 +431,7 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -467,7 +467,7 @@
                     "400": {
                         "description": "incorrect id",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -476,7 +476,7 @@
                     "404": {
                         "description": "note not found",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -524,7 +524,7 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -592,7 +592,7 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -603,7 +603,7 @@
         },
         "/api/profile/update_avatar": {
             "post": {
-                "description": "Change sources",
+                "description": "Change filework",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -613,8 +613,8 @@
                 "tags": [
                     "profile"
                 ],
-                "summary": "Update profile sources",
-                "operationId": "update-profile-sources",
+                "summary": "Update profile filework",
+                "operationId": "update-profile-filework",
                 "parameters": [
                     {
                         "type": "file",
@@ -634,7 +634,7 @@
                     "400": {
                         "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/delivery.ErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "401": {
@@ -648,14 +648,6 @@
         }
     },
     "definitions": {
-        "delivery.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Attach": {
             "type": "object",
             "properties": {
@@ -775,6 +767,14 @@
                     "type": "string"
                 },
                 "old": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }
