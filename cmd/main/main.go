@@ -85,7 +85,7 @@ func main() {
 	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 
-	logMW := log.CreateLogMiddleware(logger, cfg.AuthHandler.Jwt)
+	logMW := log.CreateLogMiddleware(logger)
 
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
 	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic)
