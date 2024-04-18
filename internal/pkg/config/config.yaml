@@ -35,7 +35,7 @@ attach:
     video/mp4: .mp4
 elastic:
   elastic_index_name: notes
-  elastic_search_value_min_length: 2
+  elastic_search_value_min_length: 3
 
 
 
