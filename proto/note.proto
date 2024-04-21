@@ -1,0 +1,52 @@
+syntax = "proto3";
+package note;
+option go_package = "./internal/pkg/note/delivery/grpc/gen/;gen";
+
+//описание сервиса
+service Note {
+rpc GetAllNotes(GetAllRequest) returns (GetAllResponse) {}
+rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {}
+rpc AddNote (AddNoteRequest) returns (AddNoteResponse) {}
+rpc UpdateNote (UpdateNoteRequest) returns (UpdateNoteResponse) {}
+rpc DeleteNote (DeleteNoteRequest) returns (DeleteNoteResponse){}
+
+}
+
+message GetAllRequest{
+     int64 count = 1;
+     int64 offset = 2;
+     string title = 3;
+}
+message NoteModel {
+	string Id = 1;
+ 	string Data = 2;
+	string CreateTime = 3;
+	string UpdateTime = 4;
+	string OwnerId = 5;
+}
+message GetAllResponse {
+     repeated NoteModel Notes = 1;
+}
+message GetNoteRequest{
+     string Id = 1;
+}
+message GetNoteResponse {
+     NoteModel Note = 1;
+}
+message AddNoteRequest {
+     string Data = 1;
+}
+message AddNoteResponse{
+     NoteModel Note = 1;
+}
+message UpdateNoteRequest{
+     string Data = 1;
+     string Id = 2;
+}
+message UpdateNoteResponse{
+     NoteModel Note = 1;
+}
+message DeleteNoteRequest{
+     string Id = 1;
+}
+message DeleteNoteResponse{}
