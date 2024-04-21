@@ -19,6 +19,13 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.8.1
+	google.golang.org/grpc v1.26.0
+	google.golang.org/protobuf v1.33.0
+)
+
+require (
+	github.com/golang/protobuf v1.5.0 // indirect
+	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 )
 
 require (

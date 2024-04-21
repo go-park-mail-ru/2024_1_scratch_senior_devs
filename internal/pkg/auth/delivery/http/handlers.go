@@ -8,7 +8,9 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -23,16 +25,16 @@ import (
 )
 
 type AuthHandler struct {
-	uc            auth.AuthUsecase
+	client        gen.AuthClient
 	blockerUC     auth.BlockerUsecase
 	noteUC        note.NoteUsecase
 	cfg           config.AuthHandlerConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, noteUC note.NoteUsecase, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
+func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, noteUC note.NoteUsecase, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
 	return &AuthHandler{
-		uc:        uc,
+		client:    client,
 		blockerUC: blockerUC,
 		noteUC:    noteUC,
 
@@ -186,7 +188,11 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, jwtToken, expTime, err := h.uc.SignIn(r.Context(), userData)
+	response, err := h.client.SignIn(r.Context(), &gen.UserFormData{
+		Username: userData.Username,
+		Password: userData.Password,
+		Code:     userData.Code,
+	})
 	if err != nil {
 		if errors.Is(err, auth.ErrFirstFactorPassed) {
 			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
@@ -199,12 +205,19 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime, h.cfg.Jwt))
-	w.Header().Set("Authorization", "Bearer "+jwtToken)
+	expTime, err := time.Parse(response.Expires, response.Expires)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, cookie.GenJwtTokenCookie(response.Token, expTime, h.cfg.Jwt))
+	w.Header().Set("Authorization", "Bearer "+response.Token)
 
 	protection.SetCsrfToken(w, h.cfg.Csrf)
 
-	if err := responses.WriteResponseData(w, user, http.StatusOK); err != nil {
+	if err := responses.WriteResponseData(w, response.User, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return

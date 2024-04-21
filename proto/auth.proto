@@ -1,0 +1,32 @@
+syntax = "proto3";
+package auth;
+option go_package = "./internal/pkg/auth/delivery/grpc/gen/;gen";
+
+//описание сервиса
+service Auth {
+  rpc SignIn(UserFormData) returns (SignInResponse) {}
+//   rpc SignUp(SignUpRequest) returns (SignUpResponse) {}
+//   rpc CheckAuth(CheckAuthRequst) returns (CheckAuthResponse) {}
+}
+
+message UserFormData {
+  string Username = 1;
+  string Password = 2;
+  string Code = 3;
+}
+
+message User {
+  string Id = 1;
+  string Description = 2;
+  string Username = 3;
+  string PasswordHash = 4;
+  string CreateTime = 5;
+  string ImagePath = 6;
+  string SecondFactor = 7;
+}
+
+message SignInResponse {
+  User User = 1;
+  string Token = 2;
+  string Expires = 3;
+}
