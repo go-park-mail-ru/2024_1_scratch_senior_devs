@@ -41,7 +41,7 @@ grpc:
   auth_port: 8081
   auth_ip: 10.5.0.7
   note_port: 8082
-  note_ip: 127.0.0.1 # it`s only example
+  note_ip: 10.5.0.8
 
 
 
