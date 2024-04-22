@@ -3,8 +3,6 @@ package grpcw
 import (
 	"bytes"
 	"context"
-	"errors"
-	"io"
 	"log/slog"
 
 	generatedAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
@@ -120,13 +118,9 @@ func (h *GrpcAuthHandler) UpdateProfileAvatar(ctx context.Context, in *generated
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	userID := uuid.FromStringOrNil(in.UserId)
-	avatar, ok := io.NopCloser(bytes.NewReader(in.Avatar)).(io.ReadSeeker)
-	if !ok {
-		logger.Error("invalid read-seeker")
-		return nil, errors.New("invalid read-seeker")
-	}
+	avatarReadSeeker := bytes.NewReader(in.Avatar)
 
-	user, err := h.uc.UpdateProfileAvatar(ctx, userID, avatar, in.Extension)
+	user, err := h.uc.UpdateProfileAvatar(ctx, userID, avatarReadSeeker, in.Extension)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
