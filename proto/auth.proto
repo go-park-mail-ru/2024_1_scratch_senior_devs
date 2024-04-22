@@ -2,11 +2,14 @@ syntax = "proto3";
 package auth;
 option go_package = "./internal/pkg/auth/delivery/grpc/gen/;gen";
 
-//описание сервиса
 service Auth {
+  rpc SignUp(UserFormData) returns (SignUpResponse) {}
   rpc SignIn(UserFormData) returns (SignInResponse) {}
-//   rpc SignUp(SignUpRequest) returns (SignUpResponse) {}
-//   rpc CheckAuth(CheckAuthRequst) returns (CheckAuthResponse) {}
+  rpc CheckUser(CheckUserRequest) returns (User) {}
+	rpc UpdateProfile(UpdateProfileRequest) returns (User) {}
+	rpc UpdateProfileAvatar(UpdateProfileAvatarRequest) returns (User) {}
+	rpc GenerateAndUpdateSecret(SecretRequest) returns (GenerateAndUpdateSecretResponse) {}
+	rpc DeleteSecret(SecretRequest) returns (EmptyMessage) {}
 }
 
 message UserFormData {
@@ -30,3 +33,44 @@ message SignInResponse {
   string Token = 2;
   string Expires = 3;
 }
+
+message SignUpResponse {
+  User User = 1;
+  string Token = 2;
+  string Expires = 3;
+}
+
+message Passwords {
+  string Old = 1;
+  string New = 2;
+}
+
+message ProfileUpdatePayload {
+  string Description = 1;
+  Passwords Password = 2;
+}
+
+message UpdateProfileRequest {
+  string UserId = 1;
+  ProfileUpdatePayload Payload = 2;
+}
+
+message CheckUserRequest {
+  string UserId = 1;
+}
+
+message UpdateProfileAvatarRequest {
+  string UserId = 1;
+  bytes Avatar = 2;
+  string Extension = 3;
+}
+
+message SecretRequest {
+  string Username = 1;
+}
+
+message GenerateAndUpdateSecretResponse {
+  bytes Secret = 1;
+}
+
+message EmptyMessage {}

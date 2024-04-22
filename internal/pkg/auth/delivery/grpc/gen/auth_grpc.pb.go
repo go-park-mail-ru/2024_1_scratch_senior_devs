@@ -22,7 +22,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthClient interface {
+	SignUp(ctx context.Context, in *UserFormData, opts ...grpc.CallOption) (*SignUpResponse, error)
 	SignIn(ctx context.Context, in *UserFormData, opts ...grpc.CallOption) (*SignInResponse, error)
+	CheckUser(ctx context.Context, in *CheckUserRequest, opts ...grpc.CallOption) (*User, error)
+	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*User, error)
+	UpdateProfileAvatar(ctx context.Context, in *UpdateProfileAvatarRequest, opts ...grpc.CallOption) (*User, error)
+	GenerateAndUpdateSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*GenerateAndUpdateSecretResponse, error)
+	DeleteSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*EmptyMessage, error)
 }
 
 type authClient struct {
@@ -31,6 +37,15 @@ type authClient struct {
 
 func NewAuthClient(cc grpc.ClientConnInterface) AuthClient {
 	return &authClient{cc}
+}
+
+func (c *authClient) SignUp(ctx context.Context, in *UserFormData, opts ...grpc.CallOption) (*SignUpResponse, error) {
+	out := new(SignUpResponse)
+	err := c.cc.Invoke(ctx, "/auth.Auth/SignUp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *authClient) SignIn(ctx context.Context, in *UserFormData, opts ...grpc.CallOption) (*SignInResponse, error) {
@@ -42,11 +57,62 @@ func (c *authClient) SignIn(ctx context.Context, in *UserFormData, opts ...grpc.
 	return out, nil
 }
 
+func (c *authClient) CheckUser(ctx context.Context, in *CheckUserRequest, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/auth.Auth/CheckUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/auth.Auth/UpdateProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) UpdateProfileAvatar(ctx context.Context, in *UpdateProfileAvatarRequest, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/auth.Auth/UpdateProfileAvatar", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) GenerateAndUpdateSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*GenerateAndUpdateSecretResponse, error) {
+	out := new(GenerateAndUpdateSecretResponse)
+	err := c.cc.Invoke(ctx, "/auth.Auth/GenerateAndUpdateSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) DeleteSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*EmptyMessage, error) {
+	out := new(EmptyMessage)
+	err := c.cc.Invoke(ctx, "/auth.Auth/DeleteSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
 type AuthServer interface {
+	SignUp(context.Context, *UserFormData) (*SignUpResponse, error)
 	SignIn(context.Context, *UserFormData) (*SignInResponse, error)
+	CheckUser(context.Context, *CheckUserRequest) (*User, error)
+	UpdateProfile(context.Context, *UpdateProfileRequest) (*User, error)
+	UpdateProfileAvatar(context.Context, *UpdateProfileAvatarRequest) (*User, error)
+	GenerateAndUpdateSecret(context.Context, *SecretRequest) (*GenerateAndUpdateSecretResponse, error)
+	DeleteSecret(context.Context, *SecretRequest) (*EmptyMessage, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -54,8 +120,26 @@ type AuthServer interface {
 type UnimplementedAuthServer struct {
 }
 
+func (UnimplementedAuthServer) SignUp(context.Context, *UserFormData) (*SignUpResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignUp not implemented")
+}
 func (UnimplementedAuthServer) SignIn(context.Context, *UserFormData) (*SignInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
+}
+func (UnimplementedAuthServer) CheckUser(context.Context, *CheckUserRequest) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckUser not implemented")
+}
+func (UnimplementedAuthServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
+}
+func (UnimplementedAuthServer) UpdateProfileAvatar(context.Context, *UpdateProfileAvatarRequest) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfileAvatar not implemented")
+}
+func (UnimplementedAuthServer) GenerateAndUpdateSecret(context.Context, *SecretRequest) (*GenerateAndUpdateSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateAndUpdateSecret not implemented")
+}
+func (UnimplementedAuthServer) DeleteSecret(context.Context, *SecretRequest) (*EmptyMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -68,6 +152,24 @@ type UnsafeAuthServer interface {
 
 func RegisterAuthServer(s grpc.ServiceRegistrar, srv AuthServer) {
 	s.RegisterService(&Auth_ServiceDesc, srv)
+}
+
+func _Auth_SignUp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserFormData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).SignUp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/SignUp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).SignUp(ctx, req.(*UserFormData))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Auth_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -88,6 +190,96 @@ func _Auth_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_CheckUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).CheckUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/CheckUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).CheckUser(ctx, req.(*CheckUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_UpdateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).UpdateProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/UpdateProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).UpdateProfile(ctx, req.(*UpdateProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_UpdateProfileAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProfileAvatarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).UpdateProfileAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/UpdateProfileAvatar",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).UpdateProfileAvatar(ctx, req.(*UpdateProfileAvatarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_GenerateAndUpdateSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).GenerateAndUpdateSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/GenerateAndUpdateSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).GenerateAndUpdateSecret(ctx, req.(*SecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).DeleteSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/DeleteSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).DeleteSecret(ctx, req.(*SecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,8 +288,32 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AuthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "SignUp",
+			Handler:    _Auth_SignUp_Handler,
+		},
+		{
 			MethodName: "SignIn",
 			Handler:    _Auth_SignIn_Handler,
+		},
+		{
+			MethodName: "CheckUser",
+			Handler:    _Auth_CheckUser_Handler,
+		},
+		{
+			MethodName: "UpdateProfile",
+			Handler:    _Auth_UpdateProfile_Handler,
+		},
+		{
+			MethodName: "UpdateProfileAvatar",
+			Handler:    _Auth_UpdateProfileAvatar_Handler,
+		},
+		{
+			MethodName: "GenerateAndUpdateSecret",
+			Handler:    _Auth_GenerateAndUpdateSecret_Handler,
+		},
+		{
+			MethodName: "DeleteSecret",
+			Handler:    _Auth_DeleteSecret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
