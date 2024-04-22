@@ -71,6 +71,8 @@ type ElasticConfig struct {
 type GrpcConfig struct {
 	AuthPort string `yaml:"auth_port"`
 	AuthIP   string `yaml:"auth_ip"`
+	NotePort string `yaml:"note_port"`
+	NoteIP   string `yaml:"note_ip"`
 }
 
 const (

@@ -30,6 +30,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	grpcAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
+	grpcNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
@@ -93,15 +94,24 @@ func main() {
 	}
 	defer authConn.Close()
 
+	noteConn, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.Grpc.NoteIP, cfg.Grpc.NotePort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Error("fail grpc.Dial note: " + err.Error())
+		return
+	}
+	defer noteConn.Close()
+
 	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 
 	logMW := log.CreateLogMiddleware(logger)
 
+	NoteClient := grpcNote.NewNoteClient(noteConn)
+	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient)
+
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
 	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic)
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, cfg.Elastic, &sync.WaitGroup{})
-	NoteDelivery := noteDelivery.CreateNotesHandler(NoteUsecase)
 
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)

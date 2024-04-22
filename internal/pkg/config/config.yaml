@@ -39,7 +39,9 @@ elastic:
   elastic_search_value_min_length: 3
 grpc:
   auth_port: 8081
-  auth_ip: 172.0.0.17 # it`s only example
+  auth_ip: 127.0.0.1 # it`s only example
+  note_port: 8082
+  note_ip: 127.0.0.1 # it`s only example
 
 
 
