@@ -30,6 +30,32 @@ services:
       - type: bind
         source: /opt/attaches/
         target: /opt/attaches/
+  auth:
+    container_name: auth
+    build:
+      context: .
+      dockerfile: ./build/auth.Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      elastic:
+        condition: service_started
+    restart: always
+    ports:
+      - "8081:8081"
+    networks:
+      - YouNote-network
+    volumes:
+      - type: bind
+        source: /var/log/
+        target: /var/log/
+      - type: bind
+        source: /opt/images/
+        target: /opt/images/
   postgres:
     env_file:
       - .env
