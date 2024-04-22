@@ -64,6 +64,23 @@ func makeHelloNoteData(username string) []byte {
 	`, username))
 }
 
+func getUser(user *gen.User) (models.User, error) {
+	createTime, err := time.Parse(user.CreateTime, user.CreateTime)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return models.User{
+		Id:           uuid.FromStringOrNil(user.Id),
+		Description:  user.Description,
+		Username:     user.Username,
+		PasswordHash: user.PasswordHash,
+		CreateTime:   createTime,
+		ImagePath:    user.ImagePath,
+		SecondFactor: models.Secret(user.SecondFactor),
+	}, nil
+}
+
 // SignUp godoc
 // @Summary		Sign up
 // @Description	Add a new user to the database
@@ -103,12 +120,25 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	expTime, err := time.Parse(response.Expires, response.Expires)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	http.SetCookie(w, cookie.GenJwtTokenCookie(response.Token, expTime, h.cfg.Jwt))
 	w.Header().Set("Authorization", "Bearer "+response.Token)
 
 	protection.SetCsrfToken(w, h.cfg.Csrf)
 
-	if err := responses.WriteResponseData(w, response.User, http.StatusCreated); err != nil {
+	realUser, err := getUser(response.User)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusCreated); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -223,7 +253,14 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	protection.SetCsrfToken(w, h.cfg.Csrf)
 
-	if err := responses.WriteResponseData(w, response.User, http.StatusOK); err != nil {
+	realUser, err := getUser(response.User)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -261,7 +298,14 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := responses.WriteResponseData(w, currentUser, http.StatusOK); err != nil {
+	realUser, err := getUser(currentUser)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -315,7 +359,14 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := responses.WriteResponseData(w, user, http.StatusOK); err != nil {
+	realUser, err := getUser(user)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -402,7 +453,14 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := responses.WriteResponseData(w, user, http.StatusOK); err != nil {
+	realUser, err := getUser(user)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -422,7 +480,6 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 // @Failure		401
 // @Router		/api/auth/get_qr [get]
 func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
-
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
