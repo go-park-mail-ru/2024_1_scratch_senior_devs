@@ -19,6 +19,8 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
+const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
+
 type NoteHandler struct {
 	client gen.NoteClient
 }
@@ -78,13 +80,13 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	data := make([]models.Note, len(protoData.Notes))
 
 	for i, note := range protoData.Notes {
-		createTime, err := time.Parse(note.CreateTime, note.CreateTime)
+		createTime, err := time.Parse(TimeLayout, note.CreateTime)
 		if err != nil {
-			log.LogHandlerError(logger, 200, err.Error())
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		}
-		updateTime, err := time.Parse(note.UpdateTime, note.UpdateTime)
+		updateTime, err := time.Parse(TimeLayout, note.UpdateTime)
 		if err != nil {
-			log.LogHandlerError(logger, 200, err.Error())
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		}
 		data[i] = models.Note{
 			Id:         uuid.FromStringOrNil(note.Id),
@@ -138,14 +140,14 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorMessage(w, http.StatusNotFound, err)
 		return
 	}
-	createTime, err := time.Parse(protoNote.Note.CreateTime, protoNote.Note.CreateTime)
+	createTime, err := time.Parse(TimeLayout, protoNote.Note.CreateTime)
 	if err != nil {
-		log.LogHandlerError(logger, 200, err.Error())
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 
 	}
-	updateTime, err := time.Parse(protoNote.Note.UpdateTime, protoNote.Note.UpdateTime)
+	updateTime, err := time.Parse(TimeLayout, protoNote.Note.UpdateTime)
 	if err != nil {
-		log.LogHandlerError(logger, 200, err.Error())
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 
 	}
 	resultNote := models.Note{
@@ -207,14 +209,14 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("invalid query"))
 		return
 	}
-	createTime, err := time.Parse(protoNote.Note.CreateTime, protoNote.Note.CreateTime)
+	createTime, err := time.Parse(TimeLayout, protoNote.Note.CreateTime)
 	if err != nil {
-		log.LogHandlerError(logger, 200, err.Error())
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 
 	}
-	updateTime, err := time.Parse(protoNote.Note.UpdateTime, protoNote.Note.UpdateTime)
+	updateTime, err := time.Parse(TimeLayout, protoNote.Note.UpdateTime)
 	if err != nil {
-		log.LogHandlerError(logger, 200, err.Error())
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 
 	}
 	resultNote := models.Note{
@@ -284,14 +286,14 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note not found"))
 		return
 	}
-	createTime, err := time.Parse(protoNote.Note.CreateTime, protoNote.Note.CreateTime)
+	createTime, err := time.Parse(TimeLayout, protoNote.Note.CreateTime)
 	if err != nil {
-		log.LogHandlerError(logger, 200, err.Error())
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 
 	}
-	updateTime, err := time.Parse(protoNote.Note.UpdateTime, protoNote.Note.UpdateTime)
+	updateTime, err := time.Parse(TimeLayout, protoNote.Note.UpdateTime)
 	if err != nil {
-		log.LogHandlerError(logger, 200, err.Error())
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 
 	}
 	resultNote := models.Note{

@@ -25,6 +25,8 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
+const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
+
 type AuthHandler struct {
 	client        gen.AuthClient
 	blockerUC     auth.BlockerUsecase
@@ -65,7 +67,7 @@ func makeHelloNoteData(username string) []byte {
 }
 
 func getUser(user *gen.User) (models.User, error) {
-	createTime, err := time.Parse(user.CreateTime, user.CreateTime)
+	createTime, err := time.Parse(TimeLayout, user.CreateTime)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -119,7 +121,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expTime, err := time.Parse(response.Expires, response.Expires)
+	expTime, err := time.Parse(TimeLayout, response.Expires)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -241,7 +243,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expTime, err := time.Parse(response.Expires, response.Expires)
+	expTime, err := time.Parse(TimeLayout, response.Expires)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
