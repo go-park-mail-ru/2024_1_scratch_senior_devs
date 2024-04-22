@@ -23,11 +23,7 @@ require (
 	google.golang.org/protobuf v1.33.0
 )
 
-require (
-	github.com/golang/protobuf v1.5.4 // indirect
-	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
-)
+require google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

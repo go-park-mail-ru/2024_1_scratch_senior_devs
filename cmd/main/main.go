@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/olivere/elastic/v7"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/redis/go-redis/v9"
 
@@ -26,6 +28,8 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	grpcAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
@@ -82,6 +86,13 @@ func main() {
 		return
 	}
 
+	authConn, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.Grpc.AuthIP, cfg.Grpc.AuthPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Error("fail grpc.Dial auth: " + err.Error())
+		return
+	}
+	defer authConn.Close()
+
 	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 
@@ -95,9 +106,8 @@ func main() {
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
 
-	AuthRepo := authRepo.CreateAuthRepo(db)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, cfg.AuthUsecase, cfg.Validation)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthUsecase, BlockerUsecase, NoteUsecase, cfg.AuthHandler, cfg.Validation)
+	AuthClient := grpcAuth.NewAuthClient(authConn)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteUsecase, cfg.AuthHandler, cfg.Validation)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)

@@ -7,14 +7,14 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/validation"
 )
 
-type passwords struct {
+type Passwords struct {
 	Old string `json:"old"`
 	New string `json:"new"`
 }
 
 type ProfileUpdatePayload struct {
 	Description string    `json:"description,omitempty"`
-	Password    passwords `json:"password,omitempty"`
+	Password    Passwords `json:"password,omitempty"`
 }
 
 func (payload *ProfileUpdatePayload) Sanitize() {

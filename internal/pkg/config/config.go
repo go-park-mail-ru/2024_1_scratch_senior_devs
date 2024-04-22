@@ -19,6 +19,7 @@ type Config struct {
 	Validation  ValidationConfig  `yaml:"validation"`
 	Attach      AttachConfig      `yaml:"attach"`
 	Elastic     ElasticConfig     `yaml:"elastic"`
+	Grpc        GrpcConfig        `yaml:"grpc"`
 }
 
 type AuthHandlerConfig struct {
@@ -65,6 +66,11 @@ type ValidationConfig struct {
 type ElasticConfig struct {
 	ElasticIndexName            string `yaml:"elastic_index_name"`
 	ElasticSearchValueMinLength int    `yaml:"elastic_search_value_min_length"`
+}
+
+type GrpcConfig struct {
+	AuthPort string `yaml:"auth_port"`
+	AuthIP   string `yaml:"auth_ip"`
 }
 
 const (
