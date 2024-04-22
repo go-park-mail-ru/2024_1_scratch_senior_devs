@@ -29,6 +29,12 @@ type GrpcAuthHandler struct {
 	uc auth.AuthUsecase
 }
 
+func NewGrpcAuthHandler(uc auth.AuthUsecase) *GrpcAuthHandler {
+	return &GrpcAuthHandler{
+		uc: uc,
+	}
+}
+
 func (h *GrpcAuthHandler) SignIn(ctx context.Context, in *generatedAuth.UserFormData) (*generatedAuth.SignInResponse, error) {
 	payload := models.UserFormData{
 		Username: in.Username,
