@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"os"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/satori/uuid"
-	"math/rand"
-	"os"
-	"time"
 )
 
 const (

@@ -19,6 +19,8 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
+const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
+
 type NoteHandler struct {
 	client gen.NoteClient
 }

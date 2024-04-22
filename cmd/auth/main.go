@@ -34,7 +34,7 @@ func main() {
 }
 
 func run() (err error) {
-	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logFile, err := os.OpenFile(os.Getenv("AUTH_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println("error opening log file: " + err.Error())
 		return
