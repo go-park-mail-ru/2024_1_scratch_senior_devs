@@ -13,9 +13,10 @@ rpc DeleteNote (DeleteNoteRequest) returns (DeleteNoteResponse){}
 }
 
 message GetAllRequest{
-     int64 count = 1;
-     int64 offset = 2;
-     string title = 3;
+     int64 Count = 1;
+     int64 Offset = 2;
+     string Title = 3;
+     string UserId = 4;
 }
 message NoteModel {
 	string Id = 1;
@@ -26,15 +27,19 @@ message NoteModel {
 }
 message GetAllResponse {
      repeated NoteModel Notes = 1;
+    
 }
 message GetNoteRequest{
      string Id = 1;
+     string UserId = 2;
 }
 message GetNoteResponse {
      NoteModel Note = 1;
 }
 message AddNoteRequest {
+    
      string Data = 1;
+     string UserId = 2;
 }
 message AddNoteResponse{
      NoteModel Note = 1;
@@ -42,11 +47,13 @@ message AddNoteResponse{
 message UpdateNoteRequest{
      string Data = 1;
      string Id = 2;
+     string UserId = 3;
 }
 message UpdateNoteResponse{
      NoteModel Note = 1;
 }
 message DeleteNoteRequest{
      string Id = 1;
+     string UserId = 2;
 }
 message DeleteNoteResponse{}
