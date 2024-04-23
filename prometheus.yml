@@ -5,7 +5,7 @@ scrape_configs:
   - job_name: "prometheus"
     static_configs:
       - targets: [ 'localhost:9090' ]
-      
+
   - job_name: "node_exporter"
     metrics_path: /metrics
     static_configs:
@@ -19,9 +19,9 @@ scrape_configs:
   - job_name: "auth"
     metrics_path: /api/metrics
     static_configs:
-      - targets: [ 'auth:8081' ]
+      - targets: [ 'auth:7071' ]
 
   - job_name: "note"
     metrics_path: /api/metrics
     static_configs:
-      - targets: [ 'note:8082' ]
+      - targets: [ 'note:7072' ]

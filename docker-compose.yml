@@ -174,17 +174,37 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"
+      - "8090:9090"
     networks:
       - YouNote-network
   grafana:
     image: grafana/grafana-enterprise
     volumes:
       - younote-grafana-data:/var/lib/grafana/
-      - younote-grafana-data/provisioning/:/etc/grafana/provisioning/
     networks:
       - YouNote-network
-
+    ports:
+      - "8070:3000"
+  node_exporter:
+    depends_on:
+      - prometheus
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.ignored-mount-points
+      - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
+    hostname: node_exporter
+    ports:
+      - "8085:9100"
+    networks:
+       - YouNote-network
+       
 networks:
   YouNote-network:
     name: YouNote-network
