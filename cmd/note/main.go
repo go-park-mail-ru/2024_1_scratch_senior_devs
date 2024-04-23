@@ -6,18 +6,22 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
+	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 	grpcNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc"
 	generatedNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
 	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
-
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/olivere/elastic/v7"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -65,8 +69,23 @@ func run() (err error) {
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, cfg.Elastic, &sync.WaitGroup{})
 	NoteDelivery := grpcNote.NewGrpcNoteHandler(NoteUsecase)
 
-	gRPCServer := grpc.NewServer()
+	grpcMetrics, err := metrics.NewGrpcMetrics("note")
+	if err != nil {
+		logger.Error("cant create metrics")
+	}
+	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
+	gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(metricsMw.ServerMetricsInterceptor))
 	generatedNote.RegisterNoteServer(gRPCServer, NoteDelivery)
+
+	r := mux.NewRouter().PathPrefix("/api").Subrouter()
+	r.PathPrefix("/metrics").Handler(promhttp.Handler())
+	http.Handle("/", r)
+	httpSrv := http.Server{Handler: r, Addr: fmt.Sprintf(":%d", 7072)}
+	go func() {
+		if err := httpSrv.ListenAndServe(); err != nil {
+			logger.Error("fail httpSrv.ListenAndServe")
+		}
+	}()
 
 	go func() {
 		listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Grpc.NotePort))
