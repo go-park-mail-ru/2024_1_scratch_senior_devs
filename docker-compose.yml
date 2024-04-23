@@ -166,6 +166,24 @@ services:
       - .env
     networks:
       - YouNote-network
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - YouNote-network
+  grafana:
+    image: grafana/grafana-enterprise
+    volumes:
+      - younote-grafana-data:/var/lib/grafana/
+      - younote-grafana-data/provisioning/:/etc/grafana/provisioning/
+    networks:
+      - YouNote-network
 
 networks:
   YouNote-network:
@@ -176,3 +194,4 @@ volumes:
   younote-db-data:
   younote-redis-data:
   younote-elastic-data:
+  younote-grafana-data:
