@@ -40,16 +40,25 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 	if err != nil {
 		return models.Note{}, err
 	}
+
 	updateTime, err := time.Parse("2006-01-02 15:04:05 -0700 UTC", note.UpdateTime)
 	if err != nil {
 		return models.Note{}, err
 	}
+
+	children := make([]uuid.UUID, len(note.Children))
+	for i, child := range note.Children {
+		children[i] = uuid.FromStringOrNil(child)
+	}
+
 	return models.Note{
 		Id:         uuid.FromStringOrNil(note.Id),
 		OwnerId:    uuid.FromStringOrNil(note.OwnerId),
 		Data:       []byte(note.Data),
 		CreateTime: createTime,
 		UpdateTime: updateTime,
+		Parent:     uuid.FromStringOrNil(note.Parent),
+		Children:   children,
 	}, nil
 }
 
@@ -202,7 +211,6 @@ func (h *NoteHandler) AddNote(w http.ResponseWriter, r *http.Request) {
 
 	noteData, err := json.Marshal(payload.Data)
 	if err != nil {
-
 		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
 		return
@@ -345,4 +353,76 @@ func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+}
+
+// CreateSubNote godoc
+// @Summary		Create subnote
+// @Description	Create new subnote in current note
+// @Tags 		note
+// @ID			create-subnote
+// @Accept		json
+// @Produce		json
+// @Param    	payload		body    	models.UpsertNoteRequestForSwagger  	true  	"note data"
+// @Param		id			path		string									true	"note id"
+// @Success		200			{object}	models.NoteForSwagger					true	"note"
+// @Failure		400			{object}	responses.ErrorResponse					true	"error"
+// @Failure		401
+// @Failure		404		{object}	responses.ErrorResponse	true	"note not found"
+// @Router		/api/note/{id}/add_subnote [post]
+func (h *NoteHandler) CreateSubNote(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	payload := models.UpsertNoteRequest{}
+	if err := responses.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	noteData, err := json.Marshal(payload.Data)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	subNote, err := h.client.CreateSubNote(r.Context(), &gen.CreateSubNoteRequest{
+		UserId:   jwtPayload.Id.String(),
+		NoteData: string(noteData),
+		ParentId: noteIdString,
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
+		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("note not found"))
+		return
+	}
+
+	resultNote, err := getNote(subNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }

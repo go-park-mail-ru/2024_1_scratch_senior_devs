@@ -51,6 +51,21 @@ func (mr *MockNoteUsecaseMockRecorder) CreateNote(arg0, arg1, arg2 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockNoteUsecase)(nil).CreateNote), arg0, arg1, arg2)
 }
 
+// CreateSubNote mocks base method.
+func (m *MockNoteUsecase) CreateSubNote(arg0 context.Context, arg1 uuid.UUID, arg2 []byte, arg3 uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSubNote", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSubNote indicates an expected call of CreateSubNote.
+func (mr *MockNoteUsecaseMockRecorder) CreateSubNote(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubNote", reflect.TypeOf((*MockNoteUsecase)(nil).CreateSubNote), arg0, arg1, arg2, arg3)
+}
+
 // DeleteNote mocks base method.
 func (m *MockNoteUsecase) DeleteNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -133,6 +148,20 @@ func (m *MockNoteBaseRepo) EXPECT() *MockNoteBaseRepoMockRecorder {
 	return m.recorder
 }
 
+// AddSubNote mocks base method.
+func (m *MockNoteBaseRepo) AddSubNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddSubNote", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddSubNote indicates an expected call of AddSubNote.
+func (mr *MockNoteBaseRepoMockRecorder) AddSubNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddSubNote), arg0, arg1, arg2)
+}
+
 // CreateNote mocks base method.
 func (m *MockNoteBaseRepo) CreateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
@@ -191,6 +220,20 @@ func (mr *MockNoteBaseRepoMockRecorder) ReadNote(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadNote), arg0, arg1)
 }
 
+// RemoveSubNote mocks base method.
+func (m *MockNoteBaseRepo) RemoveSubNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveSubNote", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveSubNote indicates an expected call of RemoveSubNote.
+func (mr *MockNoteBaseRepoMockRecorder) RemoveSubNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSubNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).RemoveSubNote), arg0, arg1, arg2)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteBaseRepo) UpdateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
@@ -228,6 +271,20 @@ func (m *MockNoteSearchRepo) EXPECT() *MockNoteSearchRepoMockRecorder {
 	return m.recorder
 }
 
+// AddSubNote mocks base method.
+func (m *MockNoteSearchRepo) AddSubNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddSubNote", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddSubNote indicates an expected call of AddSubNote.
+func (mr *MockNoteSearchRepoMockRecorder) AddSubNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubNote", reflect.TypeOf((*MockNoteSearchRepo)(nil).AddSubNote), arg0, arg1, arg2)
+}
+
 // CreateNote mocks base method.
 func (m *MockNoteSearchRepo) CreateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
@@ -254,6 +311,20 @@ func (m *MockNoteSearchRepo) DeleteNote(arg0 context.Context, arg1 uuid.UUID) er
 func (mr *MockNoteSearchRepoMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteSearchRepo)(nil).DeleteNote), arg0, arg1)
+}
+
+// RemoveSubNote mocks base method.
+func (m *MockNoteSearchRepo) RemoveSubNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveSubNote", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveSubNote indicates an expected call of RemoveSubNote.
+func (mr *MockNoteSearchRepoMockRecorder) RemoveSubNote(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSubNote", reflect.TypeOf((*MockNoteSearchRepo)(nil).RemoveSubNote), arg0, arg1, arg2)
 }
 
 // SearchNotes mocks base method.

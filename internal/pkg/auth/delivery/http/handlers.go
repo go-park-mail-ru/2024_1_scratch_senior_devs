@@ -11,8 +11,9 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"github.com/satori/uuid"
+
+	noteGen "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
@@ -30,17 +31,16 @@ const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
 type AuthHandler struct {
 	client        gen.AuthClient
 	blockerUC     auth.BlockerUsecase
-	noteUC        note.NoteUsecase
+	noteClient    noteGen.NoteClient
 	cfg           config.AuthHandlerConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, noteUC note.NoteUsecase, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
+func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, noteClient noteGen.NoteClient, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
 	return &AuthHandler{
-		client:    client,
-		blockerUC: blockerUC,
-		noteUC:    noteUC,
-
+		client:        client,
+		blockerUC:     blockerUC,
+		noteClient:    noteClient,
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
 	}
@@ -146,7 +146,10 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.noteUC.CreateNote(r.Context(), uuid.FromStringOrNil(response.User.Id), makeHelloNoteData(response.User.Username))
+	_, err = h.noteClient.AddNote(r.Context(), &noteGen.AddNoteRequest{
+		Data:   string(makeHelloNoteData(response.User.Username)),
+		UserId: response.User.Id,
+	})
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -477,7 +480,7 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 // @Tags 		auth
 // @ID			get-qr-code
 // @Produce		image/png
-// @Success		200		file	image/png	true	"QR-code"
+// @Success		200
 // @Failure		400
 // @Failure		401
 // @Router		/api/auth/get_qr [get]

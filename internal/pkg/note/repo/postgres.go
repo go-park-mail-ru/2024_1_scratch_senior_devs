@@ -14,11 +14,13 @@ import (
 )
 
 const (
-	getAllNotes = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE owner_id = $1 ORDER BY update_time DESC LIMIT $2 OFFSET $3;"
-	getNote     = "SELECT id, data, create_time, update_time, owner_id FROM notes WHERE id = $1;"
-	createNote  = "INSERT INTO notes(id, data, create_time, update_time, owner_id) VALUES ($1, $2::json, $3, $4, $5);"
-	updateNote  = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
-	deleteNote  = "DELETE FROM notes CASCADE WHERE id = $1;"
+	getAllNotes   = "SELECT id, data, create_time, update_time, owner_id, parent, children FROM notes WHERE parent = '00000000-0000-0000-0000-000000000000' AND owner_id = $1 ORDER BY update_time DESC LIMIT $2 OFFSET $3;"
+	getNote       = "SELECT id, data, create_time, update_time, owner_id, parent, children FROM notes WHERE id = $1;"
+	createNote    = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[]);"
+	updateNote    = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
+	deleteNote    = "DELETE FROM notes CASCADE WHERE id = $1;"
+	addSubNote    = "UPDATE notes SET children = array_append(children, $1) WHERE id = $2;"
+	removeSubNote = "UPDATE notes SET children = array_remove(children, $1) WHERE id = $2;"
 )
 
 type NotePostgres struct {
@@ -44,7 +46,7 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 
 	for query.Next() {
 		var note models.Note
-		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId); err != nil {
+		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId, &note.Parent, &note.Children); err != nil {
 			logger.Error(err.Error())
 			return result, fmt.Errorf("error occured while scanning notes: %w", err)
 		}
@@ -66,6 +68,8 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 		&resultNote.CreateTime,
 		&resultNote.UpdateTime,
 		&resultNote.OwnerId,
+		&resultNote.Parent,
+		&resultNote.Children,
 	)
 
 	if err != nil {
@@ -80,7 +84,7 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId)
+	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId, note.Parent, note.Children)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -104,10 +108,37 @@ func (repo *NotePostgres) UpdateNote(ctx context.Context, note models.Note) erro
 	return nil
 
 }
+
 func (repo *NotePostgres) DeleteNote(ctx context.Context, id uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, deleteNote, id)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) AddSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	_, err := repo.db.Exec(ctx, addSubNote, childID, id)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) RemoveSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	_, err := repo.db.Exec(ctx, removeSubNote, childID, id)
 	if err != nil {
 		logger.Error(err.Error())
 		return err

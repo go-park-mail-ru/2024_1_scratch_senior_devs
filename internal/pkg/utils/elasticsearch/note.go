@@ -11,6 +11,8 @@ func ConvertToElasticNote(note models.Note) models.ElasticNote {
 		CreateTime: note.CreateTime,
 		UpdateTime: note.UpdateTime,
 		OwnerId:    note.OwnerId,
+		Parent:     note.Parent,
+		Children:   note.Children,
 	}
 }
 
@@ -21,5 +23,7 @@ func ConvertToUsualNote(note models.ElasticNote) models.Note {
 		CreateTime: note.CreateTime,
 		UpdateTime: note.UpdateTime,
 		OwnerId:    note.OwnerId,
+		Parent:     note.Parent,
+		Children:   note.Children,
 	}
 }

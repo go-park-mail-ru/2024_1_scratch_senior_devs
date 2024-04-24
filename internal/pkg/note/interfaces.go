@@ -2,6 +2,7 @@ package note
 
 import (
 	"context"
+
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -15,6 +16,7 @@ type NoteUsecase interface {
 	CreateNote(context.Context, uuid.UUID, []byte) (models.Note, error)
 	UpdateNote(context.Context, uuid.UUID, uuid.UUID, []byte) (models.Note, error)
 	DeleteNote(context.Context, uuid.UUID, uuid.UUID) error
+	CreateSubNote(context.Context, uuid.UUID, []byte, uuid.UUID) (models.Note, error)
 }
 
 type NoteBaseRepo interface {
@@ -23,6 +25,8 @@ type NoteBaseRepo interface {
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
+	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error
+	RemoveSubNote(context.Context, uuid.UUID, uuid.UUID) error
 }
 
 type NoteSearchRepo interface {
@@ -30,4 +34,6 @@ type NoteSearchRepo interface {
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
+	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error
+	RemoveSubNote(context.Context, uuid.UUID, uuid.UUID) error
 }

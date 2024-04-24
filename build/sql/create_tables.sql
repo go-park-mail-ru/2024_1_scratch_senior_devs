@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS notes (
     update_time TIMESTAMP
         NOT NULL,
     owner_id UUID REFERENCES users (id)
-        NOT NULL
+        NOT NULL,
+    parent UUID DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
+    children UUID[]
 );
 
 CREATE TABLE IF NOT EXISTS attaches (
@@ -38,50 +40,20 @@ CREATE TABLE IF NOT EXISTS attaches (
         NOT NULL
 );
 
--- CREATE TABLE IF NOT EXISTS outbox (
---     id UUID PRIMARY KEY,
---     action TEXT -- "create" / "update" / "delete"
---         NOT NULL
---         CONSTRAINT action_length CHECK (char_length(action) <= 10),
---     note_id UUID
---         NOT NULL
--- );
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE OR REPLACE FUNCTION add_draft_note()
+CREATE OR REPLACE FUNCTION delete_children_notes()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     AS $BODY$
-DECLARE
-    name_text json;
-BEGIN
-    IF NEW.id IS NOT NULL AND NEW.username IS NOT NULL THEN
-        name_text := format('{
-			"title": "You-note ❤️",
-			"content": [
-				{
-					"id": "1",
-					"type": "div",
-					"content": [
-						{
-							"id": "2",
-							"content": "Привет, %s!"
-						}
-					]
-				}
-			]
-		}', NEW.username);
-        INSERT INTO notes (id, data, create_time, update_time, owner_id)
-        VALUES (uuid_generate_v4(), name_text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NEW.id);
-    END IF;
-
-    RETURN NEW;
-END;
+    BEGIN
+        DELETE FROM notes WHERE id = ANY(SELECT UNNEST(OLD.children));
+        RETURN OLD;
+    END;
 $BODY$;
 
-CREATE OR REPLACE TRIGGER add_note_on_new_user
-    AFTER INSERT
-    ON users
+CREATE OR REPLACE TRIGGER trigger_delete_children_notes
+    BEFORE DELETE
+    ON notes
     FOR EACH ROW
-    EXECUTE FUNCTION add_draft_note();
+    EXECUTE FUNCTION delete_children_notes();

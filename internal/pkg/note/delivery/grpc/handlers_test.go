@@ -41,6 +41,8 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 					UpdateTime: "0001-01-01 00:00:00 +0000 UTC",
 					CreateTime: "0001-01-01 00:00:00 +0000 UTC",
 					Data:       "nil",
+					Parent:     "c80e3ea8-0813-4731-b6ee-b41604c56f95",
+					Children:   []string{},
 				},
 				{
 					Id:         "c80e3ea8-0813-4731-b12e-b41604c56f95",
@@ -48,6 +50,8 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 					UpdateTime: "0001-01-01 00:00:00 +0000 UTC",
 					CreateTime: "0001-01-01 00:00:00 +0000 UTC",
 					Data:       "nil",
+					Parent:     "c80e3ea8-0813-4731-b6ee-b41604c56f95",
+					Children:   []string{},
 				},
 			},
 			}},
@@ -77,6 +81,8 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
 						Data:       []byte("nil"),
+						Parent:     uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+						Children:   []uuid.UUID{},
 					},
 					{
 						Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
@@ -84,6 +90,8 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
 						Data:       []byte("nil"),
+						Parent:     uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+						Children:   []uuid.UUID{},
 					},
 				}, nil)
 			}
@@ -139,6 +147,8 @@ func TestNoteHandler_GetNote(t *testing.T) {
 					Data:       "",
 					CreateTime: "0001-01-01 00:00:00 +0000 UTC",
 					UpdateTime: "0001-01-01 00:00:00 +0000 UTC",
+					Parent:     "c80e3ea8-0813-4731-b6ee-b41604c56f95",
+					Children:   []string{},
 				},
 			},
 		},
@@ -183,6 +193,8 @@ func TestNoteHandler_GetNote(t *testing.T) {
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					Data:       []byte(tt.expectedData.Note.Data),
+					Parent:     uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+					Children:   []uuid.UUID{},
 				}, nil)
 			}
 			if tt.name == "Test Error" {
@@ -234,6 +246,8 @@ func TestNoteHandler_AddNote(t *testing.T) {
 					UpdateTime: currTime.String(),
 					OwnerId:    id.String(),
 					Data:       `{"title": "my note"}`,
+					Parent:     id.String(),
+					Children:   []string{},
 				},
 			},
 		},
@@ -277,6 +291,8 @@ func TestNoteHandler_AddNote(t *testing.T) {
 						CreateTime: currTime,
 						UpdateTime: currTime,
 						OwnerId:    id,
+						Parent:     id,
+						Children:   []uuid.UUID{},
 					}, nil)
 				}
 			}

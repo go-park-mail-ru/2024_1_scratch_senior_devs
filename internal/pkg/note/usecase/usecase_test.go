@@ -45,6 +45,8 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
 						Data:       nil,
+						Parent:     uuid.UUID{},
+						Children:   []uuid.UUID{},
 					},
 					{
 						Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
@@ -52,6 +54,8 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
 						Data:       nil,
+						Parent:     uuid.UUID{},
+						Children:   []uuid.UUID{},
 					},
 				}
 
@@ -70,6 +74,8 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
 					Data:       nil,
+					Parent:     uuid.UUID{},
+					Children:   []uuid.UUID{},
 				},
 				{
 					Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
@@ -77,6 +83,8 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
 					Data:       nil,
+					Parent:     uuid.UUID{},
+					Children:   []uuid.UUID{},
 				},
 			},
 			wantErr: false,
@@ -151,6 +159,8 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
 					Data:       nil,
+					Parent:     uuid.UUID{},
+					Children:   []uuid.UUID{},
 				}
 
 				repo.EXPECT().ReadNote(ctx, nId).Return(mockResp, nil).Times(1)
@@ -166,6 +176,8 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 				UpdateTime: time.Time{},
 				CreateTime: time.Time{},
 				Data:       nil,
+				Parent:     uuid.UUID{},
+				Children:   []uuid.UUID{},
 			},
 
 			wantErr: false,

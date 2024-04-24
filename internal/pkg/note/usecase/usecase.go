@@ -77,6 +77,8 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 		CreateTime: time.Now().UTC(),
 		UpdateTime: time.Now().UTC(),
 		OwnerId:    userId,
+		Parent:     uuid.UUID{},
+		Children:   []uuid.UUID{},
 	}
 
 	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
@@ -146,15 +148,66 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId
 		return err
 	}
 
+	emptyID := uuid.UUID{}
+	if deletedNote.Parent != emptyID {
+		if err := uc.baseRepo.RemoveSubNote(ctx, deletedNote.Parent, noteId); err != nil {
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
+
 		if err := uc.searchRepo.DeleteNote(ctx, noteId); err != nil {
 			logger.Error(err.Error())
+		}
+
+		if deletedNote.Parent != emptyID {
+			if err := uc.searchRepo.RemoveSubNote(ctx, deletedNote.Parent, noteId); err != nil {
+				logger.Error(err.Error())
+			}
 		}
 	}()
 	uc.wg.Wait()
 
 	logger.Info("success")
 	return nil
+}
+
+func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, noteData []byte, parentID uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	newNote := models.Note{
+		Id:         uuid.NewV4(),
+		Data:       noteData,
+		CreateTime: time.Now().UTC(),
+		UpdateTime: time.Now().UTC(),
+		OwnerId:    userId,
+		Parent:     parentID,
+		Children:   []uuid.UUID{},
+	}
+
+	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+	// было бы неплохо обернуть эти два похода в БД в одну транзакцию, так как если что-то одно из этого падает, то второе нужно отменить
+	if err := uc.baseRepo.AddSubNote(ctx, parentID, newNote.Id); err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.AddSubNote(ctx, parentID, newNote.Id); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
+
+	logger.Info("success")
+	return newNote, nil
 }

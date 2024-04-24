@@ -7,6 +7,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
+	uuid "github.com/satori/uuid"
 )
 
 // suppress unused package warning
@@ -779,6 +780,35 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.OwnerId).UnmarshalText(data))
 			}
+		case "parent":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Parent).UnmarshalText(data))
+			}
+		case "children":
+			if in.IsNull() {
+				in.Skip()
+				out.Children = nil
+			} else {
+				in.Delim('[')
+				if out.Children == nil {
+					if !in.IsDelim(']') {
+						out.Children = make([]uuid.UUID, 0, 4)
+					} else {
+						out.Children = []uuid.UUID{}
+					}
+				} else {
+					out.Children = (out.Children)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v1 uuid.UUID
+					if data := in.UnsafeBytes(); in.Ok() {
+						in.AddError((v1).UnmarshalText(data))
+					}
+					out.Children = append(out.Children, v1)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -817,6 +847,27 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"owner_id\":"
 		out.RawString(prefix)
 		out.RawText((in.OwnerId).MarshalText())
+	}
+	{
+		const prefix string = ",\"parent\":"
+		out.RawString(prefix)
+		out.RawText((in.Parent).MarshalText())
+	}
+	{
+		const prefix string = ",\"children\":"
+		out.RawString(prefix)
+		if in.Children == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v2, v3 := range in.Children {
+				if v2 > 0 {
+					out.RawByte(',')
+				}
+				out.RawText((v3).MarshalText())
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }
@@ -959,6 +1010,35 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.OwnerId).UnmarshalText(data))
 			}
+		case "parent":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Parent).UnmarshalText(data))
+			}
+		case "children":
+			if in.IsNull() {
+				in.Skip()
+				out.Children = nil
+			} else {
+				in.Delim('[')
+				if out.Children == nil {
+					if !in.IsDelim(']') {
+						out.Children = make([]uuid.UUID, 0, 4)
+					} else {
+						out.Children = []uuid.UUID{}
+					}
+				} else {
+					out.Children = (out.Children)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v5 uuid.UUID
+					if data := in.UnsafeBytes(); in.Ok() {
+						in.AddError((v5).UnmarshalText(data))
+					}
+					out.Children = append(out.Children, v5)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -997,6 +1077,27 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"owner_id\":"
 		out.RawString(prefix)
 		out.RawText((in.OwnerId).MarshalText())
+	}
+	{
+		const prefix string = ",\"parent\":"
+		out.RawString(prefix)
+		out.RawText((in.Parent).MarshalText())
+	}
+	{
+		const prefix string = ",\"children\":"
+		out.RawString(prefix)
+		if in.Children == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v8, v9 := range in.Children {
+				if v8 > 0 {
+					out.RawByte(',')
+				}
+				out.RawText((v9).MarshalText())
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }
@@ -1136,6 +1237,35 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.OwnerId).UnmarshalText(data))
 			}
+		case "parent":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Parent).UnmarshalText(data))
+			}
+		case "children":
+			if in.IsNull() {
+				in.Skip()
+				out.Children = nil
+			} else {
+				in.Delim('[')
+				if out.Children == nil {
+					if !in.IsDelim(']') {
+						out.Children = make([]uuid.UUID, 0, 4)
+					} else {
+						out.Children = []uuid.UUID{}
+					}
+				} else {
+					out.Children = (out.Children)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v10 uuid.UUID
+					if data := in.UnsafeBytes(); in.Ok() {
+						in.AddError((v10).UnmarshalText(data))
+					}
+					out.Children = append(out.Children, v10)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1174,6 +1304,27 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"owner_id\":"
 		out.RawString(prefix)
 		out.RawText((in.OwnerId).MarshalText())
+	}
+	{
+		const prefix string = ",\"parent\":"
+		out.RawString(prefix)
+		out.RawText((in.Parent).MarshalText())
+	}
+	{
+		const prefix string = ",\"children\":"
+		out.RawString(prefix)
+		if in.Children == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v11, v12 := range in.Children {
+				if v11 > 0 {
+					out.RawByte(',')
+				}
+				out.RawText((v12).MarshalText())
+			}
+			out.RawByte(']')
+		}
 	}
 	out.RawByte('}')
 }
