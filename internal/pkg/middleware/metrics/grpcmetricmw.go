@@ -2,6 +2,9 @@ package metricsmw
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"google.golang.org/grpc"
@@ -17,12 +20,32 @@ func NewGrpcMw(metrics metrics.GrpcMetrics) *GrpcMiddleware {
 	}
 }
 
+func mapStatusCodes(Err string) int { //TODO: add more errors
+	switch Err {
+	case "user not found":
+		return http.StatusUnauthorized
+	case "wrong password":
+		return http.StatusUnauthorized
+	default:
+		return http.StatusInternalServerError
+
+	}
+}
 func (m *GrpcMiddleware) ServerMetricsInterceptor(ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
-	h, err := handler(ctx, req)
 
+	start := time.Now()
+	h, err := handler(ctx, req)
+	status := http.StatusOK
+	if err != nil {
+		m.metrics.IncreaseErrors(info.FullMethod)
+		status = mapStatusCodes(err.Error())
+
+	}
 	m.metrics.IncreaseHits(info.FullMethod)
+	fmt.Println("increased")
+	m.metrics.ObserveResponseTime(status, info.FullMethod, time.Since(start).Seconds())
 	return h, err
 }
