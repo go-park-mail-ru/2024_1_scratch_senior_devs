@@ -16,6 +16,7 @@ import (
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
 	authUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/usecase"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -65,8 +66,8 @@ func run() (err error) {
 		logger.Error("cant create metrics")
 	}
 	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
-
-	gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(metricsMw.ServerMetricsInterceptor))
+	logMw := log.NewGrpcLogMw(logger)
+	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor)) //grpc.UnaryInterceptor(metricsMw.ServerMetricsInterceptor))
 	generatedAuth.RegisterAuthServer(gRPCServer, AuthDelivery)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()

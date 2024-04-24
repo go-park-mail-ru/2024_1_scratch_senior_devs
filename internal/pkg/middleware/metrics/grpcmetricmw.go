@@ -2,7 +2,6 @@ package metricsmw
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"google.golang.org/grpc"
@@ -25,6 +24,5 @@ func (m *GrpcMiddleware) ServerMetricsInterceptor(ctx context.Context,
 	h, err := handler(ctx, req)
 
 	m.metrics.IncreaseHits(info.FullMethod)
-	fmt.Println("increased")
 	return h, err
 }

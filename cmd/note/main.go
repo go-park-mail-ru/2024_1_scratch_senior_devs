@@ -13,6 +13,7 @@ import (
 	"syscall"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 	grpcNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc"
 	generatedNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
@@ -74,7 +75,8 @@ func run() (err error) {
 		logger.Error("cant create metrics")
 	}
 	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
-	gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(metricsMw.ServerMetricsInterceptor))
+	logMw := log.NewGrpcLogMw(logger)
+	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor)) //grpc.UnaryInterceptor(metricsMw.ServerMetricsInterceptor))
 	generatedNote.RegisterNoteServer(gRPCServer, NoteDelivery)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
