@@ -13,7 +13,9 @@ services:
         condition: service_started
       redis:
         condition: service_started
-      elastic:
+      auth:
+        condition: service_started
+      note:
         condition: service_started
     restart: always
     ports:
@@ -24,9 +26,6 @@ services:
       - type: bind
         source: /var/log/
         target: /var/log/
-      - type: bind
-        source: /opt/images/
-        target: /opt/images/
       - type: bind
         source: /opt/attaches/
         target: /opt/attaches/
@@ -41,8 +40,6 @@ services:
       postgres:
         condition: service_started
       redis:
-        condition: service_started
-      elastic:
         condition: service_started
     restart: always
     ports:
