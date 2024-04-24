@@ -91,11 +91,6 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error
 		return ErrCantGetResponse
 	}
 
-	//_, err = repo.elastic.Reindex().Do(ctx)
-	//if err != nil {
-	//	logger.Error(err.Error())
-	//}
-
 	logger.Info("success")
 	return nil
 }
@@ -142,6 +137,44 @@ func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		logger.Error(err.Error())
 		return ErrCantGetResponse
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) AddSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	script := elastic.NewScript("ctx._source.children.add(params.childID)").Lang("painless").Param("childID", childID.String())
+
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(id.String()).
+		Script(script).
+		Do(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) RemoveSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	script := elastic.NewScript("ctx._source.children.removeIfContains(params.childID)").Lang("painless").Param("childID", childID.String())
+
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(id.String()).
+		Script(script).
+		Do(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
 	}
 
 	logger.Info("success")

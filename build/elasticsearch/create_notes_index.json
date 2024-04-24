@@ -38,6 +38,12 @@
       },
       "owner_id": {
         "type": "keyword"
+      },
+      "parent": {
+        "type": "keyword"
+      },
+      "children": {
+        "type": "keyword"
       }
     }
   }

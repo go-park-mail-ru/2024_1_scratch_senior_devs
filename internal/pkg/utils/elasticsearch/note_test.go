@@ -1,11 +1,12 @@
 package elasticsearch
 
 import (
+	"testing"
+	"time"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestConvertToElasticNote(t *testing.T) {
@@ -26,6 +27,8 @@ func TestConvertToElasticNote(t *testing.T) {
 				CreateTime: currTime,
 				UpdateTime: currTime,
 				OwnerId:    id,
+				Parent:     id,
+				Children:   []uuid.UUID{},
 			},
 			result: models.ElasticNote{
 				Id:         id,
@@ -33,6 +36,8 @@ func TestConvertToElasticNote(t *testing.T) {
 				CreateTime: currTime,
 				UpdateTime: currTime,
 				OwnerId:    id,
+				Parent:     id,
+				Children:   []uuid.UUID{},
 			},
 			isErr: false,
 		},
@@ -64,6 +69,8 @@ func TestConvertToUsualNote(t *testing.T) {
 				CreateTime: currTime,
 				UpdateTime: currTime,
 				OwnerId:    id,
+				Parent:     id,
+				Children:   []uuid.UUID{},
 			},
 			result: models.Note{
 				Id:         id,
@@ -71,6 +78,8 @@ func TestConvertToUsualNote(t *testing.T) {
 				CreateTime: currTime,
 				UpdateTime: currTime,
 				OwnerId:    id,
+				Parent:     id,
+				Children:   []uuid.UUID{},
 			},
 		},
 	}

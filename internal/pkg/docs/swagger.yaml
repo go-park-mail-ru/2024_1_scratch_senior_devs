@@ -17,6 +17,10 @@ definitions:
     type: object
   models.NoteForSwagger:
     properties:
+      children:
+        items:
+          type: string
+        type: array
       create_time:
         type: string
       data:
@@ -25,7 +29,16 @@ definitions:
         type: string
       owner_id:
         type: string
+      parent:
+        type: string
       update_time:
+        type: string
+    type: object
+  models.Passwords:
+    properties:
+      new:
+        type: string
+      old:
         type: string
     type: object
   models.ProfileUpdatePayload:
@@ -33,7 +46,7 @@ definitions:
       description:
         type: string
       password:
-        $ref: '#/definitions/models.passwords'
+        $ref: '#/definitions/models.Passwords'
     type: object
   models.SignUpPayloadForSwagger:
     properties:
@@ -69,13 +82,6 @@ definitions:
       password:
         type: string
       username:
-        type: string
-    type: object
-  models.passwords:
-    properties:
-      new:
-        type: string
-      old:
         type: string
     type: object
   responses.ErrorResponse:
@@ -130,9 +136,7 @@ paths:
       - image/webp
       responses:
         "200":
-          description: attach
-          schema:
-            type: file
+          description: OK
         "401":
           description: Unauthorized
       summary: Get attach
@@ -170,9 +174,7 @@ paths:
       - image/png
       responses:
         "200":
-          description: QR-code
-          schema:
-            type: file
+          description: OK
         "400":
           description: Bad Request
         "401":
@@ -315,6 +317,44 @@ paths:
       summary: Add attachment
       tags:
       - attach
+  /api/note/{id}/add_subnote:
+    post:
+      consumes:
+      - application/json
+      description: Create new subnote in current note
+      operationId: create-subnote
+      parameters:
+      - description: note data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpsertNoteRequestForSwagger'
+      - description: note id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/models.NoteForSwagger'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "401":
+          description: Unauthorized
+        "404":
+          description: note not found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Create subnote
+      tags:
+      - note
   /api/note/{id}/delete:
     delete:
       description: Delete selected note of current user

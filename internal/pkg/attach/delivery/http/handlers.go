@@ -175,7 +175,7 @@ func (h *AttachHandler) DeleteAttach(w http.ResponseWriter, r *http.Request) {
 // @ID			get-attach
 // @Param		id		path		string					true	"attach id"
 // @Produce		image/webp
-// @Success		200		{file}		image/webp	true	"attach"
+// @Success		200
 // @Failure		401
 // @Router		/api/attaches/{id} [get]
 func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {

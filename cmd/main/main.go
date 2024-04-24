@@ -8,11 +8,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
-	"github.com/olivere/elastic/v7"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -39,7 +37,6 @@ import (
 
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
-	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
 
 	attachDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach/delivery/http"
 	attachRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach/repo"
@@ -81,12 +78,6 @@ func main() {
 	}
 	redisDB := redis.NewClient(redisOpts)
 
-	elasticClient, err := elastic.NewClient(elastic.SetURL(os.Getenv("ELASTIC_URL")))
-	if err != nil {
-		logger.Error("error connecting to elasticsearch: " + err.Error())
-		return
-	}
-
 	authConn, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.Grpc.AuthIP, cfg.Grpc.AuthPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Error("fail grpc.Dial auth: " + err.Error())
@@ -109,15 +100,13 @@ func main() {
 	NoteClient := grpcNote.NewNoteClient(noteConn)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient)
 
-	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
-	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic)
-	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, cfg.Elastic, &sync.WaitGroup{})
-
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
 
 	AuthClient := grpcAuth.NewAuthClient(authConn)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteUsecase, cfg.AuthHandler, cfg.Validation)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteClient, cfg.AuthHandler, cfg.Validation)
+
+	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
@@ -159,6 +148,7 @@ func main() {
 		note.Handle("/{id}/edit", http.HandlerFunc(NoteDelivery.UpdateNote)).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/delete", http.HandlerFunc(NoteDelivery.DeleteNote)).Methods(http.MethodDelete, http.MethodOptions)
 		note.Handle("/{id}/add_attach", http.HandlerFunc(AttachDelivery.AddAttach)).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/add_subnote", http.HandlerFunc(NoteDelivery.CreateSubNote)).Methods(http.MethodPost, http.MethodOptions)
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()

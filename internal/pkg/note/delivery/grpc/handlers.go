@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	generatedNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
@@ -19,6 +20,24 @@ type GrpcNoteHandler struct {
 func NewGrpcNoteHandler(uc note.NoteUsecase) *GrpcNoteHandler {
 	return &GrpcNoteHandler{uc: uc}
 }
+
+func getNote(note models.Note) *generatedNote.NoteModel {
+	children := make([]string, len(note.Children))
+	for i, child := range note.Children {
+		children[i] = child.String()
+	}
+
+	return &generatedNote.NoteModel{
+		Id:         note.Id.String(),
+		Data:       string(note.Data),
+		CreateTime: note.CreateTime.String(),
+		UpdateTime: note.UpdateTime.String(),
+		OwnerId:    note.OwnerId.String(),
+		Parent:     note.Parent.String(),
+		Children:   children,
+	}
+}
+
 func (h *GrpcNoteHandler) GetAllNotes(ctx context.Context, in *generatedNote.GetAllRequest) (*generatedNote.GetAllResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -27,21 +46,16 @@ func (h *GrpcNoteHandler) GetAllNotes(ctx context.Context, in *generatedNote.Get
 		logger.Error(err.Error())
 		return nil, errors.New("not found")
 	}
+
 	protoNotes := make([]*generatedNote.NoteModel, len(result))
 	for i, item := range result {
-		protoNotes[i] = &generatedNote.NoteModel{
-			Id:         item.Id.String(),
-			Data:       string(item.Data),
-			CreateTime: item.CreateTime.String(),
-			UpdateTime: item.UpdateTime.String(),
-			OwnerId:    item.OwnerId.String(),
-		}
+		protoNotes[i] = getNote(item)
 	}
+
 	logger.Info("success")
 	return &generatedNote.GetAllResponse{
 		Notes: protoNotes,
 	}, nil
-
 }
 
 func (h *GrpcNoteHandler) GetNote(ctx context.Context, in *generatedNote.GetNoteRequest) (*generatedNote.GetNoteResponse, error) {
@@ -54,16 +68,9 @@ func (h *GrpcNoteHandler) GetNote(ctx context.Context, in *generatedNote.GetNote
 		return nil, errors.New("not found")
 	}
 
-	protoNote := generatedNote.NoteModel{
-		Id:         result.Id.String(),
-		Data:       string(result.Data),
-		CreateTime: result.CreateTime.String(),
-		UpdateTime: result.UpdateTime.String(),
-		OwnerId:    result.OwnerId.String(),
-	}
 	logger.Info("success")
 	return &generatedNote.GetNoteResponse{
-		Note: &protoNote,
+		Note: getNote(result),
 	}, nil
 }
 
@@ -76,16 +83,9 @@ func (h *GrpcNoteHandler) AddNote(ctx context.Context, in *generatedNote.AddNote
 		return nil, errors.New("not found")
 	}
 
-	protoNote := generatedNote.NoteModel{
-		Id:         result.Id.String(),
-		Data:       string(result.Data),
-		CreateTime: result.CreateTime.String(),
-		UpdateTime: result.UpdateTime.String(),
-		OwnerId:    result.OwnerId.String(),
-	}
 	logger.Info("success")
 	return &generatedNote.AddNoteResponse{
-		Note: &protoNote,
+		Note: getNote(result),
 	}, nil
 }
 
@@ -98,18 +98,12 @@ func (h *GrpcNoteHandler) UpdateNote(ctx context.Context, in *generatedNote.Upda
 		return nil, errors.New("not found")
 	}
 
-	protoNote := generatedNote.NoteModel{
-		Id:         result.Id.String(),
-		Data:       string(result.Data),
-		CreateTime: result.CreateTime.String(),
-		UpdateTime: result.UpdateTime.String(),
-		OwnerId:    result.OwnerId.String(),
-	}
 	logger.Info("success")
 	return &generatedNote.UpdateNoteResponse{
-		Note: &protoNote,
+		Note: getNote(result),
 	}, nil
 }
+
 func (h *GrpcNoteHandler) DeleteNote(ctx context.Context, in *generatedNote.DeleteNoteRequest) (*generatedNote.DeleteNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -118,6 +112,21 @@ func (h *GrpcNoteHandler) DeleteNote(ctx context.Context, in *generatedNote.Dele
 		logger.Error(err.Error())
 		return nil, errors.New("not found")
 	}
+
 	logger.Info("success")
 	return &generatedNote.DeleteNoteResponse{}, nil
+}
+
+func (h *GrpcNoteHandler) CreateSubNote(ctx context.Context, in *generatedNote.CreateSubNoteRequest) (*generatedNote.CreateSubNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.CreateSubNote(ctx, uuid.FromStringOrNil(in.UserId), []byte(in.NoteData), uuid.FromStringOrNil(in.ParentId))
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.CreateSubNoteResponse{
+		Note: getNote(response),
+	}, nil
 }
