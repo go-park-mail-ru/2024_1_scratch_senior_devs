@@ -14,10 +14,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
+	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
@@ -94,6 +97,11 @@ func main() {
 
 	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
+	Metrics, err := metrics.NewHttpMetrics("main")
+	if err != nil {
+		logger.Error("cant create metrics")
+	}
+	MetricsMiddleware := metricsmw.CreateHttpMetricsMiddleware(Metrics, logger)
 
 	logMW := log.CreateLogMiddleware(logger)
 
@@ -119,6 +127,7 @@ func main() {
 	})
 	r.Use(
 		logMW,
+		MetricsMiddleware,
 		protection.CorsMiddleware,
 		recover.RecoverMiddleware,
 	)
@@ -165,7 +174,7 @@ func main() {
 		attach.Handle("/{id}", http.HandlerFunc(AttachDelivery.GetAttach)).Methods(http.MethodGet, http.MethodOptions)
 		attach.Handle("/{id}/delete", http.HandlerFunc(AttachDelivery.DeleteAttach)).Methods(http.MethodDelete, http.MethodOptions)
 	}
-
+	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 	http.Handle("/", r)
 
 	signalCh := make(chan os.Signal, 1)

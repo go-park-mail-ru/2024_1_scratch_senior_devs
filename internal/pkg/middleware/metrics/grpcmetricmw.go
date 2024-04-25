@@ -2,7 +2,6 @@ package metricsmw
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -45,7 +44,6 @@ func (m *GrpcMiddleware) ServerMetricsInterceptor(ctx context.Context,
 
 	}
 	m.metrics.IncreaseHits(info.FullMethod)
-	fmt.Println("increased")
 	m.metrics.ObserveResponseTime(status, info.FullMethod, time.Since(start).Seconds())
 	return h, err
 }
