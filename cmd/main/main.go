@@ -23,7 +23,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cert"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -81,7 +81,7 @@ func main() {
 	}
 	redisDB := redis.NewClient(redisOpts)
 
-	tlsCredentials, err := cert.LoadTLSClientCredentials()
+	tlsCredentials, err := loadtls.LoadTLSClientCredentials()
 	if err != nil {
 		logger.Error(err.Error())
 	}

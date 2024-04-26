@@ -18,7 +18,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cert"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -58,7 +58,7 @@ func run() (err error) {
 	}
 	defer db.Close()
 
-	tlsCredentials, err := cert.LoadTLSCredentials()
+	tlsCredentials, err := loadtls.LoadTLSCredentials()
 	if err != nil {
 		logger.Error(err.Error())
 		return
