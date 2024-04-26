@@ -65,7 +65,7 @@ func run() (err error) {
 		return
 	}
 
-	tlsCredentials, err := loadtls.LoadTLSCredentials()
+	tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.NoteIP)
 	if err != nil {
 		logger.Error(err.Error())
 		return

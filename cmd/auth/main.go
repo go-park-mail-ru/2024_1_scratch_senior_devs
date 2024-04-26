@@ -58,7 +58,7 @@ func run() (err error) {
 	}
 	defer db.Close()
 
-	tlsCredentials, err := loadtls.LoadTLSCredentials()
+	tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.AuthIP)
 	if err != nil {
 		logger.Error(err.Error())
 		return

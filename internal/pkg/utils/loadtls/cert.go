@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-func LoadTLSCredentials() (credentials.TransportCredentials, error) {
-	serverCert, err := tls.LoadX509KeyPair("cert/techno.crt", "cert/techno.key")
+func LoadTLSCredentials(name string) (credentials.TransportCredentials, error) {
+	serverCert, err := tls.LoadX509KeyPair(fmt.Sprintf("cert/techno_%s.crt", name), "cert/techno.key")
 	if err != nil {
 		return nil, err
 	}
