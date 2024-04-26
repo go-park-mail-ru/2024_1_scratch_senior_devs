@@ -193,7 +193,7 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}
-	// было бы неплохо обернуть эти два похода в БД в одну транзакцию, так как если что-то одно из этого падает, то второе нужно отменить
+
 	if err := uc.baseRepo.AddSubNote(ctx, parentID, newNote.Id); err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err

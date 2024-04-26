@@ -19,6 +19,7 @@ import (
 	generatedNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
 	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cert"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/olivere/elastic/v7"
@@ -64,6 +65,12 @@ func run() (err error) {
 		return
 	}
 
+	tlsCredentials, err := cert.LoadTLSCredentials()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
 	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic)
 
@@ -76,7 +83,10 @@ func run() (err error) {
 	}
 	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
 	logMw := log.NewGrpcLogMw(logger)
-	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor)) //grpc.UnaryInterceptor(metricsMw.ServerMetricsInterceptor))
+	gRPCServer := grpc.NewServer(
+		grpc.Creds(tlsCredentials),
+		grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor),
+	)
 	generatedNote.RegisterNoteServer(gRPCServer, NoteDelivery)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()

@@ -18,6 +18,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/cert"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -57,6 +58,12 @@ func run() (err error) {
 	}
 	defer db.Close()
 
+	tlsCredentials, err := cert.LoadTLSCredentials()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
 	AuthRepo := authRepo.CreateAuthRepo(db)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, cfg.AuthUsecase, cfg.Validation)
 	AuthDelivery := grpcAuth.NewGrpcAuthHandler(AuthUsecase)
@@ -67,7 +74,10 @@ func run() (err error) {
 	}
 	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
 	logMw := log.NewGrpcLogMw(logger)
-	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor)) //grpc.UnaryInterceptor(metricsMw.ServerMetricsInterceptor))
+	gRPCServer := grpc.NewServer(
+		grpc.Creds(tlsCredentials),
+		grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor),
+	)
 	generatedAuth.RegisterAuthServer(gRPCServer, AuthDelivery)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
