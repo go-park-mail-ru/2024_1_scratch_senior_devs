@@ -20,7 +20,7 @@ CREATE TABLE questions (
 
 CREATE TABLE results (
     id              UUID PRIMARY KEY,
-    question_id     UUID
+    question_id     UUID REFERENCES questions (id) ON DELETE CASCADE
                     NOT NULL,
     voice           INT
                     NOT NULL

@@ -20,3 +20,7 @@ type Vote struct {
 	QuestionId uuid.UUID `json:"question_id"`
 	Voice      int       `json:"voice"`
 }
+
+type CreateSurveyRequest struct {
+	Questions []Question `json:"questions"`
+}

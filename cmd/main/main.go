@@ -171,7 +171,7 @@ func main() {
 	{
 		stat.Handle("/get", http.HandlerFunc(StatDelivery.GetSurvey)).Methods(http.MethodGet, http.MethodOptions)
 		stat.Handle("/vote", http.HandlerFunc(StatDelivery.Vote)).Methods(http.MethodPost, http.MethodOptions)
-
+		stat.Handle("/create", JwtMiddleware(http.HandlerFunc(StatDelivery.CreateSurvey))).Methods(http.MethodPost, http.MethodOptions)
 	}
 
 	auth := r.PathPrefix("/auth").Subrouter()

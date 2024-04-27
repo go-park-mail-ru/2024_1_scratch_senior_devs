@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey"
@@ -19,6 +20,25 @@ func CreateSurveyUsecase(repo survey.SurveyRepo) *SurveyUsecase {
 	return &SurveyUsecase{
 		repo: repo,
 	}
+}
+
+func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions []models.Question) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := uc.repo.AddSurvey(ctx, uuid.NewV4(), time.Now().UTC()); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	for _, question := range questions {
+		if err := uc.repo.AddQuestion(ctx, question); err != nil {
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	logger.Info("success")
+	return nil
 }
 
 func (uc *SurveyUsecase) GetSurvey(ctx context.Context) ([]models.Question, error) {
