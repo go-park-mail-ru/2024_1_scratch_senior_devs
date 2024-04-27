@@ -69,7 +69,7 @@ func (h *GrpcSurveyHandler) CreateSurvey(ctx context.Context, in *generatedSurve
 		}
 	}
 
-	if err := h.uc.CreateSurvey(ctx, questions); err != nil {
+	if err := h.uc.CreateSurvey(ctx, models.CreateSurveyRequest{Questions: questions}); err != nil {
 		logger.Error(err.Error())
 		return nil, errors.New("not found")
 	}

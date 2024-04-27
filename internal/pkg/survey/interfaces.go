@@ -15,7 +15,7 @@ type SurveyUsecase interface {
 	GetSurvey(ctx context.Context) ([]models.Question, error)
 	Vote(ctx context.Context, vote models.Vote) error
 	GetStats(ctx context.Context) ([]models.Stat, error)
-	CreateSurvey(ctx context.Context, questions []models.CreateQuestionRequest) error
+	CreateSurvey(ctx context.Context, questions models.CreateSurveyRequest) error
 }
 
 type SurveyRepo interface {
