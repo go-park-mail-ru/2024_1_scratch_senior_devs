@@ -75,13 +75,11 @@ func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	questions := make([]*gen.Question, len(payload.Questions))
+	questions := make([]*gen.CreateQuestionRequest, len(payload.Questions))
 	for i, question := range payload.Questions {
-		questions[i] = &gen.Question{
-			Id:           question.Id.String(),
+		questions[i] = &gen.CreateQuestionRequest{
 			Title:        question.Title,
 			QuestionType: question.QuestionType,
-			Number:       int64(question.Number),
 			SurveyId:     question.SurveyId.String(),
 		}
 	}

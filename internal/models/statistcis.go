@@ -28,6 +28,12 @@ type Stat struct {
 	Count        int    `json:"count"`
 }
 
+type CreateQuestionRequest struct {
+	Title        string    `json:"title"`
+	QuestionType string    `json:"question_type"`
+	SurveyId     uuid.UUID `json:"survey_id"`
+}
+
 type CreateSurveyRequest struct {
-	Questions []Question `json:"questions"`
+	Questions []CreateQuestionRequest `json:"questions"`
 }

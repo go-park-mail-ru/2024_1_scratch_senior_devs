@@ -60,13 +60,11 @@ func (h *GrpcSurveyHandler) Vote(ctx context.Context, in *generatedSurvey.VoteRe
 func (h *GrpcSurveyHandler) CreateSurvey(ctx context.Context, in *generatedSurvey.CreateSurveyRequest) (*generatedSurvey.CreateSurveyResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	questions := make([]models.Question, len(in.Questions))
+	questions := make([]models.CreateQuestionRequest, len(in.Questions))
 	for i, question := range in.Questions {
-		questions[i] = models.Question{
-			Id:           uuid.FromStringOrNil(question.Id),
+		questions[i] = models.CreateQuestionRequest{
 			Title:        question.Title,
 			QuestionType: question.QuestionType,
-			Number:       int(question.Number),
 			SurveyId:     uuid.FromStringOrNil(question.SurveyId),
 		}
 	}

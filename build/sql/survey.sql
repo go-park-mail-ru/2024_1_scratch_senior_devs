@@ -27,4 +27,4 @@ CREATE TABLE results (
 );
 
 --- INSERT INTO surveys (id, created_at) VALUES ('855cb60a-9ed0-485b-bd3c-6ac29f429ebf', CURRENT_TIMESTAMP);
---- INSERT INTO questions ( id, title, question_type, survey_id ) VALUES ('611f9ded-1340-4b3d-9202-ce7aec7fe418','first questiojn', 'CSAT', '855cb60a-9ed0-485b-bd3c-6ac29f429ebf')
+--- INSERT INTO questions ( id, title, question_type, number, survey_id ) VALUES ('611f9ded-1340-4b3d-9202-ce7aec7fe418','first questiojn', 'CSAT', 1, '855cb60a-9ed0-485b-bd3c-6ac29f429ebf');

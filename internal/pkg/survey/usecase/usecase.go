@@ -22,7 +22,7 @@ func CreateSurveyUsecase(repo survey.SurveyRepo) *SurveyUsecase {
 	}
 }
 
-func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions []models.Question) error {
+func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions models.CreateSurveyRequest) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	if err := uc.repo.AddSurvey(ctx, uuid.NewV4(), time.Now().UTC()); err != nil {
@@ -30,8 +30,14 @@ func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions []models.Qu
 		return err
 	}
 
-	for _, question := range questions {
-		if err := uc.repo.AddQuestion(ctx, question); err != nil {
+	for i, question := range questions.Questions {
+		if err := uc.repo.AddQuestion(ctx, models.Question{
+			Id:           uuid.NewV4(),
+			Title:        question.Title,
+			QuestionType: question.QuestionType,
+			Number:       i + 1,
+			SurveyId:     question.SurveyId,
+		}); err != nil {
 			logger.Error(err.Error())
 			return err
 		}

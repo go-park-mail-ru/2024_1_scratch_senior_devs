@@ -42,12 +42,18 @@ message Question {
   string SurveyId = 5;
 }
 
+message CreateQuestionRequest {
+  string Title = 1;
+  string QuestionType = 2;
+  string SurveyId = 3;
+}
+
 message GetSurveyResponse {
   repeated Question Questions = 1;
 }
 
 message CreateSurveyRequest {
-  repeated Question Questions = 1;
+  repeated CreateQuestionRequest Questions = 1;
 }
 
 message CreateSurveyResponse {}
