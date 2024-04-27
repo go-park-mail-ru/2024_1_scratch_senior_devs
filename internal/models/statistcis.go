@@ -14,3 +14,8 @@ type Result struct {
 	QuestionId uuid.UUID `json:"question_id"`
 	Voice      int       `json:"voice"`
 }
+
+type Vote struct {
+	QuestionId uuid.UUID `json:"question_id"`
+	Voice      int       `json:"voice"`
+}
