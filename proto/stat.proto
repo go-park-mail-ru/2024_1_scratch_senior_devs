@@ -6,3 +6,20 @@ service Stat {
   rpc GetSurvey(GetSurveyRequest) returns (GetSurveyReposnse) {}
   rpc Vote(VoteRequest) returns (VoteResponse)
 }
+
+
+message GetSurveyRequest {
+  string Id = 1;
+}
+
+message Question {
+  string Id = 1;
+  string Title = 2;
+  string QuestionType = 3;
+  int64 number = 4;
+  string SurveyId = 5;
+}
+
+message GetSurveyReposnse {
+  repeated Question Questions = 1;
+}
