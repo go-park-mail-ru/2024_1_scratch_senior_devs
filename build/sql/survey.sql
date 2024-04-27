@@ -10,7 +10,7 @@ CREATE TABLE questions (
 --     skip            INT,
     question_type   TEXT
                     CONSTRAINT question_type_length CHECK (char_length(question_type) <= 255),
---     number          INT,
+    number          INT,
     survey_id REFERENCES surveys (id) ON DELETE CASCADE
                     NOT NULL
 );

@@ -20,6 +20,19 @@ func CreateSurveyUsecase(repo survey.SurveyRepo) *SurveyUsecase {
 	}
 }
 
+func (uc *SurveyUsecase) GetSurvey(ctx context.Context, id uuid.UUID) ([]models.Question, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result, err := uc.repo.GetSurvey(ctx, id)
+	if err != nil {
+		logger.Error(err.Error())
+		return []models.Question{}, err
+	}
+
+	logger.Info("success")
+	return result, nil
+}
+
 func (uc *SurveyUsecase) Vote(ctx context.Context, vote models.Vote) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

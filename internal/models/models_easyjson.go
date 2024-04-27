@@ -636,6 +636,8 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			out.Title = string(in.String())
 		case "question_type":
 			out.QuestionType = string(in.String())
+		case "number":
+			out.Number = int(in.Int())
 		case "survey_id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.SurveyId).UnmarshalText(data))
@@ -668,6 +670,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"question_type\":"
 		out.RawString(prefix)
 		out.String(string(in.QuestionType))
+	}
+	{
+		const prefix string = ",\"number\":"
+		out.RawString(prefix)
+		out.Int(int(in.Number))
 	}
 	{
 		const prefix string = ",\"survey_id\":"
