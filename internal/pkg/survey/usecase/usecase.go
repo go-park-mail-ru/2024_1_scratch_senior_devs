@@ -25,7 +25,8 @@ func CreateSurveyUsecase(repo survey.SurveyRepo) *SurveyUsecase {
 func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions models.CreateSurveyRequest) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	if err := uc.repo.AddSurvey(ctx, uuid.NewV4(), time.Now().UTC()); err != nil {
+	surveyID := uuid.NewV4()
+	if err := uc.repo.AddSurvey(ctx, surveyID, time.Now().UTC()); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
@@ -43,6 +44,7 @@ func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions models.Crea
 			Title:        question.Title,
 			QuestionType: question.QuestionType,
 			Number:       i + 1,
+			SurveyId:     surveyID,
 		}); err != nil {
 			logger.Error(err.Error())
 			return err
