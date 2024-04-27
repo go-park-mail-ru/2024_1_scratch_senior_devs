@@ -73,6 +73,8 @@ type GrpcConfig struct {
 	AuthIP   string `yaml:"auth_ip"`
 	NotePort string `yaml:"note_port"`
 	NoteIP   string `yaml:"note_ip"`
+	StatPort string `yaml:"stat_port"`
+	StatIP   string `yaml:"stat_ip"`
 }
 
 const (

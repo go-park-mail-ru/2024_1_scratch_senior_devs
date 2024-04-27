@@ -8,13 +8,12 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/jackc/pgtype/pgxtype"
-	"github.com/satori/uuid"
 )
 
 const (
 	addResult = "INSERT INTO results(id, question_id, voice) VALUES ($1, $2, $3);"
 
-	getSurvey = "SELECT id, title, question_type, number, survey_id FROM questions WHERE survey_id = $1 ORDER BY number ASC;"
+	getSurvey = "SELECT id, title, question_type, number, createsurvey_id FROM questions WHERE survey_id = (SELECT id FROM surveys ORDER BY created_at DESC LIMIT 1) ORDER BY number ASC;"
 )
 
 type SurveyRepo struct {
@@ -27,12 +26,12 @@ func CreateSurveyRepo(db pgxtype.Querier) *SurveyRepo {
 	}
 }
 
-func (repo *SurveyRepo) GetSurvey(ctx context.Context, id uuid.UUID) ([]models.Question, error) {
+func (repo *SurveyRepo) GetSurvey(ctx context.Context) ([]models.Question, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	result := make([]models.Question, 0)
 
-	query, err := repo.db.Query(ctx, getSurvey, id)
+	query, err := repo.db.Query(ctx, getSurvey)
 	if err != nil {
 		logger.Error(err.Error())
 		return result, err

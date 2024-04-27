@@ -7,9 +7,7 @@ service Stat {
 }
 
 
-message GetSurveyRequest {
-  string Id = 1;
-}
+message GetSurveyRequest {}
 
 message Question {
   string Id = 1;

@@ -1,5 +1,7 @@
 CREATE TABLE surveys (
-    id UUID PRIMARY KEY
+    id UUID         PRIMARY KEY
+    created_at      TIMESTAMP
+                    NOT NULL
 );
 
 CREATE TABLE questions (
