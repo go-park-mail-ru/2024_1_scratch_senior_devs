@@ -1,5 +1,7 @@
 CREATE TABLE surveys (
-    id UUID PRIMARY KEY
+    id UUID         PRIMARY KEY,
+    created_at      TIMESTAMP
+                    NOT NULL
 );
 
 CREATE TABLE questions (
@@ -11,7 +13,7 @@ CREATE TABLE questions (
     question_type   TEXT
                     CONSTRAINT question_type_length CHECK (char_length(question_type) <= 255),
     number          INT,
-    survey_id REFERENCES surveys (id) ON DELETE CASCADE
+    survey_id UUID REFERENCES surveys (id) ON DELETE CASCADE
                     NOT NULL
 );
 

@@ -75,56 +75,16 @@ func (x *VoteRequest) GetVote() int32 {
 	return 0
 }
 
-type VoteResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *VoteResponse) Reset() {
-	*x = VoteResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_stat_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *VoteResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VoteResponse) ProtoMessage() {}
-
-func (x *VoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stat_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VoteResponse.ProtoReflect.Descriptor instead.
-func (*VoteResponse) Descriptor() ([]byte, []int) {
-	return file_stat_proto_rawDescGZIP(), []int{1}
-}
-
 type GetSurveyRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Id string `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 }
 
 func (x *GetSurveyRequest) Reset() {
 	*x = GetSurveyRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_stat_proto_msgTypes[2]
+		mi := &file_stat_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -137,7 +97,7 @@ func (x *GetSurveyRequest) String() string {
 func (*GetSurveyRequest) ProtoMessage() {}
 
 func (x *GetSurveyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stat_proto_msgTypes[2]
+	mi := &file_stat_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -150,14 +110,45 @@ func (x *GetSurveyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSurveyRequest.ProtoReflect.Descriptor instead.
 func (*GetSurveyRequest) Descriptor() ([]byte, []int) {
-	return file_stat_proto_rawDescGZIP(), []int{2}
+	return file_stat_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetSurveyRequest) GetId() string {
-	if x != nil {
-		return x.Id
+type VoteResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *VoteResponse) Reset() {
+	*x = VoteResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_stat_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
 	}
-	return ""
+}
+
+func (x *VoteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoteResponse) ProtoMessage() {}
+
+func (x *VoteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stat_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoteResponse.ProtoReflect.Descriptor instead.
+func (*VoteResponse) Descriptor() ([]byte, []int) {
+	return file_stat_proto_rawDescGZIP(), []int{2}
 }
 
 type Question struct {
@@ -294,10 +285,9 @@ var file_stat_proto_rawDesc = []byte{
 	0x74, 0x12, 0x1e, 0x0a, 0x0a, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x51, 0x75, 0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x49,
 	0x64, 0x12, 0x12, 0x0a, 0x04, 0x56, 0x6f, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52,
-	0x04, 0x56, 0x6f, 0x74, 0x65, 0x22, 0x0e, 0x0a, 0x0c, 0x56, 0x6f, 0x74, 0x65, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x22, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x53, 0x75, 0x72, 0x76,
-	0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x49, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x49, 0x64, 0x22, 0x88, 0x01, 0x0a, 0x08, 0x51, 0x75,
+	0x04, 0x56, 0x6f, 0x74, 0x65, 0x22, 0x12, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x53, 0x75, 0x72, 0x76,
+	0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x0e, 0x0a, 0x0c, 0x56, 0x6f, 0x74,
+	0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x88, 0x01, 0x0a, 0x08, 0x51, 0x75,
 	0x65, 0x73, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x02, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x54, 0x69, 0x74, 0x6c, 0x65, 0x18,
 	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x54, 0x69, 0x74, 0x6c, 0x65, 0x12, 0x22, 0x0a, 0x0c,
@@ -339,17 +329,17 @@ func file_stat_proto_rawDescGZIP() []byte {
 var file_stat_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_stat_proto_goTypes = []interface{}{
 	(*VoteRequest)(nil),       // 0: note.VoteRequest
-	(*VoteResponse)(nil),      // 1: note.VoteResponse
-	(*GetSurveyRequest)(nil),  // 2: note.GetSurveyRequest
+	(*GetSurveyRequest)(nil),  // 1: note.GetSurveyRequest
+	(*VoteResponse)(nil),      // 2: note.VoteResponse
 	(*Question)(nil),          // 3: note.Question
 	(*GetSurveyResponse)(nil), // 4: note.GetSurveyResponse
 }
 var file_stat_proto_depIdxs = []int32{
 	3, // 0: note.GetSurveyResponse.Questions:type_name -> note.Question
-	2, // 1: note.Stat.GetSurvey:input_type -> note.GetSurveyRequest
+	1, // 1: note.Stat.GetSurvey:input_type -> note.GetSurveyRequest
 	0, // 2: note.Stat.Vote:input_type -> note.VoteRequest
 	4, // 3: note.Stat.GetSurvey:output_type -> note.GetSurveyResponse
-	1, // 4: note.Stat.Vote:output_type -> note.VoteResponse
+	2, // 4: note.Stat.Vote:output_type -> note.VoteResponse
 	3, // [3:5] is the sub-list for method output_type
 	1, // [1:3] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -376,7 +366,7 @@ func file_stat_proto_init() {
 			}
 		}
 		file_stat_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VoteResponse); i {
+			switch v := v.(*GetSurveyRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -388,7 +378,7 @@ func file_stat_proto_init() {
 			}
 		}
 		file_stat_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetSurveyRequest); i {
+			switch v := v.(*VoteResponse); i {
 			case 0:
 				return &v.state
 			case 1:

@@ -12,10 +12,9 @@ message VoteRequest {
   int32 Vote = 2;
 }
 
+
+message GetSurveyRequest {}
 message VoteResponse {
-}
-message GetSurveyRequest {
-  string Id = 1;
 }
 
 message Question {
