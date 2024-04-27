@@ -16,9 +16,9 @@ import (
 const (
 	addResult   = "INSERT INTO results(id, question_id, voice) VALUES ($1, $2, $3);"
 	addSurvey   = "INSERT INTO surveys(id, created_at) VALUES ($1, $2);"
-	addQuestion = "INSERT INTO questions(id, title, question_type, number, survey_id) VALUES ($1, $2, $3, $4, $5);"
+	addQuestion = "INSERT INTO questions(id, title, min_mark, skip, question_type, number, survey_id) VALUES ($1, $2, $3, $4, $5, $6, $7);"
 
-	getSurvey = "SELECT id, title, question_type, number, survey_id FROM questions WHERE survey_id = (SELECT id FROM surveys ORDER BY created_at DESC LIMIT 1) ORDER BY number ASC;"
+	getSurvey = "SELECT id, title, min_mark, skip, question_type, number, survey_id FROM questions WHERE survey_id = (SELECT id FROM surveys ORDER BY created_at DESC LIMIT 1) ORDER BY number ASC;"
 
 	getStats = `
 	SELECT q.id, q.title, q.question_type, r.voice, COUNT(r.voice) from results r
@@ -54,7 +54,7 @@ func (repo *SurveyRepo) AddSurvey(ctx context.Context, surveyID uuid.UUID, creat
 func (repo *SurveyRepo) AddQuestion(ctx context.Context, question models.Question) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	_, err := repo.db.Exec(ctx, addQuestion, question.Id, question.Title, question.QuestionType, question.Number, question.SurveyId)
+	_, err := repo.db.Exec(ctx, addQuestion, question.Id, question.Title, question.MinMark, question.Skip, question.QuestionType, question.Number, question.SurveyId)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -77,7 +77,7 @@ func (repo *SurveyRepo) GetSurvey(ctx context.Context) ([]models.Question, error
 
 	for query.Next() {
 		var question models.Question
-		if err := query.Scan(&question.Id, &question.Title, &question.QuestionType, &question.Number, &question.SurveyId); err != nil {
+		if err := query.Scan(&question.Id, &question.Title, &question.MinMark, &question.Skip, &question.QuestionType, &question.Number, &question.SurveyId); err != nil {
 			logger.Error(err.Error())
 			return result, fmt.Errorf("error occured while scanning questions: %w", err)
 		}

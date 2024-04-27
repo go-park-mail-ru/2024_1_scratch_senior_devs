@@ -42,6 +42,8 @@ func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions models.Crea
 		if err := uc.repo.AddQuestion(ctx, models.Question{
 			Id:           uuid.NewV4(),
 			Title:        question.Title,
+			MinMark:      question.MinMark,
+			Skip:         question.Skip,
 			QuestionType: question.QuestionType,
 			Number:       i + 1,
 			SurveyId:     surveyID,

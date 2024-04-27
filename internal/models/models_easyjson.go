@@ -796,6 +796,10 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			}
 		case "title":
 			out.Title = string(in.String())
+		case "min_mark":
+			out.MinMark = int(in.Int())
+		case "skip":
+			out.Skip = int(in.Int())
 		case "question_type":
 			out.QuestionType = string(in.String())
 		case "number":
@@ -827,6 +831,16 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"title\":"
 		out.RawString(prefix)
 		out.String(string(in.Title))
+	}
+	{
+		const prefix string = ",\"min_mark\":"
+		out.RawString(prefix)
+		out.Int(int(in.MinMark))
+	}
+	{
+		const prefix string = ",\"skip\":"
+		out.RawString(prefix)
+		out.Int(int(in.Skip))
 	}
 	{
 		const prefix string = ",\"question_type\":"
@@ -1723,7 +1737,7 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 				in.Delim('[')
 				if out.Questions == nil {
 					if !in.IsDelim(']') {
-						out.Questions = make([]CreateQuestionRequest, 0, 2)
+						out.Questions = make([]CreateQuestionRequest, 0, 1)
 					} else {
 						out.Questions = []CreateQuestionRequest{}
 					}
@@ -1815,6 +1829,10 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		switch key {
 		case "title":
 			out.Title = string(in.String())
+		case "min_mark":
+			out.MinMark = int(in.Int())
+		case "skip":
+			out.Skip = int(in.Int())
 		case "question_type":
 			out.QuestionType = string(in.String())
 		default:
@@ -1835,6 +1853,16 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"title\":"
 		out.RawString(prefix[1:])
 		out.String(string(in.Title))
+	}
+	{
+		const prefix string = ",\"min_mark\":"
+		out.RawString(prefix)
+		out.Int(int(in.MinMark))
+	}
+	{
+		const prefix string = ",\"skip\":"
+		out.RawString(prefix)
+		out.Int(int(in.Skip))
 	}
 	{
 		const prefix string = ",\"question_type\":"

@@ -5,6 +5,8 @@ import "github.com/satori/uuid"
 type Question struct {
 	Id           uuid.UUID `json:"id"`
 	Title        string    `json:"title"`
+	MinMark      int       `json:"min_mark"`
+	Skip         int       `json:"skip"`
 	QuestionType string    `json:"question_type"`
 	Number       int       `json:"number"`
 	SurveyId     uuid.UUID `json:"survey_id"`
@@ -31,6 +33,8 @@ type Stat struct {
 
 type CreateQuestionRequest struct {
 	Title        string `json:"title"`
+	MinMark      int    `json:"min_mark"`
+	Skip         int    `json:"skip"`
 	QuestionType string `json:"question_type"`
 }
 

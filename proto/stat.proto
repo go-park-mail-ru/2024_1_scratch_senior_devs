@@ -39,13 +39,17 @@ message VoteResponse {
 message Question {
   string Id = 1;
   string Title = 2;
-  string QuestionType = 3;
-  int64 number = 4;
-  string SurveyId = 5;
+  int64 MinMark = 3;
+  int64 Skip = 4;
+  string QuestionType = 5;
+  int64 number = 6;
+  string SurveyId = 7;
 }
 
 message CreateQuestionRequest {
   string Title = 1;
+  int64 MinMark = 3;
+  int64 Skip = 4;
   string QuestionType = 2;
 }
 

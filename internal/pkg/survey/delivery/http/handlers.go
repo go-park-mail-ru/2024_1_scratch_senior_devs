@@ -52,6 +52,8 @@ func getQuestion(question *gen.Question) models.Question {
 	return models.Question{
 		Id:           uuid.FromStringOrNil(question.Id),
 		Title:        question.Title,
+		MinMark:      int(question.MinMark),
+		Skip:         int(question.Skip),
 		QuestionType: question.QuestionType,
 		Number:       int(question.Number),
 		SurveyId:     uuid.FromStringOrNil(question.SurveyId),
@@ -79,6 +81,8 @@ func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
 	for i, question := range payload.Questions {
 		questions[i] = &gen.CreateQuestionRequest{
 			Title:        question.Title,
+			MinMark:      int64(question.MinMark),
+			Skip:         int64(question.Skip),
 			QuestionType: question.QuestionType,
 		}
 	}

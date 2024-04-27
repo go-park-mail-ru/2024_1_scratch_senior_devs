@@ -26,6 +26,8 @@ func getQuestion(question models.Question) *generatedSurvey.Question {
 	return &generatedSurvey.Question{
 		Id:           question.Id.String(),
 		Title:        question.Title,
+		MinMark:      int64(question.MinMark),
+		Skip:         int64(question.Skip),
 		QuestionType: question.QuestionType,
 		Number:       int64(question.Number),
 		SurveyId:     question.SurveyId.String(),
@@ -65,6 +67,8 @@ func (h *GrpcSurveyHandler) CreateSurvey(ctx context.Context, in *generatedSurve
 	for i, question := range in.Questions {
 		questions[i] = models.CreateQuestionRequest{
 			Title:        question.Title,
+			MinMark:      int(question.MinMark),
+			Skip:         int(question.Skip),
 			QuestionType: question.QuestionType,
 		}
 	}
