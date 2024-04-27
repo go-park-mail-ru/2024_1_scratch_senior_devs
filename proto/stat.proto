@@ -4,10 +4,16 @@ option go_package = "./internal/pkg/survey/delivery/grpc/gen/;gen";
 
 service Stat {
   rpc GetSurvey(GetSurveyRequest) returns (GetSurveyReposnse) {}
-  rpc Vote(VoteRequest) returns (VoteResponse)
+  rpc Vote(VoteRequest) returns (VoteResponse){}
 }
 
+message VoteRequest {
+  string QuestionId = 1;
+  int32 Vote = 2;
+}
 
+message VoteResponse {
+}
 message GetSurveyRequest {
   string Id = 1;
 }
