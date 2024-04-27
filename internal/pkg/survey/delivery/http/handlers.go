@@ -2,6 +2,7 @@ package http
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -74,6 +75,7 @@ func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
 		return
 	}
+	logger.Info(fmt.Sprintf("http %+v", payload.Questions))
 
 	questions := make([]*gen.CreateQuestionRequest, len(payload.Questions))
 	for i, question := range payload.Questions {
@@ -82,6 +84,8 @@ func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
 			QuestionType: question.QuestionType,
 		}
 	}
+	logger.Info(fmt.Sprintf("htpp %+v", questions))
+
 	if _, err := h.client.CreateSurvey(r.Context(), &gen.CreateSurveyRequest{
 		Questions: questions,
 	}); err != nil {

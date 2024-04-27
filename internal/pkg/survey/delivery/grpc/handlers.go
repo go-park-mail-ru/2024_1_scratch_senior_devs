@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strconv"
 
@@ -67,6 +68,7 @@ func (h *GrpcSurveyHandler) CreateSurvey(ctx context.Context, in *generatedSurve
 			QuestionType: question.QuestionType,
 		}
 	}
+	logger.Info(fmt.Sprintf("grpc %+v", questions))
 
 	if err := h.uc.CreateSurvey(ctx, models.CreateSurveyRequest{Questions: questions}); err != nil {
 		logger.Error(err.Error())
