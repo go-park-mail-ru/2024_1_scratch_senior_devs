@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Stat_GetSurvey_FullMethodName = "/note.Stat/GetSurvey"
-	Stat_Vote_FullMethodName      = "/note.Stat/Vote"
-	Stat_GetStats_FullMethodName  = "/note.Stat/GetStats"
+	Stat_GetSurvey_FullMethodName    = "/note.Stat/GetSurvey"
+	Stat_Vote_FullMethodName         = "/note.Stat/Vote"
+	Stat_CreateSurvey_FullMethodName = "/note.Stat/CreateSurvey"
+	Stat_GetStats_FullMethodName     = "/note.Stat/GetStats"
 )
 
 // StatClient is the client API for Stat service.
@@ -30,6 +31,7 @@ const (
 type StatClient interface {
 	GetSurvey(ctx context.Context, in *GetSurveyRequest, opts ...grpc.CallOption) (*GetSurveyResponse, error)
 	Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*VoteResponse, error)
+	CreateSurvey(ctx context.Context, in *CreateSurveyRequest, opts ...grpc.CallOption) (*CreateSurveyResponse, error)
 	GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error)
 }
 
@@ -59,6 +61,15 @@ func (c *statClient) Vote(ctx context.Context, in *VoteRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *statClient) CreateSurvey(ctx context.Context, in *CreateSurveyRequest, opts ...grpc.CallOption) (*CreateSurveyResponse, error) {
+	out := new(CreateSurveyResponse)
+	err := c.cc.Invoke(ctx, Stat_CreateSurvey_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *statClient) GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error) {
 	out := new(GetStatsResponse)
 	err := c.cc.Invoke(ctx, Stat_GetStats_FullMethodName, in, out, opts...)
@@ -74,6 +85,7 @@ func (c *statClient) GetStats(ctx context.Context, in *GetStatsRequest, opts ...
 type StatServer interface {
 	GetSurvey(context.Context, *GetSurveyRequest) (*GetSurveyResponse, error)
 	Vote(context.Context, *VoteRequest) (*VoteResponse, error)
+	CreateSurvey(context.Context, *CreateSurveyRequest) (*CreateSurveyResponse, error)
 	GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error)
 	mustEmbedUnimplementedStatServer()
 }
@@ -87,6 +99,9 @@ func (UnimplementedStatServer) GetSurvey(context.Context, *GetSurveyRequest) (*G
 }
 func (UnimplementedStatServer) Vote(context.Context, *VoteRequest) (*VoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Vote not implemented")
+}
+func (UnimplementedStatServer) CreateSurvey(context.Context, *CreateSurveyRequest) (*CreateSurveyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSurvey not implemented")
 }
 func (UnimplementedStatServer) GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
@@ -140,6 +155,24 @@ func _Stat_Vote_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Stat_CreateSurvey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSurveyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StatServer).CreateSurvey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stat_CreateSurvey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StatServer).CreateSurvey(ctx, req.(*CreateSurveyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Stat_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetStatsRequest)
 	if err := dec(in); err != nil {
@@ -172,6 +205,10 @@ var Stat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Vote",
 			Handler:    _Stat_Vote_Handler,
+		},
+		{
+			MethodName: "CreateSurvey",
+			Handler:    _Stat_CreateSurvey_Handler,
 		},
 		{
 			MethodName: "GetStats",

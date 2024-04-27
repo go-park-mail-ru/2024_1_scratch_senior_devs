@@ -12,14 +12,15 @@ CREATE TABLE questions (
 --     skip            INT,
     question_type   TEXT
                     CONSTRAINT question_type_length CHECK (char_length(question_type) <= 255),
-    number          INT,
+    number          INT
+                    NOT NULL,
     survey_id UUID REFERENCES surveys (id) ON DELETE CASCADE
                     NOT NULL
 );
 
 CREATE TABLE results (
     id              UUID PRIMARY KEY,
-    question_id     UUID
+    question_id     UUID REFERENCES questions (id) ON DELETE CASCADE
                     NOT NULL,
     voice           INT
                     NOT NULL

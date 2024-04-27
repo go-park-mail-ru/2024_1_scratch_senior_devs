@@ -27,3 +27,7 @@ type Stat struct {
 	Voice        int    `json:"voice"`
 	Count        int    `json:"count"`
 }
+
+type CreateSurveyRequest struct {
+	Questions []Question `json:"questions"`
+}

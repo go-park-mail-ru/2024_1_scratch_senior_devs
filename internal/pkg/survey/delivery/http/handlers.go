@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey/delivery/grpc/gen"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
@@ -54,6 +56,84 @@ func getQuestion(question *gen.Question) models.Question {
 		Number:       int(question.Number),
 		SurveyId:     uuid.FromStringOrNil(question.SurveyId),
 	}
+}
+
+func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	payload := models.CreateSurveyRequest{}
+	if err := responses.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	questions := make([]*gen.Question, len(payload.Questions))
+	for i, question := range payload.Questions {
+		questions[i] = &gen.Question{
+			Id:           question.Id.String(),
+			Title:        question.Title,
+			QuestionType: question.QuestionType,
+			Number:       int64(question.Number),
+			SurveyId:     question.SurveyId.String(),
+		}
+	}
+	if _, err := h.client.CreateSurvey(r.Context(), &gen.CreateSurveyRequest{
+		Questions: questions,
+	}); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("error"))
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	payload := models.CreateSurveyRequest{}
+	if err := responses.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	questions := make([]*gen.Question, len(payload.Questions))
+	for i, question := range payload.Questions {
+		questions[i] = &gen.Question{
+			Id:           question.Id.String(),
+			Title:        question.Title,
+			QuestionType: question.QuestionType,
+			Number:       int64(question.Number),
+			SurveyId:     question.SurveyId.String(),
+		}
+	}
+	if _, err := h.client.CreateSurvey(r.Context(), &gen.CreateSurveyRequest{
+		Questions: questions,
+	}); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("error"))
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func getStat(stat *gen.StatModel) models.Stat {

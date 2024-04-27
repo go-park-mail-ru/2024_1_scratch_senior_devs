@@ -5,6 +5,7 @@ option go_package = "./internal/pkg/survey/delivery/grpc/gen/;gen";
 service Stat {
   rpc GetSurvey(GetSurveyRequest) returns (GetSurveyResponse) {}
   rpc Vote(VoteRequest) returns (VoteResponse){}
+  rpc CreateSurvey(CreateSurveyRequest) returns (CreateSurveyResponse) {}
   rpc GetStats(GetStatsRequest) returns (GetStatsResponse){}
 }
 
@@ -44,3 +45,9 @@ message Question {
 message GetSurveyResponse {
   repeated Question Questions = 1;
 }
+
+message CreateSurveyRequest {
+  repeated Question Questions = 1;
+}
+
+message CreateSurveyResponse {}

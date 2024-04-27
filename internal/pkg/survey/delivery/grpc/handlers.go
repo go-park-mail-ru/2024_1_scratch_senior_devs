@@ -57,6 +57,29 @@ func (h *GrpcSurveyHandler) Vote(ctx context.Context, in *generatedSurvey.VoteRe
 	return &generatedSurvey.VoteResponse{}, nil
 }
 
+func (h *GrpcSurveyHandler) CreateSurvey(ctx context.Context, in *generatedSurvey.CreateSurveyRequest) (*generatedSurvey.CreateSurveyResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	questions := make([]models.Question, len(in.Questions))
+	for i, question := range in.Questions {
+		questions[i] = models.Question{
+			Id:           uuid.FromStringOrNil(question.Id),
+			Title:        question.Title,
+			QuestionType: question.QuestionType,
+			Number:       int(question.Number),
+			SurveyId:     uuid.FromStringOrNil(question.SurveyId),
+		}
+	}
+
+	if err := h.uc.CreateSurvey(ctx, questions); err != nil {
+		logger.Error(err.Error())
+		return nil, errors.New("not found")
+	}
+
+	logger.Info("success")
+	return &generatedSurvey.CreateSurveyResponse{}, nil
+}
+
 func (h *GrpcSurveyHandler) GetSurvey(ctx context.Context, in *generatedSurvey.GetSurveyRequest) (*generatedSurvey.GetSurveyResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
