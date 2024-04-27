@@ -16,9 +16,11 @@ message GetStatsRequest {
 message StatModel{
   string QuestionTitle = 1;
   string QuestionType = 2;
+  
 
   string Label = 3;
   int32 Value = 4;
+  string QuestionId = 5;
 
 }
 message GetStatsResponse {

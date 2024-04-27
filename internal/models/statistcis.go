@@ -20,17 +20,26 @@ type Vote struct {
 	QuestionId uuid.UUID `json:"question_id"`
 	Voice      int       `json:"voice"`
 }
-
 type Stat struct {
-	Title        string `json:"title"`
-	QuestionType string `json:"question_type"`
-	Voice        int    `json:"voice"`
-	Count        int    `json:"count"`
+	QuestionId   uuid.UUID `json:"question_id"`
+	Title        string    `json:"title"`
+	QuestionType string    `json:"question_type"`
+	Voice        int       `json:"voice"`
+	Count        int       `json:"count"`
+	Type         string    `json:"-"`
 }
 
 type CreateQuestionRequest struct {
 	Title        string `json:"title"`
 	QuestionType string `json:"question_type"`
+}
+
+type StatResponse struct {
+	QuestionId   uuid.UUID   `json:"question_id"`
+	Title        string      `json:"title"`
+	QuestionType string      `json:"question_type"`
+	Stats        interface{} `json:"stats"`
+	Value        float64     `json:"value"`
 }
 
 type CreateSurveyRequest struct {

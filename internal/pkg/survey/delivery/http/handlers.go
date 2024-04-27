@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey/delivery/grpc/gen"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/responses"
+	"github.com/samber/lo"
 	"github.com/satori/uuid"
 )
 
@@ -98,6 +98,7 @@ func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
 func getStat(stat *gen.StatModel) models.Stat {
 	val, _ := strconv.ParseInt(stat.Label, 10, 32)
 	return models.Stat{
+		QuestionId:   uuid.FromStringOrNil(stat.QuestionId),
 		Title:        stat.QuestionTitle,
 		QuestionType: stat.QuestionType,
 		Voice:        int(val),
@@ -127,6 +128,55 @@ func (h *SurveyHandler) GetSurvey(w http.ResponseWriter, r *http.Request) {
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 
+func getCSAT(data []models.Stat) (map[int]int, float64) {
+	result := make(map[int]int)
+	var summary int
+	var total int
+
+	data = lo.Filter(data, func(item models.Stat, i int) bool {
+		return item.Voice > 0 && item.Voice <= 5
+	})
+
+	for _, item := range data {
+		result[item.Voice] = item.Count
+		summary += item.Voice * item.Count
+		total += item.Count
+	}
+	return result, float64(summary) / float64(total)
+}
+func getNPS(data []models.Stat) (map[string]int, float64) {
+	result := make(map[string]int)
+	// for _, item := range data {
+	// 	if item.Voice < 6{
+	// 		result["d"] = item.Count
+	// 	}
+
+	// }
+
+	lo.ForEach(data, func(d models.Stat, i int) {
+		if d.Voice <= 6 {
+			data[i].Type = "detractor"
+		} else if d.Voice >= 6 && d.Voice <= 8 {
+			data[i].Type = "passive"
+		} else {
+			data[i].Type = "promouter"
+		}
+	})
+	var total int
+	for _, v := range data {
+		result[v.Type] += v.Count
+		total += v.Count
+	}
+
+	d, _ := result["detractor"]
+	p, _ := result["promouter"]
+
+	var r float64
+	if total != 0 {
+		r = float64(p-d) / float64(total)
+	}
+	return result, r
+}
 func (h *SurveyHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
@@ -141,7 +191,37 @@ func (h *SurveyHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	for i, s := range protoData.Stats {
 		data[i] = getStat(s)
 	}
-	if err := responses.WriteResponseData(w, data, http.StatusOK); err != nil {
+
+	var groupedData map[string][]models.Stat
+
+	groupedData = lo.GroupBy(data, func(item models.Stat) string {
+		return string(item.QuestionId.String())
+
+	})
+
+	var resp []models.StatResponse
+
+	for _, item := range groupedData {
+		if len(item) == 0 {
+			continue
+		}
+
+		respItem := models.StatResponse{
+			QuestionId:   item[0].QuestionId,
+			Title:        item[0].Title,
+			QuestionType: item[0].QuestionType,
+		}
+		switch item[0].QuestionType {
+		case "CSAT":
+			respItem.Stats, respItem.Value = getCSAT(item)
+		case "NPS":
+			respItem.Stats, respItem.Value = getNPS(item)
+
+		}
+		resp = append(resp, respItem)
+	}
+
+	if err := responses.WriteResponseData(w, resp, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return

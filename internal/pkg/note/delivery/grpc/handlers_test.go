@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"log"
 	"net/http/httptest"
 	"reflect"
 	"testing"
@@ -319,4 +320,9 @@ func TestNoteHandler_AddNote(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMain(t *testing.T) {
+	r := float64(3-2) / float64(3)
+	log.Fatalln(r)
 }

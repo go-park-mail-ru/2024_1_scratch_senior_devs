@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/json"
+	"log"
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
@@ -81,4 +83,15 @@ func TestSanitizeProfile(t *testing.T) {
 
 		assert.Equal(t, tt.output, tt.input)
 	}
+}
+
+func TestXxx(t *testing.T) {
+	model := CreateSurveyRequest{
+		Questions: []Question{
+			{},
+		},
+	}
+	d, _ := json.Marshal(model)
+	m := string(d)
+	log.Println(string(m))
 }

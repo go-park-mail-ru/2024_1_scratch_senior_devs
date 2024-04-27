@@ -33,6 +33,7 @@ func getQuestion(question models.Question) *generatedSurvey.Question {
 }
 func getStat(stat models.Stat) *generatedSurvey.StatModel {
 	return &generatedSurvey.StatModel{
+		QuestionId:    stat.QuestionId.String(),
 		QuestionTitle: stat.Title,
 		QuestionType:  stat.QuestionType,
 		Label:         strconv.Itoa(stat.Voice),

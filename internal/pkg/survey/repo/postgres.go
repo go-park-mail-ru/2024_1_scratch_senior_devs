@@ -3,9 +3,10 @@ package repo
 import (
 	"context"
 	"fmt"
-	"github.com/satori/uuid"
 	"log/slog"
 	"time"
+
+	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
@@ -20,7 +21,7 @@ const (
 	getSurvey = "SELECT id, title, question_type, number, survey_id FROM questions WHERE survey_id = (SELECT id FROM surveys ORDER BY created_at DESC LIMIT 1) ORDER BY number ASC;"
 
 	getStats = `
-	SELECT q.title, q.question_type, r.voice, COUNT(r.voice) from results r
+	SELECT q.id, q.title, q.question_type, r.voice, COUNT(r.voice) from results r
 	JOIN questions q on q.id = r.question_id 
 	GROUP BY  r.voice, q.id;
 	
@@ -114,7 +115,7 @@ func (repo *SurveyRepo) GetStats(ctx context.Context) ([]models.Stat, error) {
 
 	for query.Next() {
 		var stat models.Stat
-		if err := query.Scan(stat.Title, stat.QuestionType, stat.Voice, stat.Count); err != nil {
+		if err := query.Scan(&stat.QuestionId, &stat.Title, &stat.QuestionType, &stat.Voice, &stat.Count); err != nil {
 			logger.Error(err.Error())
 			return result, fmt.Errorf("error occured while scanning stats: %w", err)
 		}
