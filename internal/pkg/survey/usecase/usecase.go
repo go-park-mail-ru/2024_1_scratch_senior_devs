@@ -53,3 +53,16 @@ func (uc *SurveyUsecase) Vote(ctx context.Context, vote models.Vote) error {
 	logger.Info("success")
 	return nil
 }
+
+func (uc *SurveyUsecase) GetStats(ctx context.Context) ([]models.Stat, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result, err := uc.repo.GetStats(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		return []models.Stat{}, err
+	}
+
+	logger.Info("success")
+	return result, nil
+}

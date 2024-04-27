@@ -20,3 +20,10 @@ type Vote struct {
 	QuestionId uuid.UUID `json:"question_id"`
 	Voice      int       `json:"voice"`
 }
+
+type Stat struct {
+	Title        string `json:"title"`
+	QuestionType string `json:"question_type"`
+	Voice        int    `json:"voice"`
+	Count        int    `json:"count"`
+}

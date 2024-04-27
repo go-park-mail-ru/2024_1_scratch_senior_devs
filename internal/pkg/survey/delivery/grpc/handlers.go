@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey"
@@ -19,6 +20,24 @@ type GrpcSurveyHandler struct {
 
 func NewGrpcSurveyHandler(uc survey.SurveyUsecase) *GrpcSurveyHandler {
 	return &GrpcSurveyHandler{uc: uc}
+}
+
+func getQuestion(question models.Question) *generatedSurvey.Question {
+	return &generatedSurvey.Question{
+		Id:           question.Id.String(),
+		Title:        question.Title,
+		QuestionType: question.QuestionType,
+		Number:       int64(question.Number),
+		SurveyId:     question.SurveyId.String(),
+	}
+}
+func getStat(stat models.Stat) *generatedSurvey.StatModel {
+	return &generatedSurvey.StatModel{
+		QuestionTitle: stat.Title,
+		QuestionType:  stat.QuestionType,
+		Label:         strconv.Itoa(stat.Voice),
+		Value:         int32(stat.Count),
+	}
 }
 
 func (h *GrpcSurveyHandler) Vote(ctx context.Context, in *generatedSurvey.VoteRequest) (*generatedSurvey.VoteResponse, error) {
@@ -38,16 +57,6 @@ func (h *GrpcSurveyHandler) Vote(ctx context.Context, in *generatedSurvey.VoteRe
 	return &generatedSurvey.VoteResponse{}, nil
 }
 
-func getQuestion(question models.Question) *generatedSurvey.Question {
-	return &generatedSurvey.Question{
-		Id:           question.Id.String(),
-		Title:        question.Title,
-		QuestionType: question.QuestionType,
-		Number:       int64(question.Number),
-		SurveyId:     question.SurveyId.String(),
-	}
-}
-
 func (h *GrpcSurveyHandler) GetSurvey(ctx context.Context, in *generatedSurvey.GetSurveyRequest) (*generatedSurvey.GetSurveyResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -65,5 +74,24 @@ func (h *GrpcSurveyHandler) GetSurvey(ctx context.Context, in *generatedSurvey.G
 	logger.Info("success")
 	return &generatedSurvey.GetSurveyResponse{
 		Questions: protoQuestions,
+	}, nil
+}
+func (h *GrpcSurveyHandler) GetStats(ctx context.Context, in *generatedSurvey.GetStatsRequest) (*generatedSurvey.GetStatsResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result, err := h.uc.GetStats(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, errors.New("not found")
+	}
+
+	protoQuestions := make([]*generatedSurvey.StatModel, len(result))
+	for i, item := range result {
+		protoQuestions[i] = getStat(item)
+	}
+
+	logger.Info("success")
+	return &generatedSurvey.GetStatsResponse{
+		Stats: protoQuestions,
 	}, nil
 }

@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Stat_GetSurvey_FullMethodName = "/note.Stat/GetSurvey"
 	Stat_Vote_FullMethodName      = "/note.Stat/Vote"
+	Stat_GetStats_FullMethodName  = "/note.Stat/GetStats"
 )
 
 // StatClient is the client API for Stat service.
@@ -29,6 +30,7 @@ const (
 type StatClient interface {
 	GetSurvey(ctx context.Context, in *GetSurveyRequest, opts ...grpc.CallOption) (*GetSurveyResponse, error)
 	Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*VoteResponse, error)
+	GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error)
 }
 
 type statClient struct {
@@ -57,12 +59,22 @@ func (c *statClient) Vote(ctx context.Context, in *VoteRequest, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *statClient) GetStats(ctx context.Context, in *GetStatsRequest, opts ...grpc.CallOption) (*GetStatsResponse, error) {
+	out := new(GetStatsResponse)
+	err := c.cc.Invoke(ctx, Stat_GetStats_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StatServer is the server API for Stat service.
 // All implementations must embed UnimplementedStatServer
 // for forward compatibility
 type StatServer interface {
 	GetSurvey(context.Context, *GetSurveyRequest) (*GetSurveyResponse, error)
 	Vote(context.Context, *VoteRequest) (*VoteResponse, error)
+	GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error)
 	mustEmbedUnimplementedStatServer()
 }
 
@@ -75,6 +87,9 @@ func (UnimplementedStatServer) GetSurvey(context.Context, *GetSurveyRequest) (*G
 }
 func (UnimplementedStatServer) Vote(context.Context, *VoteRequest) (*VoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Vote not implemented")
+}
+func (UnimplementedStatServer) GetStats(context.Context, *GetStatsRequest) (*GetStatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
 }
 func (UnimplementedStatServer) mustEmbedUnimplementedStatServer() {}
 
@@ -125,6 +140,24 @@ func _Stat_Vote_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Stat_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StatServer).GetStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stat_GetStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StatServer).GetStats(ctx, req.(*GetStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Stat_ServiceDesc is the grpc.ServiceDesc for Stat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +172,10 @@ var Stat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Vote",
 			Handler:    _Stat_Vote_Handler,
+		},
+		{
+			MethodName: "GetStats",
+			Handler:    _Stat_GetStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

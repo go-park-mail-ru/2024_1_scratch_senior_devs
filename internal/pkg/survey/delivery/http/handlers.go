@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey/delivery/grpc/gen"
@@ -55,6 +56,15 @@ func getQuestion(question *gen.Question) models.Question {
 	}
 }
 
+func getStat(stat *gen.StatModel) models.Stat {
+	val, _ := strconv.ParseInt(stat.Label, 10, 32)
+	return models.Stat{
+		Title:        stat.QuestionTitle,
+		QuestionType: stat.QuestionType,
+		Voice:        int(val),
+		Count:        int(stat.Value),
+	}
+}
 func (h *SurveyHandler) GetSurvey(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
@@ -68,6 +78,29 @@ func (h *SurveyHandler) GetSurvey(w http.ResponseWriter, r *http.Request) {
 
 	for i, question := range protoData.Questions {
 		data[i] = getQuestion(question)
+	}
+	if err := responses.WriteResponseData(w, data, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *SurveyHandler) GetStats(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	protoData, err := h.client.GetStats(r.Context(), &gen.GetStatsRequest{})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, err)
+		return
+	}
+	data := make([]models.Stat, len(protoData.Stats))
+
+	for i, s := range protoData.Stats {
+		data[i] = getStat(s)
 	}
 	if err := responses.WriteResponseData(w, data, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())

@@ -14,6 +14,13 @@ const (
 	addResult = "INSERT INTO results(id, question_id, voice) VALUES ($1, $2, $3);"
 
 	getSurvey = "SELECT id, title, question_type, number, survey_id FROM questions WHERE survey_id = (SELECT id FROM surveys ORDER BY created_at DESC LIMIT 1) ORDER BY number ASC;"
+
+	getStats = `
+	SELECT q.title, q.question_type, r.voice, COUNT(r.voice) from results r
+	JOIN questions q on q.id = r.question_id 
+	GROUP BY  r.voice, q.id;
+	
+	`
 )
 
 type SurveyRepo struct {
@@ -62,4 +69,27 @@ func (repo *SurveyRepo) AddResult(ctx context.Context, res models.Result) error 
 	logger.Info("success")
 	return nil
 
+}
+
+func (repo *SurveyRepo) GetStats(ctx context.Context) ([]models.Stat, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result := make([]models.Stat, 0)
+
+	query, err := repo.db.Query(ctx, getStats)
+	if err != nil {
+		logger.Error(err.Error())
+		return result, err
+	}
+
+	for query.Next() {
+		var stat models.Stat
+		if err := query.Scan(stat.Title, stat.QuestionType, stat.Voice, stat.Count); err != nil {
+			logger.Error(err.Error())
+			return result, fmt.Errorf("error occured while scanning stats: %w", err)
+		}
+		result = append(result, stat)
+	}
+	logger.Info("success")
+	return result, nil
 }
