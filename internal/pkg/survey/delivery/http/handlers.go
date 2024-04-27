@@ -80,7 +80,6 @@ func (h *SurveyHandler) CreateSurvey(w http.ResponseWriter, r *http.Request) {
 		questions[i] = &gen.CreateQuestionRequest{
 			Title:        question.Title,
 			QuestionType: question.QuestionType,
-			SurveyId:     question.SurveyId.String(),
 		}
 	}
 	if _, err := h.client.CreateSurvey(r.Context(), &gen.CreateSurveyRequest{

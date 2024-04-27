@@ -36,7 +36,6 @@ func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions models.Crea
 			Title:        question.Title,
 			QuestionType: question.QuestionType,
 			Number:       i + 1,
-			SurveyId:     question.SurveyId,
 		}); err != nil {
 			logger.Error(err.Error())
 			return err

@@ -65,7 +65,6 @@ func (h *GrpcSurveyHandler) CreateSurvey(ctx context.Context, in *generatedSurve
 		questions[i] = models.CreateQuestionRequest{
 			Title:        question.Title,
 			QuestionType: question.QuestionType,
-			SurveyId:     uuid.FromStringOrNil(question.SurveyId),
 		}
 	}
 

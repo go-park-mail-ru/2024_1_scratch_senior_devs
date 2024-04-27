@@ -29,9 +29,8 @@ type Stat struct {
 }
 
 type CreateQuestionRequest struct {
-	Title        string    `json:"title"`
-	QuestionType string    `json:"question_type"`
-	SurveyId     uuid.UUID `json:"survey_id"`
+	Title        string `json:"title"`
+	QuestionType string `json:"question_type"`
 }
 
 type CreateSurveyRequest struct {
