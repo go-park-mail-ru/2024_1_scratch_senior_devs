@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log/slog"
 	"net/http"
@@ -23,8 +24,6 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
-
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
@@ -81,14 +80,15 @@ func main() {
 	}
 	redisDB := redis.NewClient(redisOpts)
 
-	tlsCredentials, err := loadtls.LoadTLSClientCredentials()
-	if err != nil {
-		logger.Error(err.Error())
-	}
+	//tlsCredentials, err := loadtls.LoadTLSClientCredentials()
+	//if err != nil {
+	//	logger.Error(err.Error())
+	//}
 
 	authConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.AuthIP, cfg.Grpc.AuthPort),
-		grpc.WithTransportCredentials(tlsCredentials),
+		//grpc.WithTransportCredentials(tlsCredentials),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		logger.Error("fail grpc.Dial auth: " + err.Error())
@@ -98,7 +98,8 @@ func main() {
 
 	noteConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.NoteIP, cfg.Grpc.NotePort),
-		grpc.WithTransportCredentials(tlsCredentials),
+		//grpc.WithTransportCredentials(tlsCredentials),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		logger.Error("fail grpc.Dial note: " + err.Error())

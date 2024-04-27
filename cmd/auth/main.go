@@ -18,7 +18,6 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -58,11 +57,11 @@ func run() (err error) {
 	}
 	defer db.Close()
 
-	tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.AuthIP)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
+	//tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.AuthIP)
+	//if err != nil {
+	//	logger.Error(err.Error())
+	//	return
+	//}
 
 	AuthRepo := authRepo.CreateAuthRepo(db)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, cfg.AuthUsecase, cfg.Validation)
@@ -75,7 +74,7 @@ func run() (err error) {
 	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
 	logMw := log.NewGrpcLogMw(logger)
 	gRPCServer := grpc.NewServer(
-		grpc.Creds(tlsCredentials),
+		//grpc.Creds(tlsCredentials),
 		grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor),
 	)
 	generatedAuth.RegisterAuthServer(gRPCServer, AuthDelivery)
