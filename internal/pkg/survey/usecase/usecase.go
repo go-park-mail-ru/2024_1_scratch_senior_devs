@@ -30,6 +30,13 @@ func (uc *SurveyUsecase) CreateSurvey(ctx context.Context, questions models.Crea
 		return err
 	}
 
+	for _, question := range questions.Questions {
+		if question.QuestionType != "CSAT" && question.QuestionType != "NPS" {
+			logger.Error("incorrect question type: " + question.QuestionType)
+			return errors.New("incorrect question type: " + question.QuestionType)
+		}
+	}
+
 	for i, question := range questions.Questions {
 		if err := uc.repo.AddQuestion(ctx, models.Question{
 			Id:           uuid.NewV4(),
