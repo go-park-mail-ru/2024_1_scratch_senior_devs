@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log/slog"
 	"net/http"
@@ -11,6 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"google.golang.org/grpc/credentials/insecure"
 
 	"google.golang.org/grpc"
 
@@ -31,6 +32,9 @@ import (
 
 	grpcAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 	grpcNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
+	grpcStat "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey/delivery/grpc/gen"
+
+	statDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey/delivery/http"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
 	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
@@ -106,6 +110,16 @@ func main() {
 		return
 	}
 	defer noteConn.Close()
+	statConn, err := grpc.Dial(
+		fmt.Sprintf("%s:%s", cfg.Grpc.StatIP, cfg.Grpc.StatPort),
+		//grpc.WithTransportCredentials(tlsCredentials),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		logger.Error("fail grpc.Dial note: " + err.Error())
+		return
+	}
+	defer statConn.Close()
 
 	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
@@ -116,6 +130,9 @@ func main() {
 	MetricsMiddleware := metricsmw.CreateHttpMetricsMiddleware(Metrics, logger)
 
 	logMW := log.CreateLogMiddleware(logger)
+
+	StatClient := grpcStat.NewStatClient(statConn)
+	StatDelivery := statDelivery.CreateSurveyHandler(StatClient)
 
 	NoteClient := grpcNote.NewNoteClient(noteConn)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient)
@@ -149,6 +166,13 @@ func main() {
 		httpSwagger.DocExpansion("none"),
 		httpSwagger.DomID("swagger-ui"),
 	)).Methods(http.MethodGet, http.MethodOptions)
+
+	stat := r.PathPrefix("/survey").Subrouter()
+	{
+		stat.Handle("/get", http.HandlerFunc(StatDelivery.GetSurvey)).Methods(http.MethodGet, http.MethodOptions)
+		stat.Handle("/vote", http.HandlerFunc(StatDelivery.Vote)).Methods(http.MethodPost, http.MethodOptions)
+
+	}
 
 	auth := r.PathPrefix("/auth").Subrouter()
 	{

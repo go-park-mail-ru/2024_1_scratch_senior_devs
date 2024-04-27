@@ -21,7 +21,7 @@ func NewGrpcSurveyHandler(uc survey.SurveyUsecase) *GrpcSurveyHandler {
 	return &GrpcSurveyHandler{uc: uc}
 }
 
-func (h *GrpcSurveyHandler) AddNote(ctx context.Context, in *generatedSurvey.VoteRequest) (*generatedSurvey.VoteResponse, error) {
+func (h *GrpcSurveyHandler) Vote(ctx context.Context, in *generatedSurvey.VoteRequest) (*generatedSurvey.VoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 	vote := in.Vote
 	qid := uuid.FromStringOrNil(in.QuestionId)

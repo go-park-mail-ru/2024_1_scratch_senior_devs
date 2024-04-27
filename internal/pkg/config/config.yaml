@@ -43,7 +43,7 @@ grpc:
   note_port: 8082
   note_ip: note
   stat_port: 8083
-  stat_ip: stat
+  stat_ip: 127.0.0.1
 
 
 

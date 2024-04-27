@@ -13,7 +13,7 @@ import (
 const (
 	addResult = "INSERT INTO results(id, question_id, voice) VALUES ($1, $2, $3);"
 
-	getSurvey = "SELECT id, title, question_type, number, createsurvey_id FROM questions WHERE survey_id = (SELECT id FROM surveys ORDER BY created_at DESC LIMIT 1) ORDER BY number ASC;"
+	getSurvey = "SELECT id, title, question_type, number, survey_id FROM questions WHERE survey_id = (SELECT id FROM surveys ORDER BY created_at DESC LIMIT 1) ORDER BY number ASC;"
 )
 
 type SurveyRepo struct {

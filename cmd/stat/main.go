@@ -1,8 +1,15 @@
-package stat
+package main
 
 import (
 	"context"
 	"fmt"
+	"io"
+	"log/slog"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
 	grpcSurvey "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/survey/delivery/grpc"
@@ -12,12 +19,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
-	"io"
-	"log/slog"
-	"net"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func init() {
@@ -33,7 +34,7 @@ func main() {
 }
 
 func run() (err error) {
-	logFile, err := os.OpenFile(os.Getenv("NOTE_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logFile, err := os.OpenFile(os.Getenv("STAT_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println("error opening log file: " + err.Error())
 		return

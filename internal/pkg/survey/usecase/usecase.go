@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -35,9 +36,13 @@ func (uc *SurveyUsecase) GetSurvey(ctx context.Context) ([]models.Question, erro
 
 func (uc *SurveyUsecase) Vote(ctx context.Context, vote models.Vote) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
-
+	if vote.Voice < 0 || vote.Voice > 10 {
+		return errors.New("not acceptable")
+	}
 	newResult := models.Result{
-		Id: uuid.NewV4(),
+		Id:         uuid.NewV4(),
+		QuestionId: vote.QuestionId,
+		Voice:      vote.Voice,
 	}
 
 	if err := uc.repo.AddResult(ctx, newResult); err != nil {
