@@ -1,0 +1,7 @@
+syntax = "proto3";
+package note;
+option go_package = "./internal/pkg/survey/delivery/grpc/gen/;gen";
+
+service Stat {
+  rpc GetSurvey(GetSurveyRequest) returns (GetSurveyReposnse) {}
+}

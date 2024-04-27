@@ -6,6 +6,7 @@ type Question struct {
 	Id           uuid.UUID `json:"id"`
 	Title        string    `json:"title"`
 	QuestionType string    `json:"question_type"`
+	Number       int       `json:"number"`
 	SurveyId     uuid.UUID `json:"survey_id"`
 }
 
