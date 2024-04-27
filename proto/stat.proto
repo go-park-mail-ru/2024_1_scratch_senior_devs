@@ -3,7 +3,7 @@ package note;
 option go_package = "./internal/pkg/survey/delivery/grpc/gen/;gen";
 
 service Stat {
-  rpc GetSurvey(GetSurveyRequest) returns (GetSurveyReposnse) {}
+  rpc GetSurvey(GetSurveyRequest) returns (GetSurveyResponse) {}
   rpc Vote(VoteRequest) returns (VoteResponse){}
 }
 
@@ -26,6 +26,6 @@ message Question {
   string SurveyId = 5;
 }
 
-message GetSurveyReposnse {
+message GetSurveyResponse {
   repeated Question Questions = 1;
 }

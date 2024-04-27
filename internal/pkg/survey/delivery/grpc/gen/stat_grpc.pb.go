@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StatClient interface {
-	GetSurvey(ctx context.Context, in *GetSurveyRequest, opts ...grpc.CallOption) (*GetSurveyReposnse, error)
+	GetSurvey(ctx context.Context, in *GetSurveyRequest, opts ...grpc.CallOption) (*GetSurveyResponse, error)
 	Vote(ctx context.Context, in *VoteRequest, opts ...grpc.CallOption) (*VoteResponse, error)
 }
 
@@ -39,8 +39,8 @@ func NewStatClient(cc grpc.ClientConnInterface) StatClient {
 	return &statClient{cc}
 }
 
-func (c *statClient) GetSurvey(ctx context.Context, in *GetSurveyRequest, opts ...grpc.CallOption) (*GetSurveyReposnse, error) {
-	out := new(GetSurveyReposnse)
+func (c *statClient) GetSurvey(ctx context.Context, in *GetSurveyRequest, opts ...grpc.CallOption) (*GetSurveyResponse, error) {
+	out := new(GetSurveyResponse)
 	err := c.cc.Invoke(ctx, Stat_GetSurvey_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (c *statClient) Vote(ctx context.Context, in *VoteRequest, opts ...grpc.Cal
 // All implementations must embed UnimplementedStatServer
 // for forward compatibility
 type StatServer interface {
-	GetSurvey(context.Context, *GetSurveyRequest) (*GetSurveyReposnse, error)
+	GetSurvey(context.Context, *GetSurveyRequest) (*GetSurveyResponse, error)
 	Vote(context.Context, *VoteRequest) (*VoteResponse, error)
 	mustEmbedUnimplementedStatServer()
 }
@@ -70,7 +70,7 @@ type StatServer interface {
 type UnimplementedStatServer struct {
 }
 
-func (UnimplementedStatServer) GetSurvey(context.Context, *GetSurveyRequest) (*GetSurveyReposnse, error) {
+func (UnimplementedStatServer) GetSurvey(context.Context, *GetSurveyRequest) (*GetSurveyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSurvey not implemented")
 }
 func (UnimplementedStatServer) Vote(context.Context, *VoteRequest) (*VoteResponse, error) {
