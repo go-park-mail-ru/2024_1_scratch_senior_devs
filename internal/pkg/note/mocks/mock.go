@@ -38,17 +38,17 @@ func (m *MockNoteUsecase) EXPECT() *MockNoteUsecaseMockRecorder {
 }
 
 // AddCollaborator mocks base method.
-func (m *MockNoteUsecase) AddCollaborator(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
+func (m *MockNoteUsecase) AddCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddCollaborator indicates an expected call of AddCollaborator.
-func (mr *MockNoteUsecaseMockRecorder) AddCollaborator(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockNoteUsecaseMockRecorder) AddCollaborator(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteUsecase)(nil).AddCollaborator), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteUsecase)(nil).AddCollaborator), arg0, arg1, arg2, arg3)
 }
 
 // CheckCollaborator mocks base method.

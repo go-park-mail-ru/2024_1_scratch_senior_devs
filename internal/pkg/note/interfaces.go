@@ -19,7 +19,7 @@ type NoteUsecase interface {
 	DeleteNote(context.Context, uuid.UUID, uuid.UUID) error
 	CreateSubNote(context.Context, uuid.UUID, []byte, uuid.UUID) (models.Note, error)
 	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
-	AddCollaborator(context.Context, uuid.UUID, string) error
+	AddCollaborator(context.Context, uuid.UUID, uuid.UUID, string) error
 }
 
 type NoteBaseRepo interface {

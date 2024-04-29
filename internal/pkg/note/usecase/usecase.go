@@ -236,7 +236,7 @@ func (uc *NoteUsecase) CheckCollaborator(ctx context.Context, noteID uuid.UUID, 
 	return result || currentNote.OwnerId == userID, nil
 }
 
-func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error {
+func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, username string) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID)
@@ -250,7 +250,7 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 		return errors.New("not found")
 	}
 
-	if err := uc.baseRepo.AddCollaborator(ctx, noteID, userID); err != nil {
+	if err := uc.baseRepo.AddCollaborator(ctx, noteID, username); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
