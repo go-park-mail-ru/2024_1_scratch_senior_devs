@@ -3,6 +3,8 @@ package http
 import (
 	"encoding/json"
 	"errors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
+	"github.com/gorilla/websocket"
 	"log/slog"
 	"net/http"
 	"time"
@@ -23,16 +25,22 @@ const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
 
 type NoteHandler struct {
 	client gen.NoteClient
+	hub    hub.HubInterface
 }
 
-func CreateNotesHandler(client gen.NoteClient) *NoteHandler {
+func CreateNotesHandler(client gen.NoteClient, hub hub.HubInterface) *NoteHandler {
 	return &NoteHandler{
 		client: client,
+		hub:    hub,
 	}
 }
 
 const (
 	incorrectIdErr = "incorrect id parameter"
+)
+
+var (
+	upgrader = websocket.Upgrader{}
 )
 
 func getNote(note *gen.NoteModel) (models.Note, error) {
@@ -425,4 +433,35 @@ func (h *NoteHandler) CreateSubNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	noteID, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	connection, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("fail to upgrade to websocket"))
+		return
+	}
+	logger.Debug("connection upgraded: ", slog.Any("noteID", noteID))
+
+	h.hub.AddClient(noteID, connection)
+
+	logger.Debug("client disconnected: ", slog.Any("noteID", noteID))
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 	"io"
 	"log/slog"
 	"net/http"
@@ -116,16 +117,17 @@ func main() {
 
 	logMW := log.CreateLogMiddleware(logger)
 
+	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
+	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub)
+
 	NoteClient := grpcNote.NewNoteClient(noteConn)
-	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient)
+	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient, NoteHub)
 
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
 
 	AuthClient := grpcAuth.NewAuthClient(authConn)
 	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteClient, cfg.AuthHandler, cfg.Validation)
-
-	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
@@ -169,6 +171,7 @@ func main() {
 		note.Handle("/{id}/delete", http.HandlerFunc(NoteDelivery.DeleteNote)).Methods(http.MethodDelete, http.MethodOptions)
 		note.Handle("/{id}/add_attach", http.HandlerFunc(AttachDelivery.AddAttach)).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/add_subnote", http.HandlerFunc(NoteDelivery.CreateSubNote)).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/subscribe_on_updates", http.HandlerFunc(NoteDelivery.SubscribeOnUpdates)).Methods(http.MethodGet, http.MethodOptions)
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
@@ -187,6 +190,8 @@ func main() {
 	}
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 	http.Handle("/", r)
+
+	go NoteHub.Run(context.Background())
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)

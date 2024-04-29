@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 
@@ -21,6 +22,7 @@ const (
 	deleteNote    = "DELETE FROM notes CASCADE WHERE id = $1;"
 	addSubNote    = "UPDATE notes SET children = array_append(children, $1) WHERE id = $2;"
 	removeSubNote = "UPDATE notes SET children = array_remove(children, $1) WHERE id = $2;"
+	getUpdates    = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
 )
 
 type NotePostgres struct {
@@ -31,6 +33,30 @@ func CreateNotePostgres(db pgxtype.Querier) *NotePostgres {
 	return &NotePostgres{
 		db: db,
 	}
+}
+
+func (repo *NotePostgres) GetUpdates(ctx context.Context, noteID uuid.UUID, offset time.Time) ([]models.Message, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result := make([]models.Message, 0)
+
+	query, err := repo.db.Query(ctx, getUpdates, noteID, offset)
+	if err != nil {
+		logger.Error(err.Error())
+		return result, err
+	}
+
+	for query.Next() {
+		var message models.Message
+		if err := query.Scan(&message.NoteId, &message.Created, &message.MessageInfo); err != nil {
+			logger.Error(err.Error())
+			return result, fmt.Errorf("error occured while scanning messages: %w", err)
+		}
+		result = append(result, message)
+	}
+
+	logger.Info("success")
+	return result, nil
 }
 
 func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {

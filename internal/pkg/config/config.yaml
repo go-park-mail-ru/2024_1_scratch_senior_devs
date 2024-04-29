@@ -42,10 +42,5 @@ grpc:
   auth_ip: auth
   note_port: 8082
   note_ip: note
-
-
-
-
-
-
-
+hub:
+  period: 1s

@@ -40,6 +40,18 @@ CREATE TABLE IF NOT EXISTS attaches (
         NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS messages (
+    note_id         UUID        NOT NULL,
+    created         TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    message_info    JSON
+);
+
+CREATE TABLE IF NOT EXISTS collaborators (
+    note_id UUID REFERENCES notes (id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users (id) ON DELETE CASCADE,
+    PRIMARY KEY (note_id, user_id)
+);
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE OR REPLACE FUNCTION delete_children_notes()
@@ -57,3 +69,20 @@ CREATE OR REPLACE TRIGGER trigger_delete_children_notes
     ON notes
     FOR EACH ROW
     EXECUTE FUNCTION delete_children_notes();
+
+CREATE OR REPLACE FUNCTION insert_message()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+AS $BODY$
+BEGIN
+    INSERT INTO messages(note_id, created, message_info) VALUES (NEW.id, CURRENT_TIMESTAMP, NEW.data);
+    RETURN NEW;
+END;
+$BODY$;
+
+CREATE OR REPLACE TRIGGER trigger_insert_message
+    AFTER UPDATE
+    ON notes
+    FOR EACH ROW
+EXECUTE FUNCTION insert_message();
+

@@ -20,6 +20,7 @@ type Config struct {
 	Attach      AttachConfig      `yaml:"attach"`
 	Elastic     ElasticConfig     `yaml:"elastic"`
 	Grpc        GrpcConfig        `yaml:"grpc"`
+	Hub         HubConfig         `yaml:"hub"`
 }
 
 type AuthHandlerConfig struct {
@@ -73,6 +74,10 @@ type GrpcConfig struct {
 	AuthIP   string `yaml:"auth_ip"`
 	NotePort string `yaml:"note_port"`
 	NoteIP   string `yaml:"note_ip"`
+}
+
+type HubConfig struct {
+	Period time.Duration `yaml:"period"`
 }
 
 const (

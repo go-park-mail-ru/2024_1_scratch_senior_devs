@@ -7,6 +7,7 @@ package mock_note
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	models "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	gomock "github.com/golang/mock/gomock"
@@ -188,6 +189,21 @@ func (m *MockNoteBaseRepo) DeleteNote(arg0 context.Context, arg1 uuid.UUID) erro
 func (mr *MockNoteBaseRepoMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).DeleteNote), arg0, arg1)
+}
+
+// GetUpdates mocks base method.
+func (m *MockNoteBaseRepo) GetUpdates(arg0 context.Context, arg1 uuid.UUID, arg2 time.Time) ([]models.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUpdates", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]models.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUpdates indicates an expected call of GetUpdates.
+func (mr *MockNoteBaseRepoMockRecorder) GetUpdates(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpdates", reflect.TypeOf((*MockNoteBaseRepo)(nil).GetUpdates), arg0, arg1, arg2)
 }
 
 // ReadAllNotes mocks base method.

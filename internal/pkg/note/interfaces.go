@@ -2,6 +2,7 @@ package note
 
 import (
 	"context"
+	"time"
 
 	"github.com/satori/uuid"
 
@@ -27,6 +28,7 @@ type NoteBaseRepo interface {
 	DeleteNote(context.Context, uuid.UUID) error
 	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error
 	RemoveSubNote(context.Context, uuid.UUID, uuid.UUID) error
+	GetUpdates(context.Context, uuid.UUID, time.Time) ([]models.Message, error)
 }
 
 type NoteSearchRepo interface {
