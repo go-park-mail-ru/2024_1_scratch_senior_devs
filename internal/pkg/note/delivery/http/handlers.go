@@ -508,8 +508,8 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
-		NoteId: noteIdString,
-		UserId: payload.UserId.String(),
+		NoteId:   noteIdString,
+		Username: payload.Username,
 	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusNotFound, incorrectIdErr+err.Error())

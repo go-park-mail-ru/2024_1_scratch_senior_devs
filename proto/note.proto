@@ -24,7 +24,7 @@ message CheckCollaboratorResponse {
 
 message AddCollaboratorRequest {
      string NoteId = 1;
-     string UserId = 2;
+     string Username = 2;
 }
 
 message AddCollaboratorResponse {}

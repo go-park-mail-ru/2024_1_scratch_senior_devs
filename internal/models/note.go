@@ -40,7 +40,7 @@ type UpsertNoteRequest struct {
 }
 
 type AddCollaboratorRequest struct {
-	UserId uuid.UUID `json:"user_id"`
+	Username string `json:"username"`
 }
 
 // ================================================================

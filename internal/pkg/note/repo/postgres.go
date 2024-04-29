@@ -24,7 +24,7 @@ const (
 	removeSubNote     = "UPDATE notes SET children = array_remove(children, $1) WHERE id = $2;"
 	getUpdates        = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
 	checkCollaborator = "SELECT COUNT(user_id) FROM collaborators WHERE note_id = $1 AND user_id = $2;"
-	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, $2);"
+	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, (SELECT id FROM users WHERE username = $2));"
 )
 
 type NotePostgres struct {
@@ -37,10 +37,10 @@ func CreateNotePostgres(db pgxtype.Querier) *NotePostgres {
 	}
 }
 
-func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error {
+func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, username string) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	_, err := repo.db.Exec(ctx, addCollaborator, noteID, userID)
+	_, err := repo.db.Exec(ctx, addCollaborator, noteID, username)
 	if err != nil {
 		logger.Error(err.Error())
 		return err

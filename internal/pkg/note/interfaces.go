@@ -19,7 +19,7 @@ type NoteUsecase interface {
 	DeleteNote(context.Context, uuid.UUID, uuid.UUID) error
 	CreateSubNote(context.Context, uuid.UUID, []byte, uuid.UUID) (models.Note, error)
 	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
-	AddCollaborator(context.Context, uuid.UUID, uuid.UUID) error
+	AddCollaborator(context.Context, uuid.UUID, string) error
 }
 
 type NoteBaseRepo interface {
@@ -32,7 +32,7 @@ type NoteBaseRepo interface {
 	RemoveSubNote(context.Context, uuid.UUID, uuid.UUID) error
 	GetUpdates(context.Context, uuid.UUID, time.Time) ([]models.Message, error)
 	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
-	AddCollaborator(context.Context, uuid.UUID, uuid.UUID) error
+	AddCollaborator(context.Context, uuid.UUID, string) error
 }
 
 type NoteSearchRepo interface {

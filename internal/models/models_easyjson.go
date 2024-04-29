@@ -1544,10 +1544,8 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			continue
 		}
 		switch key {
-		case "user_id":
-			if data := in.UnsafeBytes(); in.Ok() {
-				in.AddError((out.UserId).UnmarshalText(data))
-			}
+		case "username":
+			out.Username = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1563,9 +1561,9 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"user_id\":"
+		const prefix string = ",\"username\":"
 		out.RawString(prefix[1:])
-		out.RawText((in.UserId).MarshalText())
+		out.String(string(in.Username))
 	}
 	out.RawByte('}')
 }
