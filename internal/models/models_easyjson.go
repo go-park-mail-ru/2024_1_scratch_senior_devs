@@ -1525,3 +1525,71 @@ func (v *Attach) UnmarshalJSON(data []byte) error {
 func (v *Attach) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalModels15(l, v)
 }
+func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalModels16(in *jlexer.Lexer, out *AddCollaboratorRequest) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "user_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.UserId).UnmarshalText(data))
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalModels16(out *jwriter.Writer, in AddCollaboratorRequest) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"user_id\":"
+		out.RawString(prefix[1:])
+		out.RawText((in.UserId).MarshalText())
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v AddCollaboratorRequest) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalModels16(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v AddCollaboratorRequest) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalModels16(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *AddCollaboratorRequest) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalModels16(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *AddCollaboratorRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalModels16(l, v)
+}

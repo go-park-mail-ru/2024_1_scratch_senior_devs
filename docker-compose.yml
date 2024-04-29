@@ -176,6 +176,7 @@ services:
       - YouNote-network
   grafana:
     image: grafana/grafana-enterprise
+    container_name: grafana
     volumes:
       - younote-grafana-data:/var/lib/grafana/
     networks:

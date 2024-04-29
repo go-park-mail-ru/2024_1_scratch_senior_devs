@@ -457,8 +457,14 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 		NoteId: noteIdString,
 		UserId: jwtPayload.Id.String(),
 	})
-	if err != nil || !result.Result {
-		log.LogHandlerError(logger, http.StatusNotFound, incorrectIdErr+err.Error())
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
+		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
+		return
+	}
+
+	if result == nil || !result.Result {
+		log.LogHandlerError(logger, http.StatusNotFound, "not owner")
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
@@ -494,9 +500,16 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	payload := models.AddCollaboratorRequest{}
+	if err := responses.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
 	_, err = h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
 		NoteId: noteIdString,
-		UserId: jwtPayload.Id.String(),
+		UserId: payload.UserId.String(),
 	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusNotFound, incorrectIdErr+err.Error())

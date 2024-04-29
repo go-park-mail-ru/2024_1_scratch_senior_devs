@@ -39,6 +39,10 @@ type UpsertNoteRequest struct {
 	Data interface{} `json:"data"`
 }
 
+type AddCollaboratorRequest struct {
+	UserId uuid.UUID `json:"user_id"`
+}
+
 // ================================================================
 // only swagger examples
 
