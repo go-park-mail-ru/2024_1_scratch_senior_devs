@@ -28,6 +28,8 @@ type NoteClient interface {
 	UpdateNote(ctx context.Context, in *UpdateNoteRequest, opts ...grpc.CallOption) (*UpdateNoteResponse, error)
 	DeleteNote(ctx context.Context, in *DeleteNoteRequest, opts ...grpc.CallOption) (*DeleteNoteResponse, error)
 	CreateSubNote(ctx context.Context, in *CreateSubNoteRequest, opts ...grpc.CallOption) (*CreateSubNoteResponse, error)
+	CheckCollaborator(ctx context.Context, in *CheckCollaboratorRequest, opts ...grpc.CallOption) (*CheckCollaboratorResponse, error)
+	AddCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorResponse, error)
 }
 
 type noteClient struct {
@@ -92,6 +94,24 @@ func (c *noteClient) CreateSubNote(ctx context.Context, in *CreateSubNoteRequest
 	return out, nil
 }
 
+func (c *noteClient) CheckCollaborator(ctx context.Context, in *CheckCollaboratorRequest, opts ...grpc.CallOption) (*CheckCollaboratorResponse, error) {
+	out := new(CheckCollaboratorResponse)
+	err := c.cc.Invoke(ctx, "/note.Note/CheckCollaborator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *noteClient) AddCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorResponse, error) {
+	out := new(AddCollaboratorResponse)
+	err := c.cc.Invoke(ctx, "/note.Note/AddCollaborator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NoteServer is the server API for Note service.
 // All implementations must embed UnimplementedNoteServer
 // for forward compatibility
@@ -102,6 +122,8 @@ type NoteServer interface {
 	UpdateNote(context.Context, *UpdateNoteRequest) (*UpdateNoteResponse, error)
 	DeleteNote(context.Context, *DeleteNoteRequest) (*DeleteNoteResponse, error)
 	CreateSubNote(context.Context, *CreateSubNoteRequest) (*CreateSubNoteResponse, error)
+	CheckCollaborator(context.Context, *CheckCollaboratorRequest) (*CheckCollaboratorResponse, error)
+	AddCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -126,6 +148,12 @@ func (UnimplementedNoteServer) DeleteNote(context.Context, *DeleteNoteRequest) (
 }
 func (UnimplementedNoteServer) CreateSubNote(context.Context, *CreateSubNoteRequest) (*CreateSubNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSubNote not implemented")
+}
+func (UnimplementedNoteServer) CheckCollaborator(context.Context, *CheckCollaboratorRequest) (*CheckCollaboratorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckCollaborator not implemented")
+}
+func (UnimplementedNoteServer) AddCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddCollaborator not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -248,6 +276,42 @@ func _Note_CreateSubNote_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Note_CheckCollaborator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckCollaboratorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).CheckCollaborator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/note.Note/CheckCollaborator",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).CheckCollaborator(ctx, req.(*CheckCollaboratorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Note_AddCollaborator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddCollaboratorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).AddCollaborator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/note.Note/AddCollaborator",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).AddCollaborator(ctx, req.(*AddCollaboratorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Note_ServiceDesc is the grpc.ServiceDesc for Note service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +342,14 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateSubNote",
 			Handler:    _Note_CreateSubNote_Handler,
+		},
+		{
+			MethodName: "CheckCollaborator",
+			Handler:    _Note_CheckCollaborator_Handler,
+		},
+		{
+			MethodName: "AddCollaborator",
+			Handler:    _Note_AddCollaborator_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

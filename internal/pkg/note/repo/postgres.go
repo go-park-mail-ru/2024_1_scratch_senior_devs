@@ -15,14 +15,16 @@ import (
 )
 
 const (
-	getAllNotes   = "SELECT id, data, create_time, update_time, owner_id, parent, children FROM notes WHERE parent = '00000000-0000-0000-0000-000000000000' AND owner_id = $1 ORDER BY update_time DESC LIMIT $2 OFFSET $3;"
-	getNote       = "SELECT id, data, create_time, update_time, owner_id, parent, children FROM notes WHERE id = $1;"
-	createNote    = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[]);"
-	updateNote    = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
-	deleteNote    = "DELETE FROM notes CASCADE WHERE id = $1;"
-	addSubNote    = "UPDATE notes SET children = array_append(children, $1) WHERE id = $2;"
-	removeSubNote = "UPDATE notes SET children = array_remove(children, $1) WHERE id = $2;"
-	getUpdates    = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
+	getAllNotes       = "SELECT id, data, create_time, update_time, owner_id, parent, children FROM notes WHERE parent = '00000000-0000-0000-0000-000000000000' AND owner_id = $1 ORDER BY update_time DESC LIMIT $2 OFFSET $3;"
+	getNote           = "SELECT id, data, create_time, update_time, owner_id, parent, children FROM notes WHERE id = $1;"
+	createNote        = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[]);"
+	updateNote        = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
+	deleteNote        = "DELETE FROM notes CASCADE WHERE id = $1;"
+	addSubNote        = "UPDATE notes SET children = array_append(children, $1) WHERE id = $2;"
+	removeSubNote     = "UPDATE notes SET children = array_remove(children, $1) WHERE id = $2;"
+	getUpdates        = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
+	checkCollaborator = "SELECT COUNT(user_id) FROM collaborators WHERE note_id = $1 AND user_id = $2;"
+	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, $2);"
 )
 
 type NotePostgres struct {
@@ -33,6 +35,32 @@ func CreateNotePostgres(db pgxtype.Querier) *NotePostgres {
 	return &NotePostgres{
 		db: db,
 	}
+}
+
+func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	_, err := repo.db.Exec(ctx, addCollaborator, noteID, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) CheckCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	count := 0
+	if err := repo.db.QueryRow(ctx, checkCollaborator, noteID, userID).Scan(&count); err != nil {
+		logger.Error(err.Error())
+		return false, err
+	}
+
+	logger.Info("success")
+	return count > 0, nil
 }
 
 func (repo *NotePostgres) GetUpdates(ctx context.Context, noteID uuid.UUID, offset time.Time) ([]models.Message, error) {
@@ -55,7 +83,6 @@ func (repo *NotePostgres) GetUpdates(ctx context.Context, noteID uuid.UUID, offs
 		result = append(result, message)
 	}
 
-	logger.Info("success")
 	return result, nil
 }
 

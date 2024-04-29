@@ -171,6 +171,7 @@ func main() {
 		note.Handle("/{id}/delete", http.HandlerFunc(NoteDelivery.DeleteNote)).Methods(http.MethodDelete, http.MethodOptions)
 		note.Handle("/{id}/add_attach", http.HandlerFunc(AttachDelivery.AddAttach)).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/add_subnote", http.HandlerFunc(NoteDelivery.CreateSubNote)).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/add_collaborator", http.HandlerFunc(NoteDelivery.AddCollaborator)).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/subscribe_on_updates", http.HandlerFunc(NoteDelivery.SubscribeOnUpdates)).Methods(http.MethodGet, http.MethodOptions)
 	}
 

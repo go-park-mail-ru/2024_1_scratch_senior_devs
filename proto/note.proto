@@ -9,7 +9,25 @@ service Note {
      rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {}
      rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {}
      rpc CreateSubNote(CreateSubNoteRequest) returns (CreateSubNoteResponse) {}
+     rpc CheckCollaborator(CheckCollaboratorRequest) returns (CheckCollaboratorResponse) {}
+     rpc AddCollaborator(AddCollaboratorRequest) returns (AddCollaboratorResponse) {}
 }
+
+message CheckCollaboratorRequest {
+     string NoteId = 1;
+     string UserId = 2;
+}
+
+message CheckCollaboratorResponse {
+     bool Result = 1;
+}
+
+message AddCollaboratorRequest {
+     string NoteId = 1;
+     string UserId = 2;
+}
+
+message AddCollaboratorResponse {}
 
 message GetAllRequest{
      int64 Count = 1;

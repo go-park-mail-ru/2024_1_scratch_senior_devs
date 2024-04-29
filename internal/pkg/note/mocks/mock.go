@@ -37,6 +37,35 @@ func (m *MockNoteUsecase) EXPECT() *MockNoteUsecaseMockRecorder {
 	return m.recorder
 }
 
+// AddCollaborator mocks base method.
+func (m *MockNoteUsecase) AddCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddCollaborator indicates an expected call of AddCollaborator.
+func (mr *MockNoteUsecaseMockRecorder) AddCollaborator(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteUsecase)(nil).AddCollaborator), arg0, arg1, arg2)
+}
+
+// CheckCollaborator mocks base method.
+func (m *MockNoteUsecase) CheckCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckCollaborator", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckCollaborator indicates an expected call of CheckCollaborator.
+func (mr *MockNoteUsecaseMockRecorder) CheckCollaborator(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckCollaborator", reflect.TypeOf((*MockNoteUsecase)(nil).CheckCollaborator), arg0, arg1, arg2)
+}
+
 // CreateNote mocks base method.
 func (m *MockNoteUsecase) CreateNote(arg0 context.Context, arg1 uuid.UUID, arg2 []byte) (models.Note, error) {
 	m.ctrl.T.Helper()
@@ -149,6 +178,20 @@ func (m *MockNoteBaseRepo) EXPECT() *MockNoteBaseRepoMockRecorder {
 	return m.recorder
 }
 
+// AddCollaborator mocks base method.
+func (m *MockNoteBaseRepo) AddCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddCollaborator indicates an expected call of AddCollaborator.
+func (mr *MockNoteBaseRepoMockRecorder) AddCollaborator(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddCollaborator), arg0, arg1, arg2)
+}
+
 // AddSubNote mocks base method.
 func (m *MockNoteBaseRepo) AddSubNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -161,6 +204,21 @@ func (m *MockNoteBaseRepo) AddSubNote(arg0 context.Context, arg1, arg2 uuid.UUID
 func (mr *MockNoteBaseRepoMockRecorder) AddSubNote(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSubNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddSubNote), arg0, arg1, arg2)
+}
+
+// CheckCollaborator mocks base method.
+func (m *MockNoteBaseRepo) CheckCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckCollaborator", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckCollaborator indicates an expected call of CheckCollaborator.
+func (mr *MockNoteBaseRepoMockRecorder) CheckCollaborator(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckCollaborator", reflect.TypeOf((*MockNoteBaseRepo)(nil).CheckCollaborator), arg0, arg1, arg2)
 }
 
 // CreateNote mocks base method.

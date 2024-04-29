@@ -211,3 +211,50 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 	logger.Info("success")
 	return newNote, nil
 }
+
+func (uc *NoteUsecase) CheckCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result, err := uc.baseRepo.CheckCollaborator(ctx, noteID, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return false, err
+	}
+
+	if result {
+		logger.Info("success")
+		return result, nil
+	}
+
+	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return false, err
+	}
+
+	logger.Info("success")
+	return result || currentNote.OwnerId == userID, nil
+}
+
+func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	if currentNote.OwnerId != userID {
+		logger.Error("not owner")
+		return errors.New("not found")
+	}
+
+	if err := uc.baseRepo.AddCollaborator(ctx, noteID, userID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}

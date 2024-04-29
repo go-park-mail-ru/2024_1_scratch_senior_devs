@@ -438,7 +438,7 @@ func (h *NoteHandler) CreateSubNote(w http.ResponseWriter, r *http.Request) {
 func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
-	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -453,6 +453,16 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	result, err := h.client.CheckCollaborator(r.Context(), &gen.CheckCollaboratorRequest{
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil || !result.Result {
+		log.LogHandlerError(logger, http.StatusNotFound, incorrectIdErr+err.Error())
+		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
+		return
+	}
+
 	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
@@ -464,4 +474,36 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 	h.hub.AddClient(r.Context(), noteID, connection)
 
 	logger.Debug("client disconnected: ", slog.Any("noteID", noteID))
+}
+
+func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	_, err = h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, incorrectIdErr+err.Error())
+		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 }
