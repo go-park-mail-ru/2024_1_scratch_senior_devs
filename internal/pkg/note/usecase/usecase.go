@@ -99,13 +99,26 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	return newNote, nil
 }
 
-func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID, noteData []byte) (models.Note, error) {
+func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID, noteData []byte) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
-	if err != nil || updatedNote.OwnerId != ownerId {
+	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
+	}
+
+	if updatedNote.OwnerId != userId {
+		result, err := uc.baseRepo.CheckCollaborator(ctx, noteId, userId)
+		if err != nil {
+			logger.Error(err.Error())
+			return models.Note{}, err
+		}
+
+		if !result {
+			logger.Error("not owner and not collaborator")
+			return models.Note{}, errors.New("not found")
+		}
 	}
 
 	if bytes.Equal(updatedNote.Data, noteData) {
