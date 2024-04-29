@@ -44,12 +44,15 @@ var (
 )
 
 func getNote(note *gen.NoteModel) (models.Note, error) {
-	createTime, err := time.Parse("2006-01-02 15:04:05 -0700 UTC", note.CreateTime)
+	if note == nil {
+		return models.Note{}, errors.New("not found")
+	}
+	createTime, err := time.Parse(TimeLayout, note.CreateTime)
 	if err != nil {
 		return models.Note{}, err
 	}
 
-	updateTime, err := time.Parse("2006-01-02 15:04:05 -0700 UTC", note.UpdateTime)
+	updateTime, err := time.Parse(TimeLayout, note.UpdateTime)
 	if err != nil {
 		return models.Note{}, err
 	}
