@@ -7,6 +7,6 @@ import (
 )
 
 type HubInterface interface {
-	AddClient(uuid.UUID, *websocket.Conn)
+	AddClient(context.Context, uuid.UUID, *websocket.Conn)
 	Run(context.Context)
 }

@@ -461,7 +461,7 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 	}
 	logger.Debug("connection upgraded: ", slog.Any("noteID", noteID))
 
-	h.hub.AddClient(noteID, connection)
+	h.hub.AddClient(r.Context(), noteID, connection)
 
 	logger.Debug("client disconnected: ", slog.Any("noteID", noteID))
 }

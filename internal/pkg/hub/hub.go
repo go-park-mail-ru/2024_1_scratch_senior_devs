@@ -2,10 +2,13 @@ package hub
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/gorilla/websocket"
 	"github.com/satori/uuid"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -25,8 +28,14 @@ func NewHub(repo note.NoteBaseRepo, cfg config.HubConfig) *Hub {
 	}
 }
 
-func (h *Hub) AddClient(noteID uuid.UUID, client *websocket.Conn) {
+func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *websocket.Conn) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
 	h.connect.Store(client, noteID)
+	h.connect.Range(func(key, value interface{}) bool {
+		logger.Info("add client, note_id = " + value.(uuid.UUID).String())
+		return true
+	})
 
 	go func() {
 		for {
@@ -45,6 +54,8 @@ func (h *Hub) AddClient(noteID uuid.UUID, client *websocket.Conn) {
 }
 
 func (h *Hub) Run(ctx context.Context) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
 	t := time.NewTicker(h.cfg.Period)
 	defer t.Stop()
 
@@ -55,7 +66,15 @@ func (h *Hub) Run(ctx context.Context) {
 				connect := key.(*websocket.Conn)
 				noteID := value.(uuid.UUID)
 
-				messages, _ := h.repo.GetUpdates(ctx, noteID, h.currentOffset)
+				logger.Info("run, note_id = " + noteID.String())
+
+				messages, err := h.repo.GetUpdates(ctx, noteID, h.currentOffset)
+				if err != nil {
+					logger.Error(err.Error())
+				}
+
+				logger.Info(fmt.Sprintf("messages found: %+v\n", messages))
+
 				for _, message := range messages {
 					err := connect.WriteJSON(message)
 					if err != nil {
