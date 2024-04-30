@@ -3,11 +3,12 @@ package http
 import (
 	"encoding/json"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
-	"github.com/gorilla/websocket"
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
+	"github.com/gorilla/websocket"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
@@ -488,7 +489,7 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
-	_, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
 		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -511,8 +512,9 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
-		NoteId:   noteIdString,
-		Username: payload.Username,
+		NoteId:   noteIdString,           //note Id we add collaborator to (get from request URl)
+		Username: payload.Username,       //name of user we want to make a collaborator (get from request body)
+		UserId:   jwtPayload.Id.String(), //current users id
 	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusNotFound, incorrectIdErr+err.Error())

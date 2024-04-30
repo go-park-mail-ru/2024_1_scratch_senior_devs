@@ -60,8 +60,16 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 
 	resultNote, err := uc.baseRepo.ReadNote(ctx, noteId)
 	if err != nil || resultNote.OwnerId != userId {
-		logger.Error(err.Error())
-		return models.Note{}, errors.New("note not found")
+		result, err := uc.baseRepo.CheckCollaborator(ctx, noteId, userId)
+		if err != nil {
+			logger.Error(err.Error())
+			return models.Note{}, err
+		}
+
+		if !result {
+			logger.Error("not owner and not collaborator")
+			return models.Note{}, errors.New("not found")
+		}
 	}
 
 	logger.Info("success")
