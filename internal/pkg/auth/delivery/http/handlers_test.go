@@ -9,21 +9,23 @@ import (
 func TestMakeHelloNoteData(t *testing.T) {
 	username := "testuser"
 	expected := []byte(`
-		{
-			"title": "You-note ❤️",
-			"content": [
-				{
-					"id": "1",
-					"type": "div",
-					"content": [
-						{
-							"id": "2",
-							"content": "Привет, testuser!"
-						}
-					]
-				}
-			]
-		}
+	{
+		"title": "",
+		"content": [
+		    {
+			   "pluginName": "textBlock",
+			   "content": "Hello testuser"
+		    },
+		    {
+			   "pluginName": "div",
+			   "children": [
+				  {
+					 "pluginName": "br",
+				  }
+			   ]
+		    }
+		]
+	 }
 	`)
 
 	t.Run("Test_MakeHelloNoteData", func(t *testing.T) {
