@@ -108,6 +108,7 @@ func main() {
 	defer noteConn.Close()
 
 	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
+	JwtWebsocketMiddleware := protection.CreateJwtWebsocketMiddleware(cfg.AuthHandler.Jwt)
 	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 	Metrics, err := metrics.NewHttpMetrics("main")
 	if err != nil {
@@ -162,17 +163,17 @@ func main() {
 	}
 
 	note := r.PathPrefix("/note").Subrouter()
-	note.Use(protection.ReadAndCloseBody, JwtMiddleware, CsrfMiddleware)
+	note.Use(protection.ReadAndCloseBody, CsrfMiddleware)
 	{
-		note.Handle("/get_all", http.HandlerFunc(NoteDelivery.GetAllNotes)).Methods(http.MethodGet, http.MethodOptions)
-		note.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetNote)).Methods(http.MethodGet, http.MethodOptions)
-		note.Handle("/add", http.HandlerFunc(NoteDelivery.AddNote)).Methods(http.MethodPost, http.MethodOptions)
-		note.Handle("/{id}/edit", http.HandlerFunc(NoteDelivery.UpdateNote)).Methods(http.MethodPost, http.MethodOptions)
-		note.Handle("/{id}/delete", http.HandlerFunc(NoteDelivery.DeleteNote)).Methods(http.MethodDelete, http.MethodOptions)
-		note.Handle("/{id}/add_attach", http.HandlerFunc(AttachDelivery.AddAttach)).Methods(http.MethodPost, http.MethodOptions)
-		note.Handle("/{id}/add_subnote", http.HandlerFunc(NoteDelivery.CreateSubNote)).Methods(http.MethodPost, http.MethodOptions)
-		note.Handle("/{id}/add_collaborator", http.HandlerFunc(NoteDelivery.AddCollaborator)).Methods(http.MethodPost, http.MethodOptions)
-		note.Handle("/{id}/subscribe_on_updates", http.HandlerFunc(NoteDelivery.SubscribeOnUpdates)).Methods(http.MethodGet, http.MethodOptions)
+		note.Handle("/get_all", JwtMiddleware(http.HandlerFunc(NoteDelivery.GetAllNotes))).Methods(http.MethodGet, http.MethodOptions)
+		note.Handle("/{id}", JwtMiddleware(http.HandlerFunc(NoteDelivery.GetNote))).Methods(http.MethodGet, http.MethodOptions)
+		note.Handle("/add", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddNote))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/edit", JwtMiddleware(http.HandlerFunc(NoteDelivery.UpdateNote))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/delete", JwtMiddleware(http.HandlerFunc(NoteDelivery.DeleteNote))).Methods(http.MethodDelete, http.MethodOptions)
+		note.Handle("/{id}/add_attach", JwtMiddleware(http.HandlerFunc(AttachDelivery.AddAttach))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/add_subnote", JwtMiddleware(http.HandlerFunc(NoteDelivery.CreateSubNote))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/add_collaborator", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddCollaborator))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/subscribe_on_updates", JwtWebsocketMiddleware(http.HandlerFunc(NoteDelivery.SubscribeOnUpdates))).Methods(http.MethodGet, http.MethodOptions)
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()

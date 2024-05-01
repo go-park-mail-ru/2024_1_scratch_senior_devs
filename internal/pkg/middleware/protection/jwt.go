@@ -131,6 +131,67 @@ func CreateJwtMiddleware(cfg config.JwtConfig) mux.MiddlewareFunc {
 	}
 }
 
+func CreateJwtWebsocketMiddleware(cfg config.JwtConfig) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			jwtLogger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+			token := r.Header.Get("Sec-WebSocket-Protocol")
+			if token == "" {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "empty Authorization header")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			jwtCookie, err := r.Cookie(cfg.JwtCookie)
+			if err != nil {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "no jwt cookie: "+err.Error())
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			if jwtCookie.Value != token {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "tokens in cookie and header are different")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			claims, err := parseJwtToken(token)
+			if err != nil {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "invalid token")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			timeExp, err := claims.Claims.GetExpirationTime()
+			if err != nil {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "invalid token expiration time")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			if timeExp.Before(time.Now().UTC()) {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "token expired")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			payload, err := parseJwtPayloadFromClaims(claims)
+			if err != nil {
+				log.LogHandlerError(jwtLogger, http.StatusUnauthorized, "invalid token payload")
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			jwtLogger.Info("success")
+
+			ctx := context.WithValue(r.Context(), config.PayloadContextKey, payload)
+			r = r.WithContext(ctx)
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func ReadAndCloseBody(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
