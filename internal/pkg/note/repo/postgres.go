@@ -30,7 +30,6 @@ const (
 	getUpdates        = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
 	checkCollaborator = "SELECT COUNT(user_id) FROM collaborators WHERE note_id = $1 AND user_id = $2;"
 	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, (SELECT id FROM users WHERE username = $2));"
-	getCollaborators  = "SELECT user_id FROM collaborators WHERE note_id = $1;"
 )
 
 type NotePostgres struct {
@@ -41,29 +40,6 @@ func CreateNotePostgres(db pgxtype.Querier) *NotePostgres {
 	return &NotePostgres{
 		db: db,
 	}
-}
-
-func (repo *NotePostgres) GetCollaborators(ctx context.Context, noteID uuid.UUID) ([]uuid.UUID, error) {
-	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
-
-	result := make([]uuid.UUID, 0)
-
-	query, err := repo.db.Query(ctx, getCollaborators, noteID)
-	if err != nil {
-		logger.Error(err.Error())
-		return result, err
-	}
-
-	for query.Next() {
-		var userID uuid.UUID
-		if err := query.Scan(&userID); err != nil {
-			logger.Error(err.Error())
-			return result, fmt.Errorf("error occured while scanning collaborators: %w", err)
-		}
-		result = append(result, userID)
-	}
-
-	return result, nil
 }
 
 func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, username string) error {

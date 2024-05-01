@@ -306,8 +306,8 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
 				baseRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
 				baseRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
-				searchRepo.EXPECT().UpdateNote(ctx, gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				baseRepo.EXPECT().GetCollaborators(ctx, gomock.Any()).Return([]uuid.UUID{}, nil).Times(1)
+				searchRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
+				searchRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.ElasticNote{}, nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),

@@ -68,12 +68,38 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 	return notes, nil
 }
 
-func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error {
+func (repo *NoteElastic) ReadNote(ctx context.Context, noteID uuid.UUID) (models.ElasticNote, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	elasticNote := elasticsearch.ConvertToElasticNote(note, []uuid.UUID{})
+	search, err := repo.elastic.Search().
+		Index(repo.cfg.ElasticIndexName).
+		Query(elastic.NewTermQuery("_id", noteID)).
+		Pretty(true).
+		Do(context.Background())
+	if err != nil {
+		logger.Error(err.Error())
+		return models.ElasticNote{}, ErrCantGetResponse
+	}
 
-	noteJSON, err := json.Marshal(elasticNote)
+	if len(search.Hits.Hits) == 0 {
+		logger.Error("note not found")
+		return models.ElasticNote{}, errors.New("note not found")
+	}
+
+	note := models.ElasticNote{}
+	if err := json.Unmarshal(search.Hits.Hits[0].Source, &note); err != nil {
+		logger.Error(err.Error())
+		return models.ElasticNote{}, err
+	}
+
+	logger.Info("success")
+	return note, nil
+}
+
+func (repo *NoteElastic) CreateNote(ctx context.Context, note models.ElasticNote) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	noteJSON, err := json.Marshal(note)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -87,7 +113,7 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error
 
 	_, err = repo.elastic.Index().
 		Index(repo.cfg.ElasticIndexName).
-		Id(elasticNote.Id.String()).
+		Id(note.Id.String()).
 		BodyJson(noteMap).
 		Do(ctx)
 	if err != nil {
@@ -99,12 +125,10 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error
 	return nil
 }
 
-func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note, collaborators []uuid.UUID) error {
+func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.ElasticNote) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	elasticNote := elasticsearch.ConvertToElasticNote(note, collaborators)
-
-	noteJSON, err := json.Marshal(elasticNote)
+	noteJSON, err := json.Marshal(note)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -118,7 +142,7 @@ func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note, colla
 
 	_, err = repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
-		Id(elasticNote.Id.String()).
+		Id(note.Id.String()).
 		Doc(noteMap).
 		Do(ctx)
 	if err != nil {

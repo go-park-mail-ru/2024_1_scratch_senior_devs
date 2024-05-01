@@ -31,6 +31,17 @@ CREATE TABLE IF NOT EXISTS notes (
     children UUID[]
 );
 
+-- CREATE TABLE IF NOT EXISTS tags (
+--     name    TEXT    PRIMARY KEY
+--             CONSTRAINT name_length CHECK (char_length(name) <= 255)
+-- );
+
+-- CREATE TABLE IF NOT EXISTS note_tag (
+--     note_id     UUID REFERENCES notes (id) ON DELETE CASCADE,
+--     tag_name    TEXT REFERENCES tags (name) ON DELETE CASCADE,
+--     PRIMARY KEY (note_id, tag_name)
+-- );
+
 CREATE TABLE IF NOT EXISTS attaches (
     id UUID PRIMARY KEY,
     path TEXT

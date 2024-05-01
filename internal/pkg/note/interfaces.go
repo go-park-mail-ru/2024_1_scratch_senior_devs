@@ -36,13 +36,13 @@ type NoteBaseRepo interface {
 
 	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
 	AddCollaborator(context.Context, uuid.UUID, string) error
-	GetCollaborators(context.Context, uuid.UUID) ([]uuid.UUID, error)
 }
 
 type NoteSearchRepo interface {
 	SearchNotes(context.Context, uuid.UUID, int64, int64, string) ([]models.Note, error)
-	CreateNote(context.Context, models.Note) error
-	UpdateNote(context.Context, models.Note, []uuid.UUID) error
+	ReadNote(context.Context, uuid.UUID) (models.ElasticNote, error)
+	CreateNote(context.Context, models.ElasticNote) error
+	UpdateNote(context.Context, models.ElasticNote) error
 	DeleteNote(context.Context, uuid.UUID) error
 
 	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error

@@ -32,6 +32,7 @@ const (
 // NoteClient is the client API for Note service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
 //go:generate mockgen -source=note_grpc.pb.go -destination=mocks/mock.go
 type NoteClient interface {
 	GetAllNotes(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error)

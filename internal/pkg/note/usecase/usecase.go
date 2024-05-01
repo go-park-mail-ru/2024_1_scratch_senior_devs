@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"log/slog"
 	"sync"
 	"time"
@@ -97,7 +98,7 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-		if err := uc.searchRepo.CreateNote(ctx, newNote); err != nil {
+		if err := uc.searchRepo.CreateNote(ctx, elasticsearch.ConvertToElasticNote(newNote, []uuid.UUID{})); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -146,13 +147,14 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 	go func() {
 		defer uc.wg.Done()
 
-		collaborators, err := uc.baseRepo.GetCollaborators(ctx, noteId)
+		elasticOldNote, err := uc.searchRepo.ReadNote(ctx, noteId)
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
+		elasticNote := elasticsearch.ConvertToElasticNote(updatedNote, elasticOldNote.Collaborators)
 
-		if err := uc.searchRepo.UpdateNote(ctx, updatedNote, collaborators); err != nil {
+		if err := uc.searchRepo.UpdateNote(ctx, elasticNote); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
