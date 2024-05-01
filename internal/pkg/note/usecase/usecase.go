@@ -145,7 +145,14 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-		if err := uc.searchRepo.UpdateNote(ctx, updatedNote); err != nil {
+
+		collaborators, err := uc.baseRepo.GetCollaborators(ctx, noteId)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		if err := uc.searchRepo.UpdateNote(ctx, updatedNote, collaborators); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -271,10 +278,25 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 		return errors.New("not found")
 	}
 
+	emptyID := uuid.UUID{}
+	if currentNote.Parent != emptyID {
+		logger.Error("note has a parent")
+		return errors.New("not found")
+	}
+
 	if err := uc.baseRepo.AddCollaborator(ctx, noteID, username); err != nil {
 		logger.Error(err.Error())
 		return err
 	}
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.AddCollaborator(ctx, noteID, userID); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
 
 	logger.Info("success")
 	return nil

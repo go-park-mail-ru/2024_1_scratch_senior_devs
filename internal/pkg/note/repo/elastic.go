@@ -35,11 +35,15 @@ func CreateNoteElastic(elastic *elastic.Client, cfg config.ElasticConfig) *NoteE
 func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string) ([]models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	userIdQuery := elastic.NewTermsQuery("owner_id", strings.ToLower(userID.String()))
+	ownerQuery := elastic.NewTermsQuery("owner_id", strings.ToLower(userID.String()))
+	collaboratorQuery := elastic.NewTermsQuery("collaborators", strings.ToLower(userID.String()))
 	searchQuery := elastic.NewMatchQuery("data", searchValue)
 
+	userIdQuery := elastic.NewBoolQuery().Should(ownerQuery, collaboratorQuery)
+	fullQuery := elastic.NewBoolQuery().Must(searchQuery, userIdQuery)
+
 	search, err := repo.elastic.Search().
-		Query(elastic.NewBoolQuery().Must(userIdQuery, searchQuery)).
+		Query(fullQuery).
 		Index(repo.cfg.ElasticIndexName).
 		From(int(offset)).
 		Size(int(count)).
@@ -67,7 +71,7 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	elasticNote := elasticsearch.ConvertToElasticNote(note)
+	elasticNote := elasticsearch.ConvertToElasticNote(note, []uuid.UUID{})
 
 	noteJSON, err := json.Marshal(elasticNote)
 	if err != nil {
@@ -95,10 +99,10 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error
 	return nil
 }
 
-func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note) error {
+func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note, collaborators []uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	elasticNote := elasticsearch.ConvertToElasticNote(note)
+	elasticNote := elasticsearch.ConvertToElasticNote(note, collaborators)
 
 	noteJSON, err := json.Marshal(elasticNote)
 	if err != nil {
@@ -170,6 +174,25 @@ func (repo *NoteElastic) RemoveSubNote(ctx context.Context, id uuid.UUID, childI
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(id.String()).
+		Script(script).
+		Do(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	script := elastic.NewScript("ctx._source.collaborators.add(params.collaboratorID)").Lang("painless").Param("collaboratorID", userID.String())
+
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
 		Script(script).
 		Do(ctx)
 	if err != nil {

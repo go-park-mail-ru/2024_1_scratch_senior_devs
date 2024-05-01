@@ -28,18 +28,25 @@ type NoteBaseRepo interface {
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
+
 	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error
 	RemoveSubNote(context.Context, uuid.UUID, uuid.UUID) error
+
 	GetUpdates(context.Context, uuid.UUID, time.Time) ([]models.Message, error)
+
 	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
 	AddCollaborator(context.Context, uuid.UUID, string) error
+	GetCollaborators(context.Context, uuid.UUID) ([]uuid.UUID, error)
 }
 
 type NoteSearchRepo interface {
 	SearchNotes(context.Context, uuid.UUID, int64, int64, string) ([]models.Note, error)
 	CreateNote(context.Context, models.Note) error
-	UpdateNote(context.Context, models.Note) error
+	UpdateNote(context.Context, models.Note, []uuid.UUID) error
 	DeleteNote(context.Context, uuid.UUID) error
+
 	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error
 	RemoveSubNote(context.Context, uuid.UUID, uuid.UUID) error
+
+	AddCollaborator(context.Context, uuid.UUID, uuid.UUID) error
 }

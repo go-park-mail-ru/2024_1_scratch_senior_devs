@@ -1355,6 +1355,31 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 				}
 				in.Delim(']')
 			}
+		case "collaborators":
+			if in.IsNull() {
+				in.Skip()
+				out.Collaborators = nil
+			} else {
+				in.Delim('[')
+				if out.Collaborators == nil {
+					if !in.IsDelim(']') {
+						out.Collaborators = make([]uuid.UUID, 0, 4)
+					} else {
+						out.Collaborators = []uuid.UUID{}
+					}
+				} else {
+					out.Collaborators = (out.Collaborators)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v14 uuid.UUID
+					if data := in.UnsafeBytes(); in.Ok() {
+						in.AddError((v14).UnmarshalText(data))
+					}
+					out.Collaborators = append(out.Collaborators, v14)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1406,11 +1431,27 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v14, v15 := range in.Children {
-				if v14 > 0 {
+			for v15, v16 := range in.Children {
+				if v15 > 0 {
 					out.RawByte(',')
 				}
-				out.RawText((v15).MarshalText())
+				out.RawText((v16).MarshalText())
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"collaborators\":"
+		out.RawString(prefix)
+		if in.Collaborators == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v17, v18 := range in.Collaborators {
+				if v17 > 0 {
+					out.RawByte(',')
+				}
+				out.RawText((v18).MarshalText())
 			}
 			out.RawByte(']')
 		}

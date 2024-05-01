@@ -44,6 +44,9 @@
       },
       "children": {
         "type": "keyword"
+      },
+      "collaborators": {
+        "type": "keyword"
       }
     }
   }

@@ -31,13 +31,14 @@ func TestConvertToElasticNote(t *testing.T) {
 				Children:   []uuid.UUID{},
 			},
 			result: models.ElasticNote{
-				Id:         id,
-				Data:       `{"title": "my note"}`,
-				CreateTime: currTime,
-				UpdateTime: currTime,
-				OwnerId:    id,
-				Parent:     id,
-				Children:   []uuid.UUID{},
+				Id:            id,
+				Data:          `{"title": "my note"}`,
+				CreateTime:    currTime,
+				UpdateTime:    currTime,
+				OwnerId:       id,
+				Parent:        id,
+				Children:      []uuid.UUID{},
+				Collaborators: []uuid.UUID{},
 			},
 			isErr: false,
 		},
@@ -45,7 +46,7 @@ func TestConvertToElasticNote(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			elasticNote := ConvertToElasticNote(tt.note)
+			elasticNote := ConvertToElasticNote(tt.note, []uuid.UUID{})
 
 			assert.Equal(t, elasticNote, tt.result)
 		})
