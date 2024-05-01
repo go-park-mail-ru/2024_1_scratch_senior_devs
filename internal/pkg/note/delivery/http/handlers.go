@@ -472,6 +472,7 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
+	upgrader.Subprotocols = []string{r.Header.Get("Sec-WebSocket-Protocol")}
 
 	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -479,11 +480,12 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("fail to upgrade to websocket"))
 		return
 	}
-	logger.Debug("connection upgraded: ", slog.Any("noteID", noteID))
+
+	logger.Info("connection upgraded: ", slog.Any("noteID", noteID))
 
 	h.hub.AddClient(r.Context(), noteID, connection)
 
-	logger.Debug("client disconnected: ", slog.Any("noteID", noteID))
+	logger.Info("client disconnected: ", slog.Any("noteID", noteID))
 }
 
 func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
