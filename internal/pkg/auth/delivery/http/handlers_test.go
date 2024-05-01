@@ -42,7 +42,7 @@ func TestMakeHelloNoteData(t *testing.T) {
 			   ]
 		    }
 		]
-	 }
+	}
 	`)
 
 	t.Run("Test_MakeHelloNoteData", func(t *testing.T) {
