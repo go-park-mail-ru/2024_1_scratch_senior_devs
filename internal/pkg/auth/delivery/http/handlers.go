@@ -53,18 +53,18 @@ func makeHelloNoteData(username string) []byte {
 		"content": [
 		    {
 			   "pluginName": "textBlock",
-			   "content": "Hello %s"
+			   "content": "Hello, %s!"
 		    },
 		    {
 			   "pluginName": "div",
 			   "children": [
 				  {
-					 "pluginName": "br",
+					 "pluginName": "br"
 				  }
 			   ]
 		    }
 		]
-	 }
+	}
 	`, username))
 }
 

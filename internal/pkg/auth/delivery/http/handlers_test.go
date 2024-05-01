@@ -31,13 +31,13 @@ func TestMakeHelloNoteData(t *testing.T) {
 		"content": [
 		    {
 			   "pluginName": "textBlock",
-			   "content": "Hello testuser"
+			   "content": "Hello, testuser!"
 		    },
 		    {
 			   "pluginName": "div",
 			   "children": [
 				  {
-					 "pluginName": "br",
+					 "pluginName": "br"
 				  }
 			   ]
 		    }
