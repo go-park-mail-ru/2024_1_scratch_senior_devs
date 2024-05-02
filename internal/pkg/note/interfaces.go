@@ -12,7 +12,7 @@ import (
 //go:generate mockgen -source=interfaces.go -destination=mocks/mock.go
 
 type NoteUsecase interface {
-	GetAllNotes(context.Context, uuid.UUID, int64, int64, string) ([]models.Note, error)
+	GetAllNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
 	GetNote(context.Context, uuid.UUID, uuid.UUID) (models.Note, error)
 	CreateNote(context.Context, uuid.UUID, []byte) (models.Note, error)
 	UpdateNote(context.Context, uuid.UUID, uuid.UUID, []byte) (models.Note, error)
@@ -23,12 +23,12 @@ type NoteUsecase interface {
 }
 
 type NoteBaseRepo interface {
-	ReadAllNotes(context.Context, uuid.UUID, int64, int64) ([]models.Note, error)
+	ReadAllNotes(context.Context, uuid.UUID, int64, int64, []string) ([]models.Note, error)
 	ReadNote(context.Context, uuid.UUID) (models.Note, error)
+	ReadAllNotesNoTags(context.Context, uuid.UUID, int64, int64) ([]models.Note, error)
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
-
 	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error
 	RemoveSubNote(context.Context, uuid.UUID, uuid.UUID) error
 

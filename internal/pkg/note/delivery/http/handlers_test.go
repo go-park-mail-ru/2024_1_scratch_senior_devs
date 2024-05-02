@@ -89,10 +89,10 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 
 			}
 			if tt.name == successTestName {
-				mockClient.EXPECT().GetAllNotes(ctx, &gen.GetAllRequest{Count: int64(10), Offset: int64(0), Title: "", UserId: tt.id.String()}, gomock.Any()).Return(&gen.GetAllResponse{Notes: tt.expectedData}, nil)
+				mockClient.EXPECT().GetAllNotes(ctx, &gen.GetAllRequest{Count: int64(10), Offset: int64(0), Title: "", UserId: tt.id.String(), Tags: []string{}}, gomock.Any()).Return(&gen.GetAllResponse{Notes: tt.expectedData}, nil)
 			}
 			if tt.name == "Test Error" {
-				mockClient.EXPECT().GetAllNotes(ctx, &gen.GetAllRequest{Count: int64(10), Offset: int64(0), Title: "", UserId: tt.id.String()}, gomock.Any()).Return(&gen.GetAllResponse{Notes: tt.expectedData}, errors.New("error"))
+				mockClient.EXPECT().GetAllNotes(ctx, &gen.GetAllRequest{Count: int64(10), Offset: int64(0), Title: "", UserId: tt.id.String(), Tags: []string{}}, gomock.Any()).Return(&gen.GetAllResponse{Notes: tt.expectedData}, errors.New("error"))
 
 			}
 			req = req.WithContext(ctx)
@@ -113,6 +113,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 						UpdateTime: upTime,
 						OwnerId:    uuid.FromStringOrNil(note.OwnerId),
 						Children:   []uuid.UUID{},
+						Tags:       []string{},
 					}
 
 				}
@@ -149,6 +150,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 				CreateTime: time.Time{},
 				Data:       []byte(""),
 				Children:   []uuid.UUID{},
+				Tags:       []string{},
 			},
 		},
 		{
@@ -202,6 +204,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 					OwnerId:    tt.userId.String(),
 					Parent:     tt.expectedData.Parent.String(),
 					Children:   []string{},
+					Tags:       []string{},
 				}}, nil)
 			}
 			if tt.name == "Test Error" {

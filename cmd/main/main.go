@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,7 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
@@ -24,7 +26,6 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -41,6 +42,10 @@ import (
 
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
+
+	tagDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/tags/delivery/http"
+	tagRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/tags/repo"
+	tagUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/tags/usecase"
 
 	attachDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach/delivery/http"
 	attachRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach/repo"
@@ -82,14 +87,15 @@ func main() {
 	}
 	redisDB := redis.NewClient(redisOpts)
 
-	tlsCredentials, err := loadtls.LoadTLSClientCredentials()
-	if err != nil {
-		logger.Error(err.Error())
-	}
+	// tlsCredentials, err := loadtls.LoadTLSClientCredentials()
+	// if err != nil {
+	// 	logger.Error(err.Error())
+	// }
 
 	authConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.AuthIP, cfg.Grpc.AuthPort),
-		grpc.WithTransportCredentials(tlsCredentials),
+		//grpc.WithTransportCredentials(tlsCredentials),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		logger.Error("fail grpc.Dial auth: " + err.Error())
@@ -99,7 +105,8 @@ func main() {
 
 	noteConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.NoteIP, cfg.Grpc.NotePort),
-		grpc.WithTransportCredentials(tlsCredentials),
+		//grpc.WithTransportCredentials(tlsCredentials),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		logger.Error("fail grpc.Dial note: " + err.Error())
@@ -133,6 +140,10 @@ func main() {
 	AttachRepo := attachRepo.CreateAttachRepo(db)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
 	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, cfg.Attach)
+
+	TagRepo := tagRepo.CreateTagRepo(db)
+	TagUsecase := tagUsecase.CreateTagUsecase(TagRepo, NoteBaseRepo)
+	TagDelivery := tagDelivery.CreateTagHandler(TagUsecase)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
@@ -174,6 +185,9 @@ func main() {
 		note.Handle("/{id}/add_subnote", JwtMiddleware(http.HandlerFunc(NoteDelivery.CreateSubNote))).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/add_collaborator", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddCollaborator))).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/subscribe_on_updates", JwtWebsocketMiddleware(http.HandlerFunc(NoteDelivery.SubscribeOnUpdates))).Methods(http.MethodGet, http.MethodOptions)
+		note.Handle("/{id}/add_tag", JwtMiddleware(http.HandlerFunc(TagDelivery.AddTag))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/delete_tag", JwtMiddleware(http.HandlerFunc(TagDelivery.DeleteTag))).Methods(http.MethodDelete, http.MethodOptions)
+
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()

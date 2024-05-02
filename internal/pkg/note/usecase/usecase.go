@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"log/slog"
 	"sync"
 	"time"
 	"unicode/utf8"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
@@ -35,14 +36,20 @@ func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRep
 	}
 }
 
-func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, searchValue string) ([]models.Note, error) {
+func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, searchValue string, tags []string) ([]models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	var res []models.Note
 	var err error
 
 	if utf8.RuneCountInString(searchValue) < uc.cfg.ElasticSearchValueMinLength {
-		res, err = uc.baseRepo.ReadAllNotes(ctx, userId, count, offset)
+
+		if len(tags) > 0 {
+			res, err = uc.baseRepo.ReadAllNotes(ctx, userId, count, offset, tags)
+		} else {
+			res, err = uc.baseRepo.ReadAllNotesNoTags(ctx, userId, count, offset)
+
+		}
 	} else {
 		res, err = uc.searchRepo.SearchNotes(ctx, userId, count, offset, searchValue)
 	}

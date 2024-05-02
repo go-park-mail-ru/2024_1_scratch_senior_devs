@@ -15,6 +15,7 @@ type Note struct {
 	OwnerId    uuid.UUID   `json:"owner_id"`
 	Parent     uuid.UUID   `json:"parent"`
 	Children   []uuid.UUID `json:"children"`
+	Tags       []string    `json:"tags"`
 }
 
 func Sanitize(noteData []byte) []byte {
@@ -30,6 +31,7 @@ type ElasticNote struct {
 	Parent        uuid.UUID   `json:"parent"`
 	Children      []uuid.UUID `json:"children"`
 	Collaborators []uuid.UUID `json:"collaborators"`
+	//Tags          []string    `json:"tags"`
 }
 
 type NoteUpdate struct {

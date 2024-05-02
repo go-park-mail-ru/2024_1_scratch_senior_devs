@@ -59,7 +59,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 					},
 				}
 
-				baseRepo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset)).Return(mockResp, nil).Times(1)
+				baseRepo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset), []string{"first"}).Return(mockResp, nil).Times(1)
 			},
 			args: args{
 
@@ -96,7 +96,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 
 				}
 
-				baseRepo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset)).Return(mockResp, errors.New("repo error")).Times(1)
+				baseRepo.EXPECT().ReadAllNotes(ctx, uId, int64(count), int64(offset), []string{"first"}).Return(mockResp, errors.New("repo error")).Times(1)
 			},
 			args: args{
 
@@ -119,7 +119,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 			Usecase := CreateNoteUsecase(baseRepo, searchRepo, elasticConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), baseRepo, searchRepo, tt.args.userId, tt.args.count, tt.args.offset)
-			got, err := Usecase.GetAllNotes(context.Background(), tt.args.userId, tt.args.count, tt.args.offset, "")
+			got, err := Usecase.GetAllNotes(context.Background(), tt.args.userId, tt.args.count, tt.args.offset, "", []string{"first"})
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NoteUsecase.GetAllNotes() error = %v, wantErr %v", err, tt.wantErr)

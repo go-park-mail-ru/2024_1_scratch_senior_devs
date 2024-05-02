@@ -5,6 +5,8 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
@@ -63,6 +65,9 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 		children[i] = uuid.FromStringOrNil(child)
 	}
 
+	tags := make([]string, len(note.Tags))
+	copy(tags, note.Tags)
+
 	return models.Note{
 		Id:         uuid.FromStringOrNil(note.Id),
 		OwnerId:    uuid.FromStringOrNil(note.OwnerId),
@@ -71,6 +76,7 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 		UpdateTime: updateTime,
 		Parent:     uuid.FromStringOrNil(note.Parent),
 		Children:   children,
+		Tags:       tags,
 	}, nil
 }
 
@@ -98,6 +104,11 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	titleSubstr := r.URL.Query().Get("title")
+	tagsString := r.URL.Query().Get("tags")
+
+	tagsArray := slices.DeleteFunc(strings.Split(tagsString, "|"), func(e string) bool {
+		return e == ""
+	})
 
 	payload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
 	if !ok {
@@ -111,6 +122,7 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		Offset: int64(offset),
 		Title:  titleSubstr,
 		UserId: payload.Id.String(),
+		Tags:   tagsArray,
 	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())

@@ -35,6 +35,7 @@ message GetAllRequest{
      int64 Offset = 2;
      string Title = 3;
      string UserId = 4;
+     repeated string Tags = 5;
 }
 
 message NoteModel {
@@ -45,6 +46,7 @@ message NoteModel {
 	string OwnerId = 5;
      string Parent = 6;
      repeated string Children = 7;
+     repeated string Tags = 8;
 }
 
 message GetAllResponse {

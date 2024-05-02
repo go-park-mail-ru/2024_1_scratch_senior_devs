@@ -1039,6 +1039,29 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 				}
 				in.Delim(']')
 			}
+		case "tags":
+			if in.IsNull() {
+				in.Skip()
+				out.Tags = nil
+			} else {
+				in.Delim('[')
+				if out.Tags == nil {
+					if !in.IsDelim(']') {
+						out.Tags = make([]string, 0, 4)
+					} else {
+						out.Tags = []string{}
+					}
+				} else {
+					out.Tags = (out.Tags)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v6 string
+					v6 = string(in.String())
+					out.Tags = append(out.Tags, v6)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1090,11 +1113,27 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v8, v9 := range in.Children {
-				if v8 > 0 {
+			for v9, v10 := range in.Children {
+				if v9 > 0 {
 					out.RawByte(',')
 				}
-				out.RawText((v9).MarshalText())
+				out.RawText((v10).MarshalText())
+			}
+			out.RawByte(']')
+		}
+	}
+	{
+		const prefix string = ",\"tags\":"
+		out.RawString(prefix)
+		if in.Tags == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v11, v12 := range in.Tags {
+				if v11 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v12))
 			}
 			out.RawByte(']')
 		}
@@ -1346,11 +1385,11 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 					out.Children = (out.Children)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v13 uuid.UUID
+					var v16 uuid.UUID
 					if data := in.UnsafeBytes(); in.Ok() {
-						in.AddError((v13).UnmarshalText(data))
+						in.AddError((v16).UnmarshalText(data))
 					}
-					out.Children = append(out.Children, v13)
+					out.Children = append(out.Children, v16)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1371,11 +1410,11 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 					out.Collaborators = (out.Collaborators)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v14 uuid.UUID
+					var v17 uuid.UUID
 					if data := in.UnsafeBytes(); in.Ok() {
-						in.AddError((v14).UnmarshalText(data))
+						in.AddError((v17).UnmarshalText(data))
 					}
-					out.Collaborators = append(out.Collaborators, v14)
+					out.Collaborators = append(out.Collaborators, v17)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1431,11 +1470,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v15, v16 := range in.Children {
-				if v15 > 0 {
+			for v18, v19 := range in.Children {
+				if v18 > 0 {
 					out.RawByte(',')
 				}
-				out.RawText((v16).MarshalText())
+				out.RawText((v19).MarshalText())
 			}
 			out.RawByte(']')
 		}
@@ -1447,11 +1486,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v17, v18 := range in.Collaborators {
-				if v17 > 0 {
+			for v20, v21 := range in.Collaborators {
+				if v20 > 0 {
 					out.RawByte(',')
 				}
-				out.RawText((v18).MarshalText())
+				out.RawText((v21).MarshalText())
 			}
 			out.RawByte(']')
 		}

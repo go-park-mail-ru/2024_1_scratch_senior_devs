@@ -27,12 +27,16 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/go-pg/pg v8.0.7+incompatible // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.1.0 // indirect
 	github.com/prometheus/common v0.7.0 // indirect
 	github.com/prometheus/procfs v0.0.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
+	mellium.im/sasl v0.3.1 // indirect
 )
 
 require (

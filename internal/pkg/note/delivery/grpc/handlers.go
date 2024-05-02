@@ -35,6 +35,7 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 		OwnerId:    note.OwnerId.String(),
 		Parent:     note.Parent.String(),
 		Children:   children,
+		Tags:       note.Tags,
 	}
 }
 
@@ -66,7 +67,7 @@ func (h *GrpcNoteHandler) AddCollaborator(ctx context.Context, in *generatedNote
 func (h *GrpcNoteHandler) GetAllNotes(ctx context.Context, in *generatedNote.GetAllRequest) (*generatedNote.GetAllResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	result, err := h.uc.GetAllNotes(ctx, uuid.FromStringOrNil(in.UserId), in.Count, in.Offset, in.Title)
+	result, err := h.uc.GetAllNotes(ctx, uuid.FromStringOrNil(in.UserId), in.Count, in.Offset, in.Title, in.Tags)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, errors.New("not found")

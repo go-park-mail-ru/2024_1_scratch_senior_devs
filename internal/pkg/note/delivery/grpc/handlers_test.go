@@ -74,7 +74,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
 
 			if tt.name == successTestName {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "").Return([]models.Note{
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.Note{
 					{
 						Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 						OwnerId:    uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
@@ -96,7 +96,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 				}, nil)
 			}
 			if tt.name == "Test Error" {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "").Return([]models.Note{}, errors.New("error"))
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.Note{}, errors.New("error"))
 
 			}
 			req = req.WithContext(ctx)

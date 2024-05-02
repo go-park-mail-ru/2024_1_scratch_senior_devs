@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/lib/pq"
 
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
@@ -15,13 +16,69 @@ import (
 )
 
 const (
-	getAllNotes = `SELECT id, data, create_time, update_time, owner_id, parent, children
-							FROM notes
-							WHERE parent = '00000000-0000-0000-0000-000000000000'
-							AND (owner_id = $1 OR (SELECT COUNT(user_id) FROM collaborators WHERE user_id = $1 AND note_id = id) > 0)
-							ORDER BY update_time DESC
-							LIMIT $2 OFFSET $3;`
-	getNote           = "SELECT id, data, create_time, update_time, owner_id, parent, children FROM notes WHERE id = $1;"
+	getAllNotes = `SELECT n.id, n.data, n.create_time, n.update_time, n.owner_id, n.parent, n.children, agg.array_agg
+	FROM (
+	    SELECT id, data, create_time, update_time, owner_id, parent, children
+	    FROM notes
+	    WHERE parent = '00000000-0000-0000-0000-000000000000'
+	    AND (
+		   owner_id = $1
+		   OR (
+			  SELECT COUNT(user_id)
+			  FROM collaborators
+			  WHERE user_id = $1 AND note_id = id
+		   ) > 0
+	    )
+	    AND ($4::text[] ='{}'::text[] OR EXISTS (
+		   SELECT 1
+		   FROM note_tag
+		   WHERE note_id = id AND (tag_name = ANY ($4::text[]))
+	    ))
+	) n
+	FULL JOIN (
+	    SELECT ARRAY_AGG(tag_name), note_id
+	    FROM note_tag
+	    GROUP BY note_id
+	) agg
+	ON n.id = agg.note_id
+	ORDER BY update_time DESC
+	LIMIT $2 OFFSET $3;`
+	getAllNotesWithoutTags = `SELECT n.id, n.data, n.create_time, n.update_time, n.owner_id, n.parent, n.children, agg.array_agg
+	FROM (
+	    SELECT id, data, create_time, update_time, owner_id, parent, children
+	    FROM notes
+	    WHERE parent = '00000000-0000-0000-0000-000000000000'
+	    AND (
+		   owner_id = $1
+		   OR (
+			  SELECT COUNT(user_id)
+			  FROM collaborators
+			  WHERE user_id = $1 AND note_id = id
+		   ) > 0
+	    )
+	) n
+	FULL JOIN (
+	    SELECT ARRAY_AGG(tag_name), note_id
+	    FROM note_tag
+	    GROUP BY note_id
+	) agg
+	ON n.id = agg.note_id
+	ORDER BY update_time DESC
+	LIMIT $2 OFFSET $3;`
+	getNote = `SELECT n.id, n.data, n.create_time, n.update_time, n.owner_id, n.parent, n.children, agg.array_agg
+						FROM (
+						SELECT id, data, create_time, update_time, owner_id, parent, children
+						FROM notes
+						WHERE
+							id =$1
+						
+						) n
+						LEFT JOIN (
+						SELECT ARRAY_AGG(tag_name), note_id
+						FROM note_tag
+						GROUP BY note_id
+						) agg
+						ON n.id = agg.note_id;`
 	createNote        = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[]);"
 	updateNote        = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
 	deleteNote        = "DELETE FROM notes CASCADE WHERE id = $1;"
@@ -91,12 +148,12 @@ func (repo *NotePostgres) GetUpdates(ctx context.Context, noteID uuid.UUID, offs
 	return result, nil
 }
 
-func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
+func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, tags []string) ([]models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	result := make([]models.Note, 0, count)
+	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset, pq.StringArray(tags))
 
-	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset)
 	if err != nil {
 		logger.Error(err.Error())
 		return result, err
@@ -104,10 +161,36 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 
 	for query.Next() {
 		var note models.Note
-		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId, &note.Parent, &note.Children); err != nil {
-			logger.Error(err.Error())
+		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId, &note.Parent, &note.Children, pq.Array(&note.Tags)); err != nil {
+			logger.Error("scanning" + err.Error())
 			return result, fmt.Errorf("error occured while scanning notes: %w", err)
 		}
+		result = append(result, note)
+	}
+
+	logger.Info("success")
+	return result, nil
+}
+
+func (repo *NotePostgres) ReadAllNotesNoTags(ctx context.Context, userId uuid.UUID, count int64, offset int64) ([]models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result := make([]models.Note, 0, count)
+	query, err := repo.db.Query(ctx, getAllNotesWithoutTags, userId, count, offset)
+
+	if err != nil {
+		logger.Error(err.Error())
+		return result, err
+	}
+
+	for query.Next() {
+		var note models.Note
+
+		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId, &note.Parent, &note.Children, &note.Tags); err != nil {
+			logger.Error("scanning" + err.Error())
+			return result, fmt.Errorf("error occured while scanning notes: %w", err)
+		}
+
 		result = append(result, note)
 	}
 
@@ -128,6 +211,7 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 		&resultNote.OwnerId,
 		&resultNote.Parent,
 		&resultNote.Children,
+		&resultNote.Tags,
 	)
 
 	if err != nil {
