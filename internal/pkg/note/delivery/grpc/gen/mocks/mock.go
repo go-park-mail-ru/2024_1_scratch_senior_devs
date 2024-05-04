@@ -216,6 +216,26 @@ func (mr *MockNoteClientMockRecorder) GetNote(ctx, in interface{}, opts ...inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteClient)(nil).GetNote), varargs...)
 }
 
+// GetTags mocks base method.
+func (m *MockNoteClient) GetTags(ctx context.Context, in *gen.GetTagsRequest, opts ...grpc.CallOption) (*gen.GetTagsResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetTags", varargs...)
+	ret0, _ := ret[0].(*gen.GetTagsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTags indicates an expected call of GetTags.
+func (mr *MockNoteClientMockRecorder) GetTags(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteClient)(nil).GetTags), varargs...)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteClient) UpdateNote(ctx context.Context, in *gen.UpdateNoteRequest, opts ...grpc.CallOption) (*gen.UpdateNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -392,6 +412,21 @@ func (m *MockNoteServer) GetNote(arg0 context.Context, arg1 *gen.GetNoteRequest)
 func (mr *MockNoteServerMockRecorder) GetNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteServer)(nil).GetNote), arg0, arg1)
+}
+
+// GetTags mocks base method.
+func (m *MockNoteServer) GetTags(arg0 context.Context, arg1 *gen.GetTagsRequest) (*gen.GetTagsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTags", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetTagsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTags indicates an expected call of GetTags.
+func (mr *MockNoteServerMockRecorder) GetTags(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteServer)(nil).GetTags), arg0, arg1)
 }
 
 // UpdateNote mocks base method.
