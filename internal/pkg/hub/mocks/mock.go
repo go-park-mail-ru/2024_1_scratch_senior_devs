@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	models "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	gomock "github.com/golang/mock/gomock"
 	websocket "github.com/gorilla/websocket"
 	uuid "github.com/satori/uuid"
@@ -58,4 +59,28 @@ func (m *MockHubInterface) Run(arg0 context.Context) {
 func (mr *MockHubInterfaceMockRecorder) Run(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockHubInterface)(nil).Run), arg0)
+}
+
+// StartCache mocks base method.
+func (m *MockHubInterface) StartCache(arg0 context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "StartCache", arg0)
+}
+
+// StartCache indicates an expected call of StartCache.
+func (mr *MockHubInterfaceMockRecorder) StartCache(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartCache", reflect.TypeOf((*MockHubInterface)(nil).StartCache), arg0)
+}
+
+// WriteToCache mocks base method.
+func (m *MockHubInterface) WriteToCache(arg0 context.Context, arg1 models.CacheMessage) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "WriteToCache", arg0, arg1)
+}
+
+// WriteToCache indicates an expected call of WriteToCache.
+func (mr *MockHubInterfaceMockRecorder) WriteToCache(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WriteToCache", reflect.TypeOf((*MockHubInterface)(nil).WriteToCache), arg0, arg1)
 }
