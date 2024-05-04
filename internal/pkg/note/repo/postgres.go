@@ -206,7 +206,8 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 		var note models.Note
 		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId, &note.Parent, &note.Children, pq.Array(&note.Tags)); err != nil {
 			logger.Error("scanning" + err.Error())
-			return result, fmt.Errorf("error occured while scanning notes: %w", err)
+			//return result, fmt.Errorf("error occured while scanning notes: %w", err)
+			continue
 		}
 		result = append(result, note)
 	}
@@ -231,7 +232,8 @@ func (repo *NotePostgres) ReadAllNotesNoTags(ctx context.Context, userId uuid.UU
 
 		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId, &note.Parent, &note.Children, &note.Tags); err != nil {
 			logger.Error("scanning" + err.Error())
-			return result, fmt.Errorf("error occured while scanning notes: %w", err)
+			//return result, fmt.Errorf("error occured while scanning notes: %w", err)
+			continue
 		}
 
 		result = append(result, note)
