@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 	"io"
 	"log/slog"
 	"net"
@@ -64,11 +65,11 @@ func run() (err error) {
 		return
 	}
 
-	// tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.NoteIP)
-	// if err != nil {
-	// 	logger.Error(err.Error())
-	// 	return
-	// }
+	tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.NoteIP)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
 	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic)
@@ -83,7 +84,7 @@ func run() (err error) {
 	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
 	logMw := log.NewGrpcLogMw(logger)
 	gRPCServer := grpc.NewServer(
-		//grpc.Creds(tlsCredentials),
+		grpc.Creds(tlsCredentials),
 		grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor),
 	)
 	generatedNote.RegisterNoteServer(gRPCServer, NoteDelivery)
