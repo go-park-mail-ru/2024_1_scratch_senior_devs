@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/jackc/pgtype v1.14.2
 	github.com/kolesa-team/go-webp v1.0.4
+	github.com/lib/pq v1.10.9
 	github.com/mailru/easyjson v0.7.7
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/pkg/errors v0.9.1
@@ -27,16 +28,12 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/go-pg/pg v8.0.7+incompatible // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.1.0 // indirect
 	github.com/prometheus/common v0.7.0 // indirect
 	github.com/prometheus/procfs v0.0.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
-	mellium.im/sasl v0.3.1 // indirect
 )
 
 require (

@@ -29,6 +29,7 @@ func TestConvertToElasticNote(t *testing.T) {
 				OwnerId:    id,
 				Parent:     id,
 				Children:   []uuid.UUID{},
+				Tags:       []string{},
 			},
 			result: models.ElasticNote{
 				Id:            id,
@@ -39,6 +40,7 @@ func TestConvertToElasticNote(t *testing.T) {
 				Parent:        id,
 				Children:      []uuid.UUID{},
 				Collaborators: []uuid.UUID{},
+				Tags:          []string{},
 			},
 			isErr: false,
 		},

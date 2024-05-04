@@ -76,6 +76,26 @@ func (mr *MockNoteClientMockRecorder) AddNote(ctx, in interface{}, opts ...inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNote", reflect.TypeOf((*MockNoteClient)(nil).AddNote), varargs...)
 }
 
+// AddTag mocks base method.
+func (m *MockNoteClient) AddTag(ctx context.Context, in *gen.TagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddTag", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTag indicates an expected call of AddTag.
+func (mr *MockNoteClientMockRecorder) AddTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteClient)(nil).AddTag), varargs...)
+}
+
 // CheckCollaborator mocks base method.
 func (m *MockNoteClient) CheckCollaborator(ctx context.Context, in *gen.CheckCollaboratorRequest, opts ...grpc.CallOption) (*gen.CheckCollaboratorResponse, error) {
 	m.ctrl.T.Helper()
@@ -134,6 +154,26 @@ func (mr *MockNoteClientMockRecorder) DeleteNote(ctx, in interface{}, opts ...in
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteClient)(nil).DeleteNote), varargs...)
+}
+
+// DeleteTag mocks base method.
+func (m *MockNoteClient) DeleteTag(ctx context.Context, in *gen.TagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteTag", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteTag indicates an expected call of DeleteTag.
+func (mr *MockNoteClientMockRecorder) DeleteTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteClient)(nil).DeleteTag), varargs...)
 }
 
 // GetAllNotes mocks base method.
@@ -249,6 +289,21 @@ func (mr *MockNoteServerMockRecorder) AddNote(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNote", reflect.TypeOf((*MockNoteServer)(nil).AddNote), arg0, arg1)
 }
 
+// AddTag mocks base method.
+func (m *MockNoteServer) AddTag(arg0 context.Context, arg1 *gen.TagRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTag indicates an expected call of AddTag.
+func (mr *MockNoteServerMockRecorder) AddTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteServer)(nil).AddTag), arg0, arg1)
+}
+
 // CheckCollaborator mocks base method.
 func (m *MockNoteServer) CheckCollaborator(arg0 context.Context, arg1 *gen.CheckCollaboratorRequest) (*gen.CheckCollaboratorResponse, error) {
 	m.ctrl.T.Helper()
@@ -292,6 +347,21 @@ func (m *MockNoteServer) DeleteNote(arg0 context.Context, arg1 *gen.DeleteNoteRe
 func (mr *MockNoteServerMockRecorder) DeleteNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNote", reflect.TypeOf((*MockNoteServer)(nil).DeleteNote), arg0, arg1)
+}
+
+// DeleteTag mocks base method.
+func (m *MockNoteServer) DeleteTag(arg0 context.Context, arg1 *gen.TagRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteTag indicates an expected call of DeleteTag.
+func (mr *MockNoteServerMockRecorder) DeleteTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteServer)(nil).DeleteTag), arg0, arg1)
 }
 
 // GetAllNotes mocks base method.

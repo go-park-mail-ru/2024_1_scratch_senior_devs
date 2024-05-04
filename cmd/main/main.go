@@ -43,10 +43,6 @@ import (
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
 
-	tagDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/tags/delivery/http"
-	tagRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/tags/repo"
-	tagUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/tags/usecase"
-
 	attachDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach/delivery/http"
 	attachRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach/repo"
 	attachUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach/usecase"
@@ -141,10 +137,6 @@ func main() {
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
 	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, cfg.Attach)
 
-	TagRepo := tagRepo.CreateTagRepo(db)
-	TagUsecase := tagUsecase.CreateTagUsecase(TagRepo, NoteBaseRepo)
-	TagDelivery := tagDelivery.CreateTagHandler(TagUsecase)
-
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -185,9 +177,8 @@ func main() {
 		note.Handle("/{id}/add_subnote", JwtMiddleware(http.HandlerFunc(NoteDelivery.CreateSubNote))).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/add_collaborator", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddCollaborator))).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/subscribe_on_updates", JwtWebsocketMiddleware(http.HandlerFunc(NoteDelivery.SubscribeOnUpdates))).Methods(http.MethodGet, http.MethodOptions)
-		note.Handle("/{id}/add_tag", JwtMiddleware(http.HandlerFunc(TagDelivery.AddTag))).Methods(http.MethodPost, http.MethodOptions)
-		note.Handle("/{id}/delete_tag", JwtMiddleware(http.HandlerFunc(TagDelivery.DeleteTag))).Methods(http.MethodDelete, http.MethodOptions)
-
+		note.Handle("/{id}/add_tag", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddTag))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/delete_tag", JwtMiddleware(http.HandlerFunc(NoteDelivery.DeleteTag))).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()

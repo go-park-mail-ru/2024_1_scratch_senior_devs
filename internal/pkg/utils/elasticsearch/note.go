@@ -15,6 +15,7 @@ func ConvertToElasticNote(note models.Note, collaborators []uuid.UUID) models.El
 		Parent:        note.Parent,
 		Children:      note.Children,
 		Collaborators: collaborators,
+		Tags:          note.Tags,
 	}
 }
 
@@ -27,5 +28,6 @@ func ConvertToUsualNote(note models.ElasticNote) models.Note {
 		OwnerId:    note.OwnerId,
 		Parent:     note.Parent,
 		Children:   note.Children,
+		Tags:       note.Tags,
 	}
 }

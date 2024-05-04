@@ -47,6 +47,9 @@
       },
       "collaborators": {
         "type": "keyword"
+      },
+      "tags": {
+        "type": "keyword"
       }
     }
   }

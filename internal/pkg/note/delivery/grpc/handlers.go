@@ -39,6 +39,32 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 	}
 }
 
+func (h *GrpcNoteHandler) AddTag(ctx context.Context, in *generatedNote.TagRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result, err := h.uc.AddTag(ctx, in.TagName, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{Note: getNote(result)}, nil
+}
+
+func (h *GrpcNoteHandler) DeleteTag(ctx context.Context, in *generatedNote.TagRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result, err := h.uc.DeleteTag(ctx, in.TagName, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{Note: getNote(result)}, nil
+}
+
 func (h *GrpcNoteHandler) CheckCollaborator(ctx context.Context, in *generatedNote.CheckCollaboratorRequest) (*generatedNote.CheckCollaboratorResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

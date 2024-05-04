@@ -11,6 +11,14 @@ service Note {
      rpc CreateSubNote(CreateSubNoteRequest) returns (CreateSubNoteResponse) {}
      rpc CheckCollaborator(CheckCollaboratorRequest) returns (CheckCollaboratorResponse) {}
      rpc AddCollaborator(AddCollaboratorRequest) returns (AddCollaboratorResponse) {}
+     rpc AddTag(TagRequest) returns (GetNoteResponse) {}
+     rpc DeleteTag(TagRequest) returns (GetNoteResponse) {}
+}
+
+message TagRequest {
+     string TagName = 1;
+     string NoteId = 2;
+     string UserId = 3;
 }
 
 message CheckCollaboratorRequest {
@@ -39,11 +47,11 @@ message GetAllRequest{
 }
 
 message NoteModel {
-	string Id = 1;
- 	string Data = 2;
-	string CreateTime = 3;
-	string UpdateTime = 4;
-	string OwnerId = 5;
+     string Id = 1;
+     string Data = 2;
+     string CreateTime = 3;
+     string UpdateTime = 4;
+     string OwnerId = 5;
      string Parent = 6;
      repeated string Children = 7;
      repeated string Tags = 8;

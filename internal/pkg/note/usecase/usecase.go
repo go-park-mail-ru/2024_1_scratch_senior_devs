@@ -43,15 +43,13 @@ func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count 
 	var err error
 
 	if utf8.RuneCountInString(searchValue) < uc.cfg.ElasticSearchValueMinLength {
-
 		if len(tags) > 0 {
 			res, err = uc.baseRepo.ReadAllNotes(ctx, userId, count, offset, tags)
 		} else {
 			res, err = uc.baseRepo.ReadAllNotesNoTags(ctx, userId, count, offset)
-
 		}
 	} else {
-		res, err = uc.searchRepo.SearchNotes(ctx, userId, count, offset, searchValue)
+		res, err = uc.searchRepo.SearchNotes(ctx, userId, count, offset, searchValue, tags)
 	}
 
 	if err != nil {
@@ -309,4 +307,78 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 
 	logger.Info("success")
 	return nil
+}
+
+func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+
+	if updatedNote.OwnerId != userId {
+		logger.Error("not owner")
+		return models.Note{}, errors.New("not found")
+	}
+
+	if err := uc.baseRepo.AddTag(ctx, tagName, noteId); err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+
+	updatedNote.Tags = append(updatedNote.Tags, tagName)
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.AddTag(ctx, tagName, noteId); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
+
+	logger.Info("success")
+	return updatedNote, nil
+}
+
+func (uc *NoteUsecase) DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+
+	if updatedNote.OwnerId != userId {
+		logger.Error("not owner")
+		return models.Note{}, errors.New("not found")
+	}
+
+	if err := uc.baseRepo.DeleteTag(ctx, tagName, noteId); err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+
+	newTags := make([]string, 0)
+	for i := range updatedNote.Tags {
+		if updatedNote.Tags[i] != tagName {
+			newTags = append(newTags, updatedNote.Tags[i])
+		}
+	}
+	updatedNote.Tags = newTags
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.DeleteTag(ctx, tagName, noteId); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
+
+	logger.Info("success")
+	return updatedNote, nil
 }

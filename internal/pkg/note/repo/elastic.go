@@ -32,7 +32,7 @@ func CreateNoteElastic(elastic *elastic.Client, cfg config.ElasticConfig) *NoteE
 	}
 }
 
-func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string) ([]models.Note, error) {
+func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string, tags []string) ([]models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	ownerQuery := elastic.NewTermsQuery("owner_id", strings.ToLower(userID.String()))
@@ -41,6 +41,16 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 
 	userIdQuery := elastic.NewBoolQuery().Should(ownerQuery, collaboratorQuery)
 	fullQuery := elastic.NewBoolQuery().Must(searchQuery, userIdQuery)
+
+	if len(tags) > 0 {
+		tagQueries := make([]elastic.Query, len(tags))
+		for i, tag := range tags {
+			tagQueries[i] = elastic.NewTermsQuery("tags", tag)
+		}
+
+		tagsQuery := elastic.NewBoolQuery().Should(tagQueries...)
+		fullQuery = fullQuery.Filter(tagsQuery)
+	}
 
 	search, err := repo.elastic.Search().
 		Query(fullQuery).
@@ -213,6 +223,44 @@ func (repo *NoteElastic) AddCollaborator(ctx context.Context, noteID uuid.UUID, 
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	script := elastic.NewScript("ctx._source.collaborators.add(params.collaboratorID)").Lang("painless").Param("collaboratorID", userID.String())
+
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Script(script).
+		Do(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	script := elastic.NewScript("ctx._source.tags.add(params.tagName)").Lang("painless").Param("tagName", tagName)
+
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Script(script).
+		Do(ctx)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) DeleteTag(ctx context.Context, tagName string, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	script := elastic.NewScript("ctx._source.tags.removeIfContains(params.tagName)").Lang("painless").Param("tagName", tagName)
 
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).

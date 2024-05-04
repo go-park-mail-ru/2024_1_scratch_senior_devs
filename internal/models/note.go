@@ -31,7 +31,7 @@ type ElasticNote struct {
 	Parent        uuid.UUID   `json:"parent"`
 	Children      []uuid.UUID `json:"children"`
 	Collaborators []uuid.UUID `json:"collaborators"`
-	//Tags          []string    `json:"tags"`
+	Tags          []string    `json:"tags"`
 }
 
 type NoteUpdate struct {

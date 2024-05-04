@@ -87,6 +87,8 @@ const (
 	getUpdates        = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
 	checkCollaborator = "SELECT COUNT(user_id) FROM collaborators WHERE note_id = $1 AND user_id = $2;"
 	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, (SELECT id FROM users WHERE username = $2));"
+	addTag            = "INSERT INTO note_tag(note_id, tag_name) VALUES ($1, $2);"
+	deleteTag         = "DELETE FROM note_tag WHERE note_id = $1 AND tag_name = $2;"
 )
 
 type NotePostgres struct {
@@ -281,6 +283,32 @@ func (repo *NotePostgres) RemoveSubNote(ctx context.Context, id uuid.UUID, child
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	_, err := repo.db.Exec(ctx, removeSubNote, childID, id)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) AddTag(ctx context.Context, tagName string, noteId uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	_, err := repo.db.Exec(ctx, addTag, noteId, tagName)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	_, err := repo.db.Exec(ctx, deleteTag, noteId, tagName)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
