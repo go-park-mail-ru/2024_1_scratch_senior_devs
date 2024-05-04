@@ -1,0 +1,32 @@
+{
+  "properties": {
+    "id": {
+      "type": "keyword"
+    },
+    "data": {
+      "type": "text",
+      "analyzer": "ngram_analyzer"
+    },
+    "create_time": {
+      "type": "date"
+    },
+    "update_time": {
+      "type": "date"
+    },
+    "owner_id": {
+      "type": "keyword"
+    },
+    "parent": {
+      "type": "keyword"
+    },
+    "children": {
+      "type": "keyword"
+    },
+    "collaborators": {
+      "type": "keyword"
+    },
+    "tags": {
+      "type": "keyword"
+    }
+  }
+}
