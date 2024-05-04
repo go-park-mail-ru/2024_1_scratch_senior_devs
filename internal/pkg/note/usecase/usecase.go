@@ -382,3 +382,16 @@ func (uc *NoteUsecase) DeleteTag(ctx context.Context, tagName string, noteId uui
 	logger.Info("success")
 	return updatedNote, nil
 }
+
+func (uc *NoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	tags, err := uc.baseRepo.GetTags(ctx, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return []string{}, err
+	}
+
+	logger.Info("success")
+	return tags, nil
+}

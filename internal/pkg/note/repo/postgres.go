@@ -89,6 +89,24 @@ const (
 	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, (SELECT id FROM users WHERE username = $2));"
 	addTag            = "INSERT INTO note_tag(note_id, tag_name) VALUES ($1, $2);"
 	deleteTag         = "DELETE FROM note_tag WHERE note_id = $1 AND tag_name = $2;"
+	getTags           = `
+		SELECT tag_name
+		FROM note_tag 
+		WHERE note_id = ANY (
+			SELECT id
+			FROM notes
+			WHERE parent = '00000000-0000-0000-0000-000000000000'
+			AND (
+				owner_id = $1
+				OR (
+					SELECT COUNT(user_id)
+					FROM collaborators
+					WHERE user_id = $1
+					AND note_id = id
+				) > 0
+			)
+		)
+	`
 )
 
 type NotePostgres struct {
@@ -99,6 +117,29 @@ func CreateNotePostgres(db pgxtype.Querier) *NotePostgres {
 	return &NotePostgres{
 		db: db,
 	}
+}
+
+func (repo *NotePostgres) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result := make([]string, 0)
+
+	query, err := repo.db.Query(ctx, getTags, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return result, err
+	}
+
+	for query.Next() {
+		var tag string
+		if err := query.Scan(&tag); err != nil {
+			logger.Error(err.Error())
+			return result, fmt.Errorf("error occured while scanning tags: %w", err)
+		}
+		result = append(result, tag)
+	}
+
+	return result, nil
 }
 
 func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, username string) error {

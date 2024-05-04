@@ -32,6 +32,7 @@ type NoteClient interface {
 	AddCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorResponse, error)
 	AddTag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	DeleteTag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
+	GetTags(ctx context.Context, in *GetTagsRequest, opts ...grpc.CallOption) (*GetTagsResponse, error)
 }
 
 type noteClient struct {
@@ -132,6 +133,15 @@ func (c *noteClient) DeleteTag(ctx context.Context, in *TagRequest, opts ...grpc
 	return out, nil
 }
 
+func (c *noteClient) GetTags(ctx context.Context, in *GetTagsRequest, opts ...grpc.CallOption) (*GetTagsResponse, error) {
+	out := new(GetTagsResponse)
+	err := c.cc.Invoke(ctx, "/note.Note/GetTags", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NoteServer is the server API for Note service.
 // All implementations must embed UnimplementedNoteServer
 // for forward compatibility
@@ -146,6 +156,7 @@ type NoteServer interface {
 	AddCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorResponse, error)
 	AddTag(context.Context, *TagRequest) (*GetNoteResponse, error)
 	DeleteTag(context.Context, *TagRequest) (*GetNoteResponse, error)
+	GetTags(context.Context, *GetTagsRequest) (*GetTagsResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -182,6 +193,9 @@ func (UnimplementedNoteServer) AddTag(context.Context, *TagRequest) (*GetNoteRes
 }
 func (UnimplementedNoteServer) DeleteTag(context.Context, *TagRequest) (*GetNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTag not implemented")
+}
+func (UnimplementedNoteServer) GetTags(context.Context, *GetTagsRequest) (*GetTagsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTags not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -376,6 +390,24 @@ func _Note_DeleteTag_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Note_GetTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).GetTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/note.Note/GetTags",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).GetTags(ctx, req.(*GetTagsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Note_ServiceDesc is the grpc.ServiceDesc for Note service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -422,6 +454,10 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteTag",
 			Handler:    _Note_DeleteTag_Handler,
+		},
+		{
+			MethodName: "GetTags",
+			Handler:    _Note_GetTags_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

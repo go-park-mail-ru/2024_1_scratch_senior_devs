@@ -25,3 +25,7 @@ func (payload *TagRequest) Validate() error {
 	}
 	return nil
 }
+
+type GetTagsResponse struct {
+	Tags []string `json:"tags"`
+}

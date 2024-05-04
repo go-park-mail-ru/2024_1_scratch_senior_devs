@@ -13,6 +13,15 @@ service Note {
      rpc AddCollaborator(AddCollaboratorRequest) returns (AddCollaboratorResponse) {}
      rpc AddTag(TagRequest) returns (GetNoteResponse) {}
      rpc DeleteTag(TagRequest) returns (GetNoteResponse) {}
+     rpc GetTags(GetTagsRequest) returns (GetTagsResponse) {}
+}
+
+message GetTagsRequest {
+     string UserId = 1;
+}
+
+message GetTagsResponse {
+     repeated string Tags = 1;
 }
 
 message TagRequest {

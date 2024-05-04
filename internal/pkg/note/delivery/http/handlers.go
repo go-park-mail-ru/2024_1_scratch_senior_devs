@@ -657,3 +657,32 @@ func (h *NoteHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
+
+func (h *NoteHandler) GetTags(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	result, err := h.client.GetTags(r.Context(), &gen.GetTagsRequest{
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	response := models.GetTagsResponse{Tags: result.Tags}
+	if err := responses.WriteResponseData(w, response, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}

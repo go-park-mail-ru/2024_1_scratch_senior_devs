@@ -39,6 +39,19 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 	}
 }
 
+func (h *GrpcNoteHandler) GetTags(ctx context.Context, in *generatedNote.GetTagsRequest) (*generatedNote.GetTagsResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	tags, err := h.uc.GetTags(ctx, uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetTagsResponse{Tags: tags}, nil
+}
+
 func (h *GrpcNoteHandler) AddTag(ctx context.Context, in *generatedNote.TagRequest) (*generatedNote.GetNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

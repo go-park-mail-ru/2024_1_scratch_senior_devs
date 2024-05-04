@@ -194,7 +194,11 @@ func main() {
 		attach.Handle("/{id}", http.HandlerFunc(AttachDelivery.GetAttach)).Methods(http.MethodGet, http.MethodOptions)
 		attach.Handle("/{id}/delete", http.HandlerFunc(AttachDelivery.DeleteAttach)).Methods(http.MethodDelete, http.MethodOptions)
 	}
+
+	r.PathPrefix("/tags").Handler(http.HandlerFunc(NoteDelivery.GetTags)).Methods(http.MethodGet, http.MethodOptions)
+
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
+
 	http.Handle("/", r)
 
 	go NoteHub.Run(context.WithValue(context.Background(), config.LoggerContextKey, logger))

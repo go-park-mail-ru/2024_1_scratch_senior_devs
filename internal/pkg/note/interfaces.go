@@ -25,6 +25,7 @@ type NoteUsecase interface {
 
 	AddTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error)
 	DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error)
+	GetTags(ctx context.Context, userID uuid.UUID) ([]string, error)
 }
 
 type NoteBaseRepo interface {
@@ -45,6 +46,7 @@ type NoteBaseRepo interface {
 
 	AddTag(ctx context.Context, tagName string, noteId uuid.UUID) error
 	DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID) error
+	GetTags(ctx context.Context, userID uuid.UUID) ([]string, error)
 }
 
 type NoteSearchRepo interface {

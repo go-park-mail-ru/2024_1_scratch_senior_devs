@@ -170,6 +170,21 @@ func (mr *MockNoteUsecaseMockRecorder) GetNote(arg0, arg1, arg2 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteUsecase)(nil).GetNote), arg0, arg1, arg2)
 }
 
+// GetTags mocks base method.
+func (m *MockNoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTags", ctx, userID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTags indicates an expected call of GetTags.
+func (mr *MockNoteUsecaseMockRecorder) GetTags(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteUsecase)(nil).GetTags), ctx, userID)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteUsecase) UpdateNote(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 []byte) (models.Note, error) {
 	m.ctrl.T.Helper()
@@ -305,6 +320,21 @@ func (m *MockNoteBaseRepo) DeleteTag(ctx context.Context, tagName string, noteId
 func (mr *MockNoteBaseRepoMockRecorder) DeleteTag(ctx, tagName, noteId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).DeleteTag), ctx, tagName, noteId)
+}
+
+// GetTags mocks base method.
+func (m *MockNoteBaseRepo) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTags", ctx, userID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTags indicates an expected call of GetTags.
+func (mr *MockNoteBaseRepoMockRecorder) GetTags(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteBaseRepo)(nil).GetTags), ctx, userID)
 }
 
 // GetUpdates mocks base method.
