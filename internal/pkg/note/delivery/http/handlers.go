@@ -583,7 +583,14 @@ func (h *NoteHandler) AddTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := responses.WriteResponseData(w, note, http.StatusOK); err != nil {
+	resultNote, err := getNote(note.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -628,7 +635,14 @@ func (h *NoteHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := responses.WriteResponseData(w, note, http.StatusOK); err != nil {
+	resultNote, err := getNote(note.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
