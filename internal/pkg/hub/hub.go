@@ -2,6 +2,7 @@ package hub
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
@@ -9,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/satori/uuid"
+	"io"
 	"log/slog"
 	"sync"
 	"time"
@@ -46,16 +48,47 @@ func (h *Hub) WriteToCache(ctx context.Context, message models.CacheMessage) {
 }
 
 func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *websocket.Conn) {
-	_ = log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	h.connect.Store(client, noteID)
 
 	go func() {
 		for {
-			_, _, err := client.NextReader()
+			messageType, reader, err := client.NextReader()
 			if err != nil {
 				_ = client.Close()
 				return
+			}
+
+			switch messageType {
+			case websocket.TextMessage:
+				messageBytes, err := io.ReadAll(reader)
+				if err != nil {
+					logger.Error("failed to read message: " + err.Error())
+					continue
+				}
+
+				var message models.JoinMessage
+				if err := json.Unmarshal(messageBytes, &message); err != nil {
+					logger.Error("incorrect message format: " + err.Error())
+					continue
+				}
+
+				h.connect.Range(func(key, value interface{}) bool {
+					connect := key.(*websocket.Conn)
+					noteId := value.(uuid.UUID)
+
+					if noteId == message.NoteId {
+						if err := connect.WriteJSON(message); err != nil {
+							logger.Error("can`t write hub`s message: " + err.Error())
+						}
+					}
+
+					return true
+				})
+
+			default:
+				logger.Error("received unsupported message type")
 			}
 		}
 	}()
@@ -94,8 +127,7 @@ func (h *Hub) Run(ctx context.Context) {
 					}
 
 					for _, message := range messages {
-						err := connect.WriteJSON(message)
-						if err != nil {
+						if err := connect.WriteJSON(message); err != nil {
 							continue
 						}
 					}

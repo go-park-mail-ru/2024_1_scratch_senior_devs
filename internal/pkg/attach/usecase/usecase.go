@@ -39,8 +39,16 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 		return models.Attach{}, err
 	}
 	if noteData.OwnerId != userID {
-		logger.Error("user is not owner of note")
-		return models.Attach{}, ErrNoteNotFound
+		result, err := uc.noteRepo.CheckCollaborator(ctx, noteID, userID)
+		if err != nil {
+			logger.Error(err.Error())
+			return models.Attach{}, ErrNoteNotFound
+		}
+
+		if !result {
+			logger.Error("not owner and not collaborator")
+			return models.Attach{}, ErrNoteNotFound
+		}
 	}
 
 	attachBasePath := os.Getenv("ATTACHES_BASE_PATH")
@@ -84,8 +92,16 @@ func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, u
 	}
 
 	if noteData.OwnerId != userID {
-		logger.Error("user is not owner of note")
-		return ErrNoteNotFound
+		result, err := uc.noteRepo.CheckCollaborator(ctx, noteData.Id, userID)
+		if err != nil {
+			logger.Error(err.Error())
+			return ErrNoteNotFound
+		}
+
+		if !result {
+			logger.Error("not owner and not collaborator")
+			return ErrNoteNotFound
+		}
 	}
 
 	err = uc.repo.DeleteAttach(ctx, attachID)
@@ -118,8 +134,16 @@ func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, user
 	}
 
 	if noteData.OwnerId != userID {
-		logger.Error("user is not owner of note")
-		return models.Attach{}, ErrNoteNotFound
+		result, err := uc.noteRepo.CheckCollaborator(ctx, noteData.Id, userID)
+		if err != nil {
+			logger.Error(err.Error())
+			return models.Attach{}, ErrNoteNotFound
+		}
+
+		if !result {
+			logger.Error("not owner and not collaborator")
+			return models.Attach{}, ErrNoteNotFound
+		}
 	}
 	return attachData, nil
 }
