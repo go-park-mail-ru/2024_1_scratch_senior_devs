@@ -281,12 +281,7 @@ func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid
 func (repo *NoteElastic) DeleteTag(ctx context.Context, tagName string, noteID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	if err := repo.updateNullFieldToEmptyArray(ctx, "tags", noteID); err != nil {
-		logger.Error(err.Error())
-		return err
-	}
-
-	script := elastic.NewScript("ctx._source.tags.removeIfContains(params.tagName)").Lang("painless").Param("tagName", tagName)
+	script := elastic.NewScript("if (ctx._source.tags.contains(params.tagName)) { ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName)) }").Lang("painless").Param("tagName", tagName)
 
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
