@@ -333,6 +333,13 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.hub.WriteToCache(r.Context(), models.CacheMessage{
+		NoteId:      resultNote.Id,
+		Username:    jwtPayload.Username,
+		Created:     time.Now().UTC(),
+		MessageInfo: resultNote.Data,
+	})
+
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 

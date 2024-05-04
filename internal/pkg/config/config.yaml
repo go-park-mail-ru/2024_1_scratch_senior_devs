@@ -44,3 +44,4 @@ grpc:
   note_ip: note
 hub:
   period: 1s
+  cache_ttl: 1m0s

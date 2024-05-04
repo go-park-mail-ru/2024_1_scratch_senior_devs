@@ -10,3 +10,10 @@ type Message struct {
 	Created     time.Time `json:"created"`
 	MessageInfo []byte    `json:"message_info"`
 }
+
+type CacheMessage struct {
+	NoteId      uuid.UUID `json:"note_id"`
+	Username    string    `json:"username"`
+	Created     time.Time `json:"created"`
+	MessageInfo []byte    `json:"message_info"`
+}

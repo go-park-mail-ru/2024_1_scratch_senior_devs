@@ -2,10 +2,12 @@ package hub
 
 import (
 	"context"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/gorilla/websocket"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/satori/uuid"
 	"log/slog"
 	"sync"
@@ -16,6 +18,7 @@ type Hub struct {
 	connect       sync.Map
 	currentOffset time.Time
 	repo          note.NoteBaseRepo
+	cache         *ttlcache.Cache[uuid.UUID, models.CacheMessage]
 	cfg           config.HubConfig
 }
 
@@ -23,8 +26,23 @@ func NewHub(repo note.NoteBaseRepo, cfg config.HubConfig) *Hub {
 	return &Hub{
 		repo:          repo,
 		currentOffset: time.Now().UTC(),
+		cache:         ttlcache.New[uuid.UUID, models.CacheMessage](ttlcache.WithTTL[uuid.UUID, models.CacheMessage](cfg.CacheTtl)),
 		cfg:           cfg,
 	}
+}
+
+func (h *Hub) StartCache(ctx context.Context) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	h.cache.Start()
+	logger.Info("hub cache started")
+}
+
+func (h *Hub) WriteToCache(ctx context.Context, message models.CacheMessage) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	h.cache.Set(message.NoteId, message, h.cfg.CacheTtl)
+	logger.Info("cache - new message")
 }
 
 func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *websocket.Conn) {
@@ -61,15 +79,25 @@ func (h *Hub) Run(ctx context.Context) {
 				connect := key.(*websocket.Conn)
 				noteID := value.(uuid.UUID)
 
-				messages, err := h.repo.GetUpdates(ctx, noteID, h.currentOffset)
-				if err != nil {
-					logger.Error(err.Error())
-				}
+				if h.cache.Has(noteID) {
+					message := h.cache.Get(noteID).Value()
 
-				for _, message := range messages {
-					err := connect.WriteJSON(message)
+					if !message.Created.Before(h.currentOffset) {
+						if err := connect.WriteJSON(message); err != nil {
+							logger.Error("can`t write hub`s message: " + err.Error())
+						}
+					}
+				} else {
+					messages, err := h.repo.GetUpdates(ctx, noteID, h.currentOffset)
 					if err != nil {
-						continue
+						logger.Error(err.Error())
+					}
+
+					for _, message := range messages {
+						err := connect.WriteJSON(message)
+						if err != nil {
+							continue
+						}
 					}
 				}
 

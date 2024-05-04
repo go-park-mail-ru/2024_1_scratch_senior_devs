@@ -29,10 +29,12 @@ require (
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/jellydator/ttlcache/v3 v3.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/client_model v0.1.0 // indirect
 	github.com/prometheus/common v0.7.0 // indirect
 	github.com/prometheus/procfs v0.0.8 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240415180920-8c6c420018be // indirect
 )
 

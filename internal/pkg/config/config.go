@@ -77,7 +77,8 @@ type GrpcConfig struct {
 }
 
 type HubConfig struct {
-	Period time.Duration `yaml:"period"`
+	Period   time.Duration `yaml:"period"`
+	CacheTtl time.Duration `yaml:"cache_ttl"`
 }
 
 const (

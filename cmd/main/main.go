@@ -198,6 +198,7 @@ func main() {
 	http.Handle("/", r)
 
 	go NoteHub.Run(context.WithValue(context.Background(), config.LoggerContextKey, logger))
+	go NoteHub.StartCache(context.WithValue(context.Background(), config.LoggerContextKey, logger))
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
