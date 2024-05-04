@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -30,6 +31,21 @@ func CreateNoteElastic(elastic *elastic.Client, cfg config.ElasticConfig) *NoteE
 		elastic: elastic,
 		cfg:     cfg,
 	}
+}
+
+func (repo *NoteElastic) updateNullFieldToEmptyArray(ctx context.Context, fieldName string, noteID uuid.UUID) error {
+	script := elastic.NewScript(fmt.Sprintf("if (ctx._source.%s == null) {ctx._source.%s = []; }", fieldName, fieldName))
+
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Script(script).
+		Do(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string, tags []string) ([]models.Note, error) {
@@ -241,6 +257,11 @@ func (repo *NoteElastic) AddCollaborator(ctx context.Context, noteID uuid.UUID, 
 func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	if err := repo.updateNullFieldToEmptyArray(ctx, "tags", noteID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
 	script := elastic.NewScript("ctx._source.tags.add(params.tagName)").Lang("painless").Param("tagName", tagName)
 
 	_, err := repo.elastic.Update().
@@ -259,6 +280,11 @@ func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid
 
 func (repo *NoteElastic) DeleteTag(ctx context.Context, tagName string, noteID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := repo.updateNullFieldToEmptyArray(ctx, "tags", noteID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
 
 	script := elastic.NewScript("ctx._source.tags.removeIfContains(params.tagName)").Lang("painless").Param("tagName", tagName)
 
