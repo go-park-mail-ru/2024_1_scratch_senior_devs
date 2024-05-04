@@ -49,7 +49,6 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 					NoteId: data.noteID,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -75,7 +74,6 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 					NoteId: data.noteID,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -107,7 +105,6 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 			name: "TestDeleteAtatch_Fail_On_GetAttach",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, data args) {
 				repo.EXPECT().GetAttach(ctx, attachId).Return(models.Attach{}, errors.New("get attach error")).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -132,7 +129,8 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 					NoteId: data.noteID,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
+				noteRepo.EXPECT().CheckCollaborator(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil).Times(1)
+				repo.EXPECT().DeleteAttach(gomock.Any(), gomock.Any()).Return(errors.New("note not found")).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -190,7 +188,6 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 					NoteId: noteId,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				attachID: attachId,
@@ -213,7 +210,6 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 					NoteId: noteId,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				attachID: attachId,
@@ -226,7 +222,6 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 		{
 			name: "Test_GetAttach_Fail_On_GetAttach",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo) {
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 				repo.EXPECT().GetAttach(ctx, attachId).Return(models.Attach{}, errors.New("get attach error")).Times(1)
 			},
 			args: args{
@@ -252,7 +247,7 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 					NoteId: noteId,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
+				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(false, errors.New("note not found")).Times(1)
 			},
 			args: args{
 				attachID: attachId,
@@ -305,7 +300,6 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 					Id:      args.noteID,
 					OwnerId: args.userID,
 				}, nil)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				ctx:       context.Background(),
@@ -325,7 +319,6 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 					Id:      args.noteID,
 					OwnerId: args.userID,
 				}, nil)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				ctx:       context.Background(),
@@ -344,7 +337,6 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 					Id:      args.noteID,
 					OwnerId: args.userID,
 				}, errors.New("error read note"))
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				ctx:       context.Background(),
@@ -363,7 +355,6 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 					Id:      args.noteID,
 					OwnerId: args.noteID,
 				}, errors.New("error read note"))
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(true, nil).Times(1)
 			},
 			args: args{
 				ctx:       context.Background(),
