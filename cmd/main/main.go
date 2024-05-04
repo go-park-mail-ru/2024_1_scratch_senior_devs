@@ -195,7 +195,7 @@ func main() {
 		attach.Handle("/{id}/delete", http.HandlerFunc(AttachDelivery.DeleteAttach)).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
-	r.PathPrefix("/tags").Handler(http.HandlerFunc(NoteDelivery.GetTags)).Methods(http.MethodGet, http.MethodOptions)
+	r.PathPrefix("/tags").Handler(JwtMiddleware(http.HandlerFunc(NoteDelivery.GetTags))).Methods(http.MethodGet, http.MethodOptions)
 
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 

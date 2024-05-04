@@ -14,6 +14,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/samber/lo"
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -393,5 +394,5 @@ func (uc *NoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string,
 	}
 
 	logger.Info("success")
-	return tags, nil
+	return lo.Uniq(tags), nil
 }
