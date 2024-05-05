@@ -228,6 +228,11 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		return models.Note{}, err
 	}
 
+	if parent.OwnerId != userId && !slices.Contains(parent.Collaborators, userId) {
+		logger.Error("not owner and not collaborator")
+		return models.Note{}, errors.New("not found")
+	}
+
 	if len(parent.Children) >= uc.constraints.MaxSubnotes {
 		logger.Error(note.ErrTooManySubnotes)
 		return models.Note{}, errors.New(note.ErrTooManySubnotes)
