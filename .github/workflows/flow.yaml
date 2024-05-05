@@ -84,4 +84,4 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
-          script: cd /home/${{ secrets.USERNAME }}/backend/2024_1_scratch_senior_devs && sudo docker compose down && sudo docker compose up -d
+          script: cd /home/${{ secrets.USERNAME }}/backend/2024_1_scratch_senior_devs && sudo docker compose down proxy main auth note && sudo docker compose up -d proxy main auth note

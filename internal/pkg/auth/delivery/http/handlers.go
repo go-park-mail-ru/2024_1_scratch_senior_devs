@@ -49,11 +49,11 @@ func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, not
 func makeHelloNoteData(username string) []byte {
 	return []byte(fmt.Sprintf(`
 	{
-		"title": "",
+		"title": "YouNote❤️",
 		"content": [
 		    {
 			   "pluginName": "textBlock",
-			   "content": "Hello, %s!"
+			   "content": "Привет, %s!"
 		    },
 		    {
 			   "pluginName": "div",
