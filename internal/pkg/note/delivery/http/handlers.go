@@ -68,15 +68,21 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 		children[i] = uuid.FromStringOrNil(child)
 	}
 
+	collaborators := make([]uuid.UUID, len(note.Collaborators))
+	for i, collaborator := range note.Collaborators {
+		collaborators[i] = uuid.FromStringOrNil(collaborator)
+	}
+
 	return models.Note{
-		Id:         uuid.FromStringOrNil(note.Id),
-		OwnerId:    uuid.FromStringOrNil(note.OwnerId),
-		Data:       []byte(note.Data),
-		CreateTime: createTime,
-		UpdateTime: updateTime,
-		Parent:     uuid.FromStringOrNil(note.Parent),
-		Children:   children,
-		Tags:       note.Tags,
+		Id:            uuid.FromStringOrNil(note.Id),
+		OwnerId:       uuid.FromStringOrNil(note.OwnerId),
+		Data:          []byte(note.Data),
+		CreateTime:    createTime,
+		UpdateTime:    updateTime,
+		Parent:        uuid.FromStringOrNil(note.Parent),
+		Children:      children,
+		Tags:          note.Tags,
+		Collaborators: collaborators,
 	}, nil
 }
 

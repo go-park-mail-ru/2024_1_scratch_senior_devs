@@ -55,6 +55,7 @@ message NoteModel {
      string Parent = 6;
      repeated string Children = 7;
      repeated string Tags = 8;
+     repeated string Collaborators = 9;
 }
 
 message GetAllResponse {

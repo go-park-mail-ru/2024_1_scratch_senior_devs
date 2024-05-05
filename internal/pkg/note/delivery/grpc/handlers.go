@@ -27,15 +27,21 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 		children[i] = child.String()
 	}
 
+	collaborators := make([]string, len(note.Collaborators))
+	for i, collaborator := range note.Collaborators {
+		collaborators[i] = collaborator.String()
+	}
+
 	return &generatedNote.NoteModel{
-		Id:         note.Id.String(),
-		Data:       string(note.Data),
-		CreateTime: note.CreateTime.String(),
-		UpdateTime: note.UpdateTime.String(),
-		OwnerId:    note.OwnerId.String(),
-		Parent:     note.Parent.String(),
-		Children:   children,
-		Tags:       note.Tags,
+		Id:            note.Id.String(),
+		Data:          string(note.Data),
+		CreateTime:    note.CreateTime.String(),
+		UpdateTime:    note.UpdateTime.String(),
+		OwnerId:       note.OwnerId.String(),
+		Parent:        note.Parent.String(),
+		Children:      children,
+		Tags:          note.Tags,
+		Collaborators: collaborators,
 	}
 }
 

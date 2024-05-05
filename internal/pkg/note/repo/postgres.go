@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/lib/pq"
-
 	"github.com/jackc/pgtype/pgxtype"
 	"github.com/satori/uuid"
 
@@ -24,7 +22,7 @@ const (
 			OR $1 = ANY(collaborators)
 		)
 		AND (
-			$4 = '{}' OR EXISTS (
+			cardinality($4::TEXT[]) = 0 OR $4::TEXT[] IS NULL OR EXISTS (
 				SELECT 1 FROM unnest(tags) AS tag WHERE tag = ANY($4)
 			)
 		)
@@ -121,7 +119,7 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	result := make([]models.Note, 0, count)
-	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset, pq.StringArray(tags))
+	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset, tags)
 
 	if err != nil {
 		logger.Error(err.Error())
