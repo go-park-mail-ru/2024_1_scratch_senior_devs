@@ -68,9 +68,6 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 		children[i] = uuid.FromStringOrNil(child)
 	}
 
-	tags := make([]string, len(note.Tags))
-	copy(tags, note.Tags)
-
 	return models.Note{
 		Id:         uuid.FromStringOrNil(note.Id),
 		OwnerId:    uuid.FromStringOrNil(note.OwnerId),
@@ -79,7 +76,7 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 		UpdateTime: updateTime,
 		Parent:     uuid.FromStringOrNil(note.Parent),
 		Children:   children,
-		Tags:       tags,
+		Tags:       note.Tags,
 	}, nil
 }
 
@@ -692,9 +689,7 @@ func (h *NoteHandler) GetTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	realTags := make([]string, len(result.Tags))
-	copy(realTags, result.Tags)
-	response := models.GetTagsResponse{Tags: realTags}
+	response := models.GetTagsResponse{Tags: result.Tags}
 	if err := responses.WriteResponseData(w, response, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
