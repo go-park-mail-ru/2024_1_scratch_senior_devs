@@ -45,3 +45,8 @@ grpc:
 hub:
   period: 1s
   cache_ttl: 1m0s
+constraints:
+  max_subnotes: 10
+  max_depth: 3
+  max_collaborators: 10
+  max_tags: 10

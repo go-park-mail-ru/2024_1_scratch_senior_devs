@@ -21,6 +21,7 @@ type Config struct {
 	Elastic     ElasticConfig     `yaml:"elastic"`
 	Grpc        GrpcConfig        `yaml:"grpc"`
 	Hub         HubConfig         `yaml:"hub"`
+	Constraints ConstraintsConfig `yaml:"constraints"`
 }
 
 type AuthHandlerConfig struct {
@@ -79,6 +80,13 @@ type GrpcConfig struct {
 type HubConfig struct {
 	Period   time.Duration `yaml:"period"`
 	CacheTtl time.Duration `yaml:"cache_ttl"`
+}
+
+type ConstraintsConfig struct {
+	MaxSubnotes      int `yaml:"max_subnotes"`
+	MaxDepth         int `yaml:"max_depth"`
+	MaxCollaborators int `yaml:"max_collaborators"`
+	MaxTags          int `yaml:"max_tags"`
 }
 
 const (

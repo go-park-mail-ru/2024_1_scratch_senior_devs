@@ -22,18 +22,20 @@ import (
 )
 
 type NoteUsecase struct {
-	baseRepo   note.NoteBaseRepo
-	searchRepo note.NoteSearchRepo
-	cfg        config.ElasticConfig
-	wg         *sync.WaitGroup
+	baseRepo    note.NoteBaseRepo
+	searchRepo  note.NoteSearchRepo
+	cfg         config.ElasticConfig
+	constraints config.ConstraintsConfig
+	wg          *sync.WaitGroup
 }
 
-func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, cfg config.ElasticConfig, wg *sync.WaitGroup) *NoteUsecase {
+func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, constraints config.ConstraintsConfig, cfg config.ElasticConfig, wg *sync.WaitGroup) *NoteUsecase {
 	return &NoteUsecase{
-		baseRepo:   baseRepo,
-		searchRepo: searchRepo,
-		cfg:        cfg,
-		wg:         wg,
+		baseRepo:    baseRepo,
+		searchRepo:  searchRepo,
+		cfg:         cfg,
+		constraints: constraints,
+		wg:          wg,
 	}
 }
 
@@ -191,6 +193,20 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId
 	return nil
 }
 
+func (uc *NoteUsecase) getDepth(ctx context.Context, parentParentID uuid.UUID, currentDepth int) (int, error) {
+	emptyID := uuid.UUID{}
+	if parentParentID == emptyID {
+		return currentDepth, nil
+	}
+
+	parent, err := uc.baseRepo.ReadNote(ctx, parentParentID)
+	if err != nil {
+		return -1, err
+	}
+
+	return uc.getDepth(ctx, parent.Parent, currentDepth+1)
+}
+
 func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, noteData []byte, parentID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -204,6 +220,27 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		Children:      []uuid.UUID{},
 		Tags:          []string{},
 		Collaborators: []uuid.UUID{},
+	}
+
+	parent, err := uc.baseRepo.ReadNote(ctx, parentID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+
+	if len(parent.Children) >= uc.constraints.MaxSubnotes {
+		logger.Error("too many subnotes")
+		return models.Note{}, errors.New("too many subnotes")
+	}
+
+	depth, err := uc.getDepth(ctx, parent.Parent, 1)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+	if depth >= uc.constraints.MaxDepth {
+		logger.Error("too deep")
+		return models.Note{}, errors.New("too deep")
 	}
 
 	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
@@ -273,6 +310,11 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 		return errors.New("yet a collaborator")
 	}
 
+	if len(currentNote.Collaborators) >= uc.constraints.MaxCollaborators {
+		logger.Error("too many collaborators")
+		return errors.New("too many collaborators")
+	}
+
 	if err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
 		logger.Error(err.Error())
 		return err
@@ -310,6 +352,11 @@ func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.U
 	if updatedNote.OwnerId != userId {
 		logger.Error("not owner")
 		return models.Note{}, errors.New("not found")
+	}
+
+	if len(updatedNote.Tags) >= uc.constraints.MaxTags {
+		logger.Error("too many tags")
+		return models.Note{}, errors.New("too many tags")
 	}
 
 	if err := uc.baseRepo.AddTag(ctx, tagName, noteId); err != nil {
