@@ -28,11 +28,11 @@ type NoteClient interface {
 	UpdateNote(ctx context.Context, in *UpdateNoteRequest, opts ...grpc.CallOption) (*UpdateNoteResponse, error)
 	DeleteNote(ctx context.Context, in *DeleteNoteRequest, opts ...grpc.CallOption) (*DeleteNoteResponse, error)
 	CreateSubNote(ctx context.Context, in *CreateSubNoteRequest, opts ...grpc.CallOption) (*CreateSubNoteResponse, error)
-	CheckCollaborator(ctx context.Context, in *CheckCollaboratorRequest, opts ...grpc.CallOption) (*CheckCollaboratorResponse, error)
 	AddCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorResponse, error)
 	AddTag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	DeleteTag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	GetTags(ctx context.Context, in *GetTagsRequest, opts ...grpc.CallOption) (*GetTagsResponse, error)
+	CheckPermissions(ctx context.Context, in *CheckPermissionsRequest, opts ...grpc.CallOption) (*CheckPermissionsResponse, error)
 }
 
 type noteClient struct {
@@ -97,15 +97,6 @@ func (c *noteClient) CreateSubNote(ctx context.Context, in *CreateSubNoteRequest
 	return out, nil
 }
 
-func (c *noteClient) CheckCollaborator(ctx context.Context, in *CheckCollaboratorRequest, opts ...grpc.CallOption) (*CheckCollaboratorResponse, error) {
-	out := new(CheckCollaboratorResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/CheckCollaborator", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *noteClient) AddCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorResponse, error) {
 	out := new(AddCollaboratorResponse)
 	err := c.cc.Invoke(ctx, "/note.Note/AddCollaborator", in, out, opts...)
@@ -142,6 +133,15 @@ func (c *noteClient) GetTags(ctx context.Context, in *GetTagsRequest, opts ...gr
 	return out, nil
 }
 
+func (c *noteClient) CheckPermissions(ctx context.Context, in *CheckPermissionsRequest, opts ...grpc.CallOption) (*CheckPermissionsResponse, error) {
+	out := new(CheckPermissionsResponse)
+	err := c.cc.Invoke(ctx, "/note.Note/CheckPermissions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NoteServer is the server API for Note service.
 // All implementations must embed UnimplementedNoteServer
 // for forward compatibility
@@ -152,11 +152,11 @@ type NoteServer interface {
 	UpdateNote(context.Context, *UpdateNoteRequest) (*UpdateNoteResponse, error)
 	DeleteNote(context.Context, *DeleteNoteRequest) (*DeleteNoteResponse, error)
 	CreateSubNote(context.Context, *CreateSubNoteRequest) (*CreateSubNoteResponse, error)
-	CheckCollaborator(context.Context, *CheckCollaboratorRequest) (*CheckCollaboratorResponse, error)
 	AddCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorResponse, error)
 	AddTag(context.Context, *TagRequest) (*GetNoteResponse, error)
 	DeleteTag(context.Context, *TagRequest) (*GetNoteResponse, error)
 	GetTags(context.Context, *GetTagsRequest) (*GetTagsResponse, error)
+	CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -182,9 +182,6 @@ func (UnimplementedNoteServer) DeleteNote(context.Context, *DeleteNoteRequest) (
 func (UnimplementedNoteServer) CreateSubNote(context.Context, *CreateSubNoteRequest) (*CreateSubNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSubNote not implemented")
 }
-func (UnimplementedNoteServer) CheckCollaborator(context.Context, *CheckCollaboratorRequest) (*CheckCollaboratorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CheckCollaborator not implemented")
-}
 func (UnimplementedNoteServer) AddCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddCollaborator not implemented")
 }
@@ -196,6 +193,9 @@ func (UnimplementedNoteServer) DeleteTag(context.Context, *TagRequest) (*GetNote
 }
 func (UnimplementedNoteServer) GetTags(context.Context, *GetTagsRequest) (*GetTagsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTags not implemented")
+}
+func (UnimplementedNoteServer) CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckPermissions not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -318,24 +318,6 @@ func _Note_CreateSubNote_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Note_CheckCollaborator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckCollaboratorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NoteServer).CheckCollaborator(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/note.Note/CheckCollaborator",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoteServer).CheckCollaborator(ctx, req.(*CheckCollaboratorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Note_AddCollaborator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddCollaboratorRequest)
 	if err := dec(in); err != nil {
@@ -408,6 +390,24 @@ func _Note_GetTags_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Note_CheckPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).CheckPermissions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/note.Note/CheckPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).CheckPermissions(ctx, req.(*CheckPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Note_ServiceDesc is the grpc.ServiceDesc for Note service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -440,10 +440,6 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Note_CreateSubNote_Handler,
 		},
 		{
-			MethodName: "CheckCollaborator",
-			Handler:    _Note_CheckCollaborator_Handler,
-		},
-		{
 			MethodName: "AddCollaborator",
 			Handler:    _Note_AddCollaborator_Handler,
 		},
@@ -458,6 +454,10 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTags",
 			Handler:    _Note_GetTags_Handler,
+		},
+		{
+			MethodName: "CheckPermissions",
+			Handler:    _Note_CheckPermissions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

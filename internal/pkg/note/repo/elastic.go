@@ -94,34 +94,6 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 	return notes, nil
 }
 
-func (repo *NoteElastic) ReadNote(ctx context.Context, noteID uuid.UUID) (models.ElasticNote, error) {
-	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
-
-	search, err := repo.elastic.Search().
-		Index(repo.cfg.ElasticIndexName).
-		Query(elastic.NewTermQuery("_id", noteID)).
-		Pretty(true).
-		Do(context.Background())
-	if err != nil {
-		logger.Error(err.Error())
-		return models.ElasticNote{}, ErrCantGetResponse
-	}
-
-	if len(search.Hits.Hits) == 0 {
-		logger.Error("note not found")
-		return models.ElasticNote{}, errors.New("note not found")
-	}
-
-	note := models.ElasticNote{}
-	if err := json.Unmarshal(search.Hits.Hits[0].Source, &note); err != nil {
-		logger.Error(err.Error())
-		return models.ElasticNote{}, err
-	}
-
-	logger.Info("success")
-	return note, nil
-}
-
 func (repo *NoteElastic) CreateNote(ctx context.Context, note models.ElasticNote) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

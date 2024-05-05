@@ -479,7 +479,7 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	result, err := h.client.CheckCollaborator(r.Context(), &gen.CheckCollaboratorRequest{
+	response, err := h.client.CheckPermissions(r.Context(), &gen.CheckPermissionsRequest{
 		NoteId: noteIdString,
 		UserId: jwtPayload.Id.String(),
 	})
@@ -488,14 +488,13 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
-
-	if result == nil || !result.Result {
-		log.LogHandlerError(logger, http.StatusNotFound, "not owner")
+	if !response.Result {
+		log.LogHandlerError(logger, http.StatusNotFound, "not owner and not collaborator")
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
-	upgrader.Subprotocols = []string{r.Header.Get("Sec-WebSocket-Protocol")}
 
+	upgrader.Subprotocols = []string{r.Header.Get("Sec-WebSocket-Protocol")}
 	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())

@@ -8,14 +8,15 @@ import (
 )
 
 type Note struct {
-	Id         uuid.UUID   `json:"id"`
-	Data       []byte      `json:"data,omitempty"`
-	CreateTime time.Time   `json:"create_time"`
-	UpdateTime time.Time   `json:"update_time"`
-	OwnerId    uuid.UUID   `json:"owner_id"`
-	Parent     uuid.UUID   `json:"parent"`
-	Children   []uuid.UUID `json:"children"`
-	Tags       []string    `json:"tags"`
+	Id            uuid.UUID   `json:"id"`
+	Data          []byte      `json:"data,omitempty"`
+	CreateTime    time.Time   `json:"create_time"`
+	UpdateTime    time.Time   `json:"update_time"`
+	OwnerId       uuid.UUID   `json:"owner_id"`
+	Parent        uuid.UUID   `json:"parent"`
+	Children      []uuid.UUID `json:"children"`
+	Tags          []string    `json:"tags"`
+	Collaborators []uuid.UUID `json:"collaborators"`
 }
 
 func Sanitize(noteData []byte) []byte {
@@ -30,8 +31,8 @@ type ElasticNote struct {
 	OwnerId       uuid.UUID   `json:"owner_id"`
 	Parent        uuid.UUID   `json:"parent"`
 	Children      []uuid.UUID `json:"children"`
-	Collaborators []uuid.UUID `json:"collaborators"`
 	Tags          []string    `json:"tags"`
+	Collaborators []uuid.UUID `json:"collaborators"`
 }
 
 type NoteUpdate struct {

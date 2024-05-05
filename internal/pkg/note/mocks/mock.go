@@ -66,19 +66,19 @@ func (mr *MockNoteUsecaseMockRecorder) AddTag(ctx, tagName, noteId, userId inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteUsecase)(nil).AddTag), ctx, tagName, noteId, userId)
 }
 
-// CheckCollaborator mocks base method.
-func (m *MockNoteUsecase) CheckCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) (bool, error) {
+// CheckPermissions mocks base method.
+func (m *MockNoteUsecase) CheckPermissions(ctx context.Context, noteID, userID uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckCollaborator", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CheckPermissions", ctx, noteID, userID)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CheckCollaborator indicates an expected call of CheckCollaborator.
-func (mr *MockNoteUsecaseMockRecorder) CheckCollaborator(arg0, arg1, arg2 interface{}) *gomock.Call {
+// CheckPermissions indicates an expected call of CheckPermissions.
+func (mr *MockNoteUsecaseMockRecorder) CheckPermissions(ctx, noteID, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckCollaborator", reflect.TypeOf((*MockNoteUsecase)(nil).CheckCollaborator), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPermissions", reflect.TypeOf((*MockNoteUsecase)(nil).CheckPermissions), ctx, noteID, userID)
 }
 
 // CreateNote mocks base method.
@@ -265,21 +265,6 @@ func (mr *MockNoteBaseRepoMockRecorder) AddTag(ctx, tagName, noteId interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddTag), ctx, tagName, noteId)
 }
 
-// CheckCollaborator mocks base method.
-func (m *MockNoteBaseRepo) CheckCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckCollaborator", arg0, arg1, arg2)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckCollaborator indicates an expected call of CheckCollaborator.
-func (mr *MockNoteBaseRepoMockRecorder) CheckCollaborator(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckCollaborator", reflect.TypeOf((*MockNoteBaseRepo)(nil).CheckCollaborator), arg0, arg1, arg2)
-}
-
 // CreateNote mocks base method.
 func (m *MockNoteBaseRepo) CreateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
@@ -365,21 +350,6 @@ func (m *MockNoteBaseRepo) ReadAllNotes(arg0 context.Context, arg1 uuid.UUID, ar
 func (mr *MockNoteBaseRepoMockRecorder) ReadAllNotes(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAllNotes", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadAllNotes), arg0, arg1, arg2, arg3, arg4)
-}
-
-// ReadAllNotesNoTags mocks base method.
-func (m *MockNoteBaseRepo) ReadAllNotesNoTags(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64) ([]models.Note, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadAllNotesNoTags", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].([]models.Note)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReadAllNotesNoTags indicates an expected call of ReadAllNotesNoTags.
-func (mr *MockNoteBaseRepoMockRecorder) ReadAllNotesNoTags(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadAllNotesNoTags", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadAllNotesNoTags), arg0, arg1, arg2, arg3)
 }
 
 // ReadNote mocks base method.
@@ -530,21 +500,6 @@ func (m *MockNoteSearchRepo) DeleteTag(ctx context.Context, tagName string, note
 func (mr *MockNoteSearchRepoMockRecorder) DeleteTag(ctx, tagName, noteID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteSearchRepo)(nil).DeleteTag), ctx, tagName, noteID)
-}
-
-// ReadNote mocks base method.
-func (m *MockNoteSearchRepo) ReadNote(arg0 context.Context, arg1 uuid.UUID) (models.ElasticNote, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadNote", arg0, arg1)
-	ret0, _ := ret[0].(models.ElasticNote)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReadNote indicates an expected call of ReadNote.
-func (mr *MockNoteSearchRepoMockRecorder) ReadNote(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteSearchRepo)(nil).ReadNote), arg0, arg1)
 }
 
 // RemoveSubNote mocks base method.

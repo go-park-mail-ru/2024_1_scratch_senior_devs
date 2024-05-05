@@ -96,24 +96,24 @@ func (mr *MockNoteClientMockRecorder) AddTag(ctx, in interface{}, opts ...interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteClient)(nil).AddTag), varargs...)
 }
 
-// CheckCollaborator mocks base method.
-func (m *MockNoteClient) CheckCollaborator(ctx context.Context, in *gen.CheckCollaboratorRequest, opts ...grpc.CallOption) (*gen.CheckCollaboratorResponse, error) {
+// CheckPermissions mocks base method.
+func (m *MockNoteClient) CheckPermissions(ctx context.Context, in *gen.CheckPermissionsRequest, opts ...grpc.CallOption) (*gen.CheckPermissionsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "CheckCollaborator", varargs...)
-	ret0, _ := ret[0].(*gen.CheckCollaboratorResponse)
+	ret := m.ctrl.Call(m, "CheckPermissions", varargs...)
+	ret0, _ := ret[0].(*gen.CheckPermissionsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CheckCollaborator indicates an expected call of CheckCollaborator.
-func (mr *MockNoteClientMockRecorder) CheckCollaborator(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// CheckPermissions indicates an expected call of CheckPermissions.
+func (mr *MockNoteClientMockRecorder) CheckPermissions(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckCollaborator", reflect.TypeOf((*MockNoteClient)(nil).CheckCollaborator), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPermissions", reflect.TypeOf((*MockNoteClient)(nil).CheckPermissions), varargs...)
 }
 
 // CreateSubNote mocks base method.
@@ -324,19 +324,19 @@ func (mr *MockNoteServerMockRecorder) AddTag(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteServer)(nil).AddTag), arg0, arg1)
 }
 
-// CheckCollaborator mocks base method.
-func (m *MockNoteServer) CheckCollaborator(arg0 context.Context, arg1 *gen.CheckCollaboratorRequest) (*gen.CheckCollaboratorResponse, error) {
+// CheckPermissions mocks base method.
+func (m *MockNoteServer) CheckPermissions(arg0 context.Context, arg1 *gen.CheckPermissionsRequest) (*gen.CheckPermissionsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckCollaborator", arg0, arg1)
-	ret0, _ := ret[0].(*gen.CheckCollaboratorResponse)
+	ret := m.ctrl.Call(m, "CheckPermissions", arg0, arg1)
+	ret0, _ := ret[0].(*gen.CheckPermissionsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CheckCollaborator indicates an expected call of CheckCollaborator.
-func (mr *MockNoteServerMockRecorder) CheckCollaborator(arg0, arg1 interface{}) *gomock.Call {
+// CheckPermissions indicates an expected call of CheckPermissions.
+func (mr *MockNoteServerMockRecorder) CheckPermissions(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckCollaborator", reflect.TypeOf((*MockNoteServer)(nil).CheckCollaborator), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPermissions", reflect.TypeOf((*MockNoteServer)(nil).CheckPermissions), arg0, arg1)
 }
 
 // CreateSubNote mocks base method.

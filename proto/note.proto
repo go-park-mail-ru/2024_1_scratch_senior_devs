@@ -9,11 +9,11 @@ service Note {
      rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {}
      rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {}
      rpc CreateSubNote(CreateSubNoteRequest) returns (CreateSubNoteResponse) {}
-     rpc CheckCollaborator(CheckCollaboratorRequest) returns (CheckCollaboratorResponse) {}
      rpc AddCollaborator(AddCollaboratorRequest) returns (AddCollaboratorResponse) {}
      rpc AddTag(TagRequest) returns (GetNoteResponse) {}
      rpc DeleteTag(TagRequest) returns (GetNoteResponse) {}
      rpc GetTags(GetTagsRequest) returns (GetTagsResponse) {}
+     rpc CheckPermissions(CheckPermissionsRequest) returns (CheckPermissionsResponse) {}
 }
 
 message GetTagsRequest {
@@ -28,15 +28,6 @@ message TagRequest {
      string TagName = 1;
      string NoteId = 2;
      string UserId = 3;
-}
-
-message CheckCollaboratorRequest {
-     string NoteId = 1;
-     string UserId = 2;
-}
-
-message CheckCollaboratorResponse {
-     bool Result = 1;
 }
 
 message AddCollaboratorRequest {
@@ -113,4 +104,13 @@ message CreateSubNoteRequest {
 
 message CreateSubNoteResponse {
      NoteModel Note = 1;
+}
+
+message CheckPermissionsRequest {
+     string NoteId = 1;
+     string UserId = 2;
+}
+
+message CheckPermissionsResponse {
+     bool Result = 1;
 }

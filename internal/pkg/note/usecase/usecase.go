@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 	"sync"
 	"time"
 	"unicode/utf8"
@@ -14,7 +15,6 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
-	"github.com/samber/lo"
 	"github.com/satori/uuid"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -44,11 +44,7 @@ func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count 
 	var err error
 
 	if utf8.RuneCountInString(searchValue) < uc.cfg.ElasticSearchValueMinLength {
-		if len(tags) > 0 {
-			res, err = uc.baseRepo.ReadAllNotes(ctx, userId, count, offset, tags)
-		} else {
-			res, err = uc.baseRepo.ReadAllNotesNoTags(ctx, userId, count, offset)
-		}
+		res, err = uc.baseRepo.ReadAllNotes(ctx, userId, count, offset, tags)
 	} else {
 		res, err = uc.searchRepo.SearchNotes(ctx, userId, count, offset, searchValue, tags)
 	}
@@ -66,17 +62,14 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	resultNote, err := uc.baseRepo.ReadNote(ctx, noteId)
-	if err != nil || resultNote.OwnerId != userId {
-		result, err := uc.baseRepo.CheckCollaborator(ctx, noteId, userId)
-		if err != nil {
-			logger.Error(err.Error())
-			return models.Note{}, err
-		}
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, errors.New("not found")
+	}
 
-		if !result {
-			logger.Error("not owner and not collaborator")
-			return models.Note{}, errors.New("not found")
-		}
+	if resultNote.OwnerId != userId || !slices.Contains(resultNote.Collaborators, userId) {
+		logger.Error("not owner and not collaborator")
+		return models.Note{}, errors.New("not found")
 	}
 
 	logger.Info("success")
@@ -87,13 +80,15 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	newNote := models.Note{
-		Id:         uuid.NewV4(),
-		Data:       noteData,
-		CreateTime: time.Now().UTC(),
-		UpdateTime: time.Now().UTC(),
-		OwnerId:    userId,
-		Parent:     uuid.UUID{},
-		Children:   []uuid.UUID{},
+		Id:            uuid.NewV4(),
+		Data:          noteData,
+		CreateTime:    time.Now().UTC(),
+		UpdateTime:    time.Now().UTC(),
+		OwnerId:       userId,
+		Parent:        uuid.UUID{},
+		Children:      []uuid.UUID{},
+		Tags:          []string{},
+		Collaborators: []uuid.UUID{},
 	}
 
 	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
@@ -104,7 +99,7 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-		if err := uc.searchRepo.CreateNote(ctx, elasticsearch.ConvertToElasticNote(newNote, []uuid.UUID{})); err != nil {
+		if err := uc.searchRepo.CreateNote(ctx, elasticsearch.ConvertToElasticNote(newNote)); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -120,24 +115,16 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
 	if err != nil {
 		logger.Error(err.Error())
-		return models.Note{}, err
+		return models.Note{}, errors.New("not found")
 	}
 
-	if updatedNote.OwnerId != userId {
-		result, err := uc.baseRepo.CheckCollaborator(ctx, noteId, userId)
-		if err != nil {
-			logger.Error(err.Error())
-			return models.Note{}, err
-		}
-
-		if !result {
-			logger.Error("not owner and not collaborator")
-			return models.Note{}, errors.New("not found")
-		}
+	if updatedNote.OwnerId != userId || !slices.Contains(updatedNote.Collaborators, userId) {
+		logger.Error("not owner and not collaborator")
+		return models.Note{}, errors.New("not found")
 	}
 
 	if bytes.Equal(updatedNote.Data, noteData) {
-		logger.Info("success")
+		logger.Info("note data not modified")
 		return updatedNote, nil
 	}
 
@@ -152,15 +139,7 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-
-		elasticOldNote, err := uc.searchRepo.ReadNote(ctx, noteId)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-		elasticNote := elasticsearch.ConvertToElasticNote(updatedNote, elasticOldNote.Collaborators)
-
-		if err := uc.searchRepo.UpdateNote(ctx, elasticNote); err != nil {
+		if err := uc.searchRepo.UpdateNote(ctx, elasticsearch.ConvertToElasticNote(updatedNote)); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -246,30 +225,6 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 
 	logger.Info("success")
 	return newNote, nil
-}
-
-func (uc *NoteUsecase) CheckCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
-	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
-
-	result, err := uc.baseRepo.CheckCollaborator(ctx, noteID, userID)
-	if err != nil {
-		logger.Error(err.Error())
-		return false, err
-	}
-
-	if result {
-		logger.Info("success")
-		return result, nil
-	}
-
-	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID)
-	if err != nil {
-		logger.Error(err.Error())
-		return false, err
-	}
-
-	logger.Info("success")
-	return result || currentNote.OwnerId == userID, nil
 }
 
 func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, guestID uuid.UUID) error {
@@ -394,5 +349,23 @@ func (uc *NoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string,
 	}
 
 	logger.Info("success")
-	return lo.Uniq(tags), nil
+	return tags, nil
+}
+
+func (uc *NoteUsecase) CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return false, errors.New("not found")
+	}
+
+	if resultNote.OwnerId != userID || !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return false, nil
+	}
+
+	logger.Info("success")
+	return true, nil
 }

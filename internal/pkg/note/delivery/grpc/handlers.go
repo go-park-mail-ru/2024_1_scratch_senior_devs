@@ -78,19 +78,6 @@ func (h *GrpcNoteHandler) DeleteTag(ctx context.Context, in *generatedNote.TagRe
 	return &generatedNote.GetNoteResponse{Note: getNote(result)}, nil
 }
 
-func (h *GrpcNoteHandler) CheckCollaborator(ctx context.Context, in *generatedNote.CheckCollaboratorRequest) (*generatedNote.CheckCollaboratorResponse, error) {
-	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
-
-	result, err := h.uc.CheckCollaborator(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	logger.Info("success")
-	return &generatedNote.CheckCollaboratorResponse{Result: result}, nil
-}
-
 func (h *GrpcNoteHandler) AddCollaborator(ctx context.Context, in *generatedNote.AddCollaboratorRequest) (*generatedNote.AddCollaboratorResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -187,11 +174,27 @@ func (h *GrpcNoteHandler) CreateSubNote(ctx context.Context, in *generatedNote.C
 
 	response, err := h.uc.CreateSubNote(ctx, uuid.FromStringOrNil(in.UserId), []byte(in.NoteData), uuid.FromStringOrNil(in.ParentId))
 	if err != nil {
+		logger.Error(err.Error())
 		return nil, err
 	}
 
 	logger.Info("success")
 	return &generatedNote.CreateSubNoteResponse{
 		Note: getNote(response),
+	}, nil
+}
+
+func (h *GrpcNoteHandler) CheckPermissions(ctx context.Context, in *generatedNote.CheckPermissionsRequest) (*generatedNote.CheckPermissionsResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.CheckPermissions(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.CheckPermissionsResponse{
+		Result: response,
 	}, nil
 }

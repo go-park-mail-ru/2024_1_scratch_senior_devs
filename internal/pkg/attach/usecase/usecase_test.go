@@ -129,7 +129,6 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 					NoteId: data.noteID,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil).Times(1)
 				repo.EXPECT().DeleteAttach(gomock.Any(), gomock.Any()).Return(errors.New("note not found")).Times(1)
 			},
 			args: args{
@@ -247,7 +246,6 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 					NoteId: noteId,
 					Path:   "",
 				}, nil).Times(1)
-				noteRepo.EXPECT().CheckCollaborator(ctx, noteId, userId).Return(false, errors.New("note not found")).Times(1)
 			},
 			args: args{
 				attachID: attachId,

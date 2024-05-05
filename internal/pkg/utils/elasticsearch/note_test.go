@@ -22,14 +22,15 @@ func TestConvertToElasticNote(t *testing.T) {
 		{
 			name: "Test_ConvertToElasticNote_Success",
 			note: models.Note{
-				Id:         id,
-				Data:       []byte(`{"title": "my note"}`),
-				CreateTime: currTime,
-				UpdateTime: currTime,
-				OwnerId:    id,
-				Parent:     id,
-				Children:   []uuid.UUID{},
-				Tags:       []string{},
+				Id:            id,
+				Data:          []byte(`{"title": "my note"}`),
+				CreateTime:    currTime,
+				UpdateTime:    currTime,
+				OwnerId:       id,
+				Parent:        id,
+				Children:      []uuid.UUID{},
+				Tags:          []string{},
+				Collaborators: []uuid.UUID{},
 			},
 			result: models.ElasticNote{
 				Id:            id,
@@ -39,8 +40,8 @@ func TestConvertToElasticNote(t *testing.T) {
 				OwnerId:       id,
 				Parent:        id,
 				Children:      []uuid.UUID{},
-				Collaborators: []uuid.UUID{},
 				Tags:          []string{},
+				Collaborators: []uuid.UUID{},
 			},
 			isErr: false,
 		},
@@ -48,7 +49,7 @@ func TestConvertToElasticNote(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			elasticNote := ConvertToElasticNote(tt.note, []uuid.UUID{})
+			elasticNote := ConvertToElasticNote(tt.note)
 
 			assert.Equal(t, elasticNote, tt.result)
 		})
@@ -67,22 +68,26 @@ func TestConvertToUsualNote(t *testing.T) {
 		{
 			name: "Test_ConvertToUsualNote_Success",
 			note: models.ElasticNote{
-				Id:         id,
-				Data:       `{"title": "my note"}`,
-				CreateTime: currTime,
-				UpdateTime: currTime,
-				OwnerId:    id,
-				Parent:     id,
-				Children:   []uuid.UUID{},
+				Id:            id,
+				Data:          `{"title": "my note"}`,
+				CreateTime:    currTime,
+				UpdateTime:    currTime,
+				OwnerId:       id,
+				Parent:        id,
+				Children:      []uuid.UUID{},
+				Tags:          []string{},
+				Collaborators: []uuid.UUID{},
 			},
 			result: models.Note{
-				Id:         id,
-				Data:       []byte(`{"title": "my note"}`),
-				CreateTime: currTime,
-				UpdateTime: currTime,
-				OwnerId:    id,
-				Parent:     id,
-				Children:   []uuid.UUID{},
+				Id:            id,
+				Data:          []byte(`{"title": "my note"}`),
+				CreateTime:    currTime,
+				UpdateTime:    currTime,
+				OwnerId:       id,
+				Parent:        id,
+				Children:      []uuid.UUID{},
+				Tags:          []string{},
+				Collaborators: []uuid.UUID{},
 			},
 		},
 	}

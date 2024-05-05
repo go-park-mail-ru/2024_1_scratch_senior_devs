@@ -190,7 +190,6 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 				}
 
 				repo.EXPECT().ReadNote(ctx, nId).Return(mockResp, errors.New("error")).Times(1)
-				repo.EXPECT().CheckCollaborator(ctx, nId, uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95")).Return(false, nil)
 			},
 			args: args{
 				context.Background(),
@@ -307,7 +306,6 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 				baseRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
 				baseRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
 				searchRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
-				searchRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.ElasticNote{}, nil).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),

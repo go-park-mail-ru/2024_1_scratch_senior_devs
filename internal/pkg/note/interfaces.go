@@ -20,18 +20,18 @@ type NoteUsecase interface {
 
 	CreateSubNote(context.Context, uuid.UUID, []byte, uuid.UUID) (models.Note, error)
 
-	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
 	AddCollaborator(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error
 
 	AddTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error)
 	DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error)
 	GetTags(ctx context.Context, userID uuid.UUID) ([]string, error)
+
+	CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error)
 }
 
 type NoteBaseRepo interface {
 	ReadAllNotes(context.Context, uuid.UUID, int64, int64, []string) ([]models.Note, error)
 	ReadNote(context.Context, uuid.UUID) (models.Note, error)
-	ReadAllNotesNoTags(context.Context, uuid.UUID, int64, int64) ([]models.Note, error)
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
@@ -41,7 +41,6 @@ type NoteBaseRepo interface {
 
 	GetUpdates(context.Context, uuid.UUID, time.Time) ([]models.Message, error)
 
-	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
 	AddCollaborator(context.Context, uuid.UUID, uuid.UUID) error
 
 	AddTag(ctx context.Context, tagName string, noteId uuid.UUID) error
@@ -51,7 +50,6 @@ type NoteBaseRepo interface {
 
 type NoteSearchRepo interface {
 	SearchNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
-	ReadNote(context.Context, uuid.UUID) (models.ElasticNote, error)
 	CreateNote(context.Context, models.ElasticNote) error
 	UpdateNote(context.Context, models.ElasticNote) error
 	DeleteNote(context.Context, uuid.UUID) error
