@@ -39,7 +39,7 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 		logger.Error(err.Error())
 		return models.Attach{}, err
 	}
-	if resultNote.OwnerId != userID || !slices.Contains(resultNote.Collaborators, userID) {
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
 		return models.Attach{}, nil
 	}
@@ -83,7 +83,7 @@ func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, u
 		logger.Error(err.Error())
 		return err
 	}
-	if resultNote.OwnerId != userID || !slices.Contains(resultNote.Collaborators, userID) {
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
 		return nil
 	}
@@ -116,7 +116,7 @@ func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, user
 		logger.Error(err.Error())
 		return models.Attach{}, err
 	}
-	if resultNote.OwnerId != userID || !slices.Contains(resultNote.Collaborators, userID) {
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
 		return models.Attach{}, nil
 	}

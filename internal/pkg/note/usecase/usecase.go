@@ -67,7 +67,7 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 		return models.Note{}, errors.New("not found")
 	}
 
-	if resultNote.OwnerId != userId || !slices.Contains(resultNote.Collaborators, userId) {
+	if resultNote.OwnerId != userId && !slices.Contains(resultNote.Collaborators, userId) {
 		logger.Error("not owner and not collaborator")
 		return models.Note{}, errors.New("not found")
 	}
@@ -118,7 +118,7 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 		return models.Note{}, errors.New("not found")
 	}
 
-	if updatedNote.OwnerId != userId || !slices.Contains(updatedNote.Collaborators, userId) {
+	if updatedNote.OwnerId != userId && !slices.Contains(updatedNote.Collaborators, userId) {
 		logger.Error("not owner and not collaborator")
 		return models.Note{}, errors.New("not found")
 	}
@@ -361,7 +361,7 @@ func (uc *NoteUsecase) CheckPermissions(ctx context.Context, noteID uuid.UUID, u
 		return false, errors.New("not found")
 	}
 
-	if resultNote.OwnerId != userID || !slices.Contains(resultNote.Collaborators, userID) {
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
 		return false, nil
 	}
