@@ -28,7 +28,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 				mockPool.EXPECT().Query(gomock.Any(), getAllNotes, id, int64(1), int64(0), []string{}).Return(pgxRows, nil)
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
 			expectedErr: nil,
 		},
 		{
@@ -37,7 +37,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 				mockPool.EXPECT().Query(gomock.Any(), getAllNotes, id, int64(1), int64(0), []string{}).Return(pgxRows, pgx.ErrNoRows)
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
 			expectedErr: pgx.ErrNoRows,
 		},
 	}
@@ -48,7 +48,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), []byte{}, time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), []byte{}, time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.userId)
 
@@ -75,7 +75,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 				pgxRows.Next()
 			},
 			Id:          uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
 			expectedErr: nil,
 		},
 		{
@@ -85,7 +85,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 				pgxRows.Next()
 			},
 			Id:          uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
 			expectedErr: nil,
 		},
 	}
@@ -95,7 +95,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), []byte{}, time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), []byte{}, time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, pgxRows, tt.Id)
 
@@ -121,7 +121,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Success",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, []byte{}, currTime, currTime, userId, Id, []uuid.UUID{},
+					Id, []byte{}, currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
 				).Return(nil, nil)
 			},
 			err: nil,
@@ -130,7 +130,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Fail",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, []byte{}, currTime, currTime, userId, Id, []uuid.UUID{},
+					Id, []byte{}, currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
 				).Return(nil, errors.New("err"))
 			},
 			err: errors.New("err"),
@@ -146,13 +146,15 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 
 			repo := CreateNotePostgres(mockPool)
 			err := repo.CreateNote(context.Background(), models.Note{
-				Id:         Id,
-				Data:       []byte{},
-				CreateTime: currTime,
-				UpdateTime: currTime,
-				OwnerId:    userId,
-				Parent:     Id,
-				Children:   []uuid.UUID{},
+				Id:            Id,
+				Data:          []byte{},
+				CreateTime:    currTime,
+				UpdateTime:    currTime,
+				OwnerId:       userId,
+				Parent:        Id,
+				Children:      []uuid.UUID{},
+				Tags:          []string{},
+				Collaborators: []uuid.UUID{},
 			})
 
 			assert.Equal(t, tt.err, err)
@@ -199,13 +201,15 @@ func TestNoteRepo_UpdateNote(t *testing.T) {
 
 			repo := CreateNotePostgres(mockPool)
 			err := repo.UpdateNote(context.Background(), models.Note{
-				Id:         Id,
-				Data:       []byte{},
-				CreateTime: currTime,
-				UpdateTime: currTime,
-				OwnerId:    userId,
-				Parent:     Id,
-				Children:   []uuid.UUID{},
+				Id:            Id,
+				Data:          []byte{},
+				CreateTime:    currTime,
+				UpdateTime:    currTime,
+				OwnerId:       userId,
+				Parent:        Id,
+				Children:      []uuid.UUID{},
+				Tags:          []string{},
+				Collaborators: []uuid.UUID{},
 			})
 
 			assert.Equal(t, tt.err, err)

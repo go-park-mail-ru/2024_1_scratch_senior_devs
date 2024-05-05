@@ -23,6 +23,13 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 		ElasticSearchValueMinLength: 2,
 	}
 
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          10,
+		MaxSubnotes:      10,
+	}
+
 	type args struct {
 		userId uuid.UUID
 		count  int64
@@ -116,7 +123,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 			defer ctl.Finish()
 			baseRepo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			Usecase := CreateNoteUsecase(baseRepo, searchRepo, elasticConfig, &sync.WaitGroup{})
+			Usecase := CreateNoteUsecase(baseRepo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), baseRepo, searchRepo, tt.args.userId, tt.args.count, tt.args.offset)
 			got, err := Usecase.GetAllNotes(context.Background(), tt.args.userId, tt.args.count, tt.args.offset, "", []string{"first"})
@@ -136,6 +143,13 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 	elasticConfig := config.ElasticConfig{
 		ElasticIndexName:            "notes",
 		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          10,
+		MaxSubnotes:      10,
 	}
 
 	type args struct {
@@ -207,7 +221,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, tt.args.noteId)
 
@@ -227,6 +241,13 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 	elasticConfig := config.ElasticConfig{
 		ElasticIndexName:            "notes",
 		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          10,
+		MaxSubnotes:      10,
 	}
 
 	type args struct {
@@ -262,7 +283,7 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
@@ -284,6 +305,13 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 	elasticConfig := config.ElasticConfig{
 		ElasticIndexName:            "notes",
 		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          10,
+		MaxSubnotes:      10,
 	}
 
 	id := uuid.NewV4()
@@ -322,7 +350,7 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
@@ -344,6 +372,13 @@ func TestNoteUsecase_DeleteNote(t *testing.T) {
 	elasticConfig := config.ElasticConfig{
 		ElasticIndexName:            "notes",
 		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          10,
+		MaxSubnotes:      10,
 	}
 
 	id := uuid.NewV4()
@@ -382,7 +417,7 @@ func TestNoteUsecase_DeleteNote(t *testing.T) {
 			defer ctl.Finish()
 			repo := mock_note.NewMockNoteBaseRepo(ctl)
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
-			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, &sync.WaitGroup{})
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 

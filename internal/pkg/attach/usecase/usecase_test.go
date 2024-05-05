@@ -117,19 +117,18 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 		{
 			name: "TestDeleteAtatch_Fail_NotFound",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, data args) {
-				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any()).Return(models.Note{
 					Id:         data.noteID,
 					Data:       []byte{},
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					OwnerId:    uuid.NewV4(),
-				}, nil).Times(1)
+				}, errors.New("note not found")).Times(1)
 				repo.EXPECT().GetAttach(ctx, attachId).Return(models.Attach{
 					Id:     data.attachID,
 					NoteId: data.noteID,
 					Path:   "",
 				}, nil).Times(1)
-				repo.EXPECT().DeleteAttach(gomock.Any(), gomock.Any()).Return(errors.New("note not found")).Times(1)
 			},
 			args: args{
 				ctx:      context.Background(),
@@ -234,13 +233,13 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 		{
 			name: "Test_GetAttach_NotFound",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo) {
-				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any()).Return(models.Note{
 					Id:         noteId,
 					Data:       []byte{},
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					OwnerId:    uuid.NewV4(),
-				}, nil).Times(1)
+				}, errors.New("note not found")).Times(1)
 				repo.EXPECT().GetAttach(ctx, attachId).Return(models.Attach{
 					Id:     attachId,
 					NoteId: noteId,
