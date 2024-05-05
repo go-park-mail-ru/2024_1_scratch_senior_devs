@@ -135,10 +135,9 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorMessage(w, http.StatusBadRequest, err)
 		return
 	}
+
 	data := make([]models.Note, len(protoData.Notes))
-
 	for i, note := range protoData.Notes {
-
 		data[i], err = getNote(note)
 		if err != nil {
 			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())

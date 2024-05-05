@@ -88,7 +88,6 @@ func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID,
 		return err
 	}
 
-	logger.Info("success")
 	return nil
 }
 

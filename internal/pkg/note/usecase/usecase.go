@@ -227,6 +227,25 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 	return newNote, nil
 }
 
+func (uc *NoteUsecase) addCollaboratorRecursive(ctx context.Context, noteID uuid.UUID, guestID uuid.UUID) error {
+	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	if err != nil {
+		return err
+	}
+
+	if err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
+		return err
+	}
+
+	for _, child := range currentNote.Children {
+		if err := uc.addCollaboratorRecursive(ctx, child, guestID); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, guestID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -255,6 +274,13 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 	if err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
 		logger.Error(err.Error())
 		return err
+	}
+
+	for _, child := range currentNote.Collaborators {
+		if err := uc.addCollaboratorRecursive(ctx, child, guestID); err != nil {
+			logger.Error(err.Error())
+			return err
+		}
 	}
 
 	uc.wg.Add(1)
