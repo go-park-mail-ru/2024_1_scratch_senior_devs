@@ -26,7 +26,10 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 )
 
-const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
+const (
+	TimeLayout     = "2006-01-02 15:04:05 -0700 UTC"
+	RpcErrorPrefix = "rpc error: code = Unknown desc = "
+)
 
 type NoteHandler struct {
 	client     gen.NoteClient
@@ -447,9 +450,15 @@ func (h *NoteHandler) CreateSubNote(w http.ResponseWriter, r *http.Request) {
 		ParentId: noteIdString,
 	})
 	if err != nil {
-		if err.Error() == note.ErrTooManySubnotes || err.Error() == note.ErrTooDeep {
+		if err.Error()[len(RpcErrorPrefix):] == note.ErrTooManySubnotes {
 			log.LogHandlerError(logger, http.StatusConflict, err.Error())
 			responses.WriteErrorMessage(w, http.StatusConflict, err)
+			return
+		}
+
+		if err.Error()[len(RpcErrorPrefix):] == note.ErrTooDeep {
+			log.LogHandlerError(logger, http.StatusNotFound, err.Error())
+			responses.WriteErrorMessage(w, http.StatusNotFound, err)
 			return
 		}
 
@@ -565,9 +574,15 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		GuestId: guest.Id,
 	})
 	if err != nil {
-		if err.Error() == note.ErrAlreadyCollaborator || err.Error() == note.ErrTooManyCollaborators {
+		if err.Error()[len(RpcErrorPrefix):] == note.ErrAlreadyCollaborator {
 			log.LogHandlerError(logger, http.StatusConflict, err.Error())
 			responses.WriteErrorMessage(w, http.StatusConflict, err)
+			return
+		}
+
+		if err.Error()[len(RpcErrorPrefix):] == note.ErrTooManyCollaborators {
+			log.LogHandlerError(logger, http.StatusExpectationFailed, err.Error())
+			responses.WriteErrorMessage(w, http.StatusExpectationFailed, err)
 			return
 		}
 
@@ -618,7 +633,7 @@ func (h *NoteHandler) AddTag(w http.ResponseWriter, r *http.Request) {
 		UserId:  jwtPayload.Id.String(),
 	})
 	if err != nil {
-		if err.Error() == note.ErrTooManyTags {
+		if err.Error()[len(RpcErrorPrefix):] == note.ErrTooManyTags {
 			log.LogHandlerError(logger, http.StatusConflict, err.Error())
 			responses.WriteErrorMessage(w, http.StatusConflict, err)
 			return
