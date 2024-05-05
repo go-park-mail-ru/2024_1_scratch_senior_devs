@@ -27,11 +27,11 @@ func TestMakeHelloNoteData(t *testing.T) {
 	username := "testuser"
 	expected := []byte(`
 	{
-		"title": "",
+		"title": "YouNote❤️",
 		"content": [
 		    {
 			   "pluginName": "textBlock",
-			   "content": "Hello, testuser!"
+			   "content": "Привет, testuser!"
 		    },
 		    {
 			   "pluginName": "div",
