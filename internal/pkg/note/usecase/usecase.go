@@ -248,6 +248,9 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		return models.Note{}, errors.New(note.ErrTooDeep)
 	}
 
+	newNote.OwnerId = parent.OwnerId
+	newNote.Collaborators = parent.Collaborators
+
 	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
