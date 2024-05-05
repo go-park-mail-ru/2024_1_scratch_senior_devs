@@ -29,7 +29,7 @@ type NoteUsecase struct {
 	wg          *sync.WaitGroup
 }
 
-func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, constraints config.ConstraintsConfig, cfg config.ElasticConfig, wg *sync.WaitGroup) *NoteUsecase {
+func CreateNoteUsecase(baseRepo note.NoteBaseRepo, searchRepo note.NoteSearchRepo, cfg config.ElasticConfig, constraints config.ConstraintsConfig, wg *sync.WaitGroup) *NoteUsecase {
 	return &NoteUsecase{
 		baseRepo:    baseRepo,
 		searchRepo:  searchRepo,
