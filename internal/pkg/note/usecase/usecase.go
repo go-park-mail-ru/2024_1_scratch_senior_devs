@@ -247,6 +247,11 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 		return errors.New("not found")
 	}
 
+	if slices.Contains(currentNote.Collaborators, userID) {
+		logger.Error("yet a collaborator")
+		return errors.New("yet a collaborator")
+	}
+
 	if err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
 		logger.Error(err.Error())
 		return err

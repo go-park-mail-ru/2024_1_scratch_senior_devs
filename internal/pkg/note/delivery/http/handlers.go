@@ -556,6 +556,12 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		GuestId: guest.Id,
 	})
 	if err != nil {
+		if err.Error() == "yet a collaborator" {
+			log.LogHandlerError(logger, http.StatusConflict, err.Error())
+			responses.WriteErrorMessage(w, http.StatusConflict, err)
+			return
+		}
+
 		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
