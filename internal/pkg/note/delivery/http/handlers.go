@@ -536,8 +536,8 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	guest, err := h.authClient.GetUserByUsername(r.Context(), &authGen.GetUserByUsernameRequest{Username: payload.Username})
-	if err := responses.GetRequestData(r, &payload); err != nil {
-		log.LogHandlerError(logger, http.StatusNotFound, responses.ParseBodyError+err.Error())
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("user not found"))
 		return
 	}
@@ -693,7 +693,9 @@ func (h *NoteHandler) GetTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := models.GetTagsResponse{Tags: result.Tags}
+	realTags := make([]string, len(result.Tags))
+	copy(realTags, result.Tags)
+	response := models.GetTagsResponse{Tags: realTags}
 	if err := responses.WriteResponseData(w, response, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

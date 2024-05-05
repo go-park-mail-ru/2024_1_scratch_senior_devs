@@ -16,33 +16,22 @@ import (
 )
 
 const (
-	getAllNotes = `SELECT n.id, n.data, n.create_time, n.update_time, n.owner_id, n.parent, n.children, agg.array_agg
-	FROM (
-	    SELECT id, data, create_time, update_time, owner_id, parent, children
+	getAllNotes = `
+	    SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators
 	    FROM notes
 	    WHERE parent = '00000000-0000-0000-0000-000000000000'
-	    AND (
-		   owner_id = $1
-		   OR (
-			  SELECT COUNT(user_id)
-			  FROM collaborators
-			  WHERE user_id = $1 AND note_id = id
-		   ) > 0
-	    )
-	    AND ($4::text[] ='{}'::text[] OR EXISTS (
-		   SELECT 1
-		   FROM note_tag
-		   WHERE note_id = id AND (tag_name = ANY ($4::text[]))
-	    ))
-	) n
-	FULL JOIN (
-	    SELECT ARRAY_AGG(tag_name), note_id
-	    FROM note_tag
-	    GROUP BY note_id
-	) agg
-	ON n.id = agg.note_id
-	ORDER BY update_time DESC
-	LIMIT $2 OFFSET $3;`
+			AND (
+				owner_id = $1
+				OR $1 IN collaborators
+			)
+			AND ($4::text[] = '{}'::text[] OR EXISTS (
+			   SELECT 1
+			   FROM note_tag
+			   WHERE note_id = id AND (tag_name = ANY ($4::text[]))
+			))
+		ORDER BY update_time DESC
+		LIMIT $2 OFFSET $3;
+	`
 	getAllNotesWithoutTags = `SELECT n.id, n.data, n.create_time, n.update_time, n.owner_id, n.parent, n.children, agg.array_agg
 	FROM (
 	    SELECT id, data, create_time, update_time, owner_id, parent, children

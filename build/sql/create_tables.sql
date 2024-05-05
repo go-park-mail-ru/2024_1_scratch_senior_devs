@@ -29,16 +29,8 @@ CREATE TABLE IF NOT EXISTS notes (
         NOT NULL,
     parent UUID DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
     children UUID[],
---     tags TEXT[],
---     collaborators UUID[]
-);
-
-
-CREATE TABLE IF NOT EXISTS note_tag (
-    note_id     UUID REFERENCES notes (id) ON DELETE CASCADE,
-    tag_name    TEXT NOT NULL
-                 CONSTRAINT tag_length CHECK (char_length(tag_name) <= 255),
-    PRIMARY KEY (note_id, tag_name)
+    tags TEXT[],
+    collaborators UUID[]
 );
 
 CREATE TABLE IF NOT EXISTS attaches (
@@ -54,12 +46,6 @@ CREATE TABLE IF NOT EXISTS messages (
     note_id         UUID        NOT NULL,
     created         TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     message_info    JSON
-);
-
-CREATE TABLE IF NOT EXISTS collaborators (
-    note_id UUID REFERENCES notes (id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users (id) ON DELETE CASCADE,
-    PRIMARY KEY (note_id, user_id)
 );
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
