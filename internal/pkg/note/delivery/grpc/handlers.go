@@ -32,6 +32,9 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 		collaborators[i] = collaborator.String()
 	}
 
+	tags := make([]string, len(note.Tags))
+	copy(tags, note.Tags)
+
 	return &generatedNote.NoteModel{
 		Id:            note.Id.String(),
 		Data:          string(note.Data),
@@ -40,7 +43,7 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 		OwnerId:       note.OwnerId.String(),
 		Parent:        note.Parent.String(),
 		Children:      children,
-		Tags:          note.Tags,
+		Tags:          tags,
 		Collaborators: collaborators,
 	}
 }
