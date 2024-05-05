@@ -43,7 +43,14 @@ const (
 
 	addTag    = "UPDATE notes SET tags = array_append(tags, $1) WHERE id = $2;"
 	deleteTag = "UPDATE notes SET tags = array_remove(tags, $1) WHERE id = $2;"
-	getTags   = `SELECT DISTINCT unnest(tags) AS tag FROM notes WHERE owner_id = $1;`
+	getTags   = `
+		SELECT DISTINCT unnest(tags) AS tag FROM notes 
+		WHERE parent = '00000000-0000-0000-0000-000000000000'::UUID
+		AND (
+			owner_id = $1
+			OR $1 = ANY(collaborators)
+		);
+	`
 )
 
 type NotePostgres struct {
