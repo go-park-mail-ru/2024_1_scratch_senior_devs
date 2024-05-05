@@ -6,6 +6,7 @@ service Auth {
   rpc SignUp(UserFormData) returns (SignUpResponse) {}
   rpc SignIn(UserFormData) returns (SignInResponse) {}
   rpc CheckUser(CheckUserRequest) returns (User) {}
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (User) {}
 	rpc UpdateProfile(UpdateProfileRequest) returns (User) {}
 	rpc UpdateProfileAvatar(UpdateProfileAvatarRequest) returns (User) {}
 	rpc GenerateAndUpdateSecret(SecretRequest) returns (GenerateAndUpdateSecretResponse) {}
@@ -57,6 +58,10 @@ message UpdateProfileRequest {
 
 message CheckUserRequest {
   string UserId = 1;
+}
+
+message GetUserByUsernameRequest {
+  string Username = 1;
 }
 
 message UpdateProfileAvatarRequest {

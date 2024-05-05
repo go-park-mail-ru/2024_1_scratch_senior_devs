@@ -42,7 +42,7 @@ message CheckCollaboratorResponse {
 message AddCollaboratorRequest {
      string NoteId = 1;
      string UserId = 2;
-     string Username = 3;
+     string GuestId = 3;
 }
 
 message AddCollaboratorResponse {}

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen/mocks"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -78,6 +79,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			//mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
 			mockClient := mock_grpc.NewMockNoteClient(ctrl)
+			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
 			mockHub := mock_hub.NewMockHubInterface(ctrl)
 			defer ctrl.Finish()
 			req := httptest.NewRequest("GET", "http://example.com/api/handler", nil)
@@ -97,7 +99,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			h := CreateNotesHandler(mockClient, mockHub)
+			h := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
 			h.GetAllNotes(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -183,6 +185,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			//mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
 			mockClient := mock_grpc.NewMockNoteClient(ctrl)
+			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
 			mockHub := mock_hub.NewMockHubInterface(ctrl)
 			defer ctrl.Finish()
 			req := httptest.NewRequest("GET", "http://example.com/api/note/c80e3ea8-0813-4731-b6ee-b41604c56f95", nil)
@@ -218,7 +221,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			if tt.name != "Test Bad Request" {
 				req = mux.SetURLVars(req, map[string]string{"id": tt.noteId.String()})
 			}
-			h := CreateNotesHandler(mockClient, mockHub)
+			h := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
 			h.GetNote(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -269,6 +272,7 @@ func TestNoteHandler_AddNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			//mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
 			mockClient := mock_grpc.NewMockNoteClient(ctrl)
+			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
 			mockHub := mock_hub.NewMockHubInterface(ctrl)
 
 			defer ctrl.Finish()
@@ -298,7 +302,7 @@ func TestNoteHandler_AddNote(t *testing.T) {
 			r = r.WithContext(ctx)
 			w := httptest.NewRecorder()
 
-			handler := CreateNotesHandler(mockClient, mockHub)
+			handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
 			handler.AddNote(w, r)
 
 			//assert.Equal(t, tt.expectedStatus, w.Code)

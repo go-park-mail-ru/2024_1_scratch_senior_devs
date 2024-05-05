@@ -86,7 +86,7 @@ const (
 	removeSubNote     = "UPDATE notes SET children = array_remove(children, $1) WHERE id = $2;"
 	getUpdates        = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
 	checkCollaborator = "SELECT COUNT(user_id) FROM collaborators WHERE note_id = $1 AND user_id = $2;"
-	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, (SELECT id FROM users WHERE username = $2));"
+	addCollaborator   = "INSERT INTO collaborators(note_id, user_id) VALUES ($1, $2);"
 	addTag            = "INSERT INTO note_tag(note_id, tag_name) VALUES ($1, $2);"
 	deleteTag         = "DELETE FROM note_tag WHERE note_id = $1 AND tag_name = $2;"
 	getTags           = `
@@ -142,10 +142,10 @@ func (repo *NotePostgres) GetTags(ctx context.Context, userID uuid.UUID) ([]stri
 	return result, nil
 }
 
-func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, username string) error {
+func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, guestID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	_, err := repo.db.Exec(ctx, addCollaborator, noteID, username)
+	_, err := repo.db.Exec(ctx, addCollaborator, noteID, guestID)
 	if err != nil {
 		logger.Error(err.Error())
 		return err

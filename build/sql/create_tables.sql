@@ -28,7 +28,9 @@ CREATE TABLE IF NOT EXISTS notes (
     owner_id UUID REFERENCES users (id)
         NOT NULL,
     parent UUID DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
-    children UUID[]
+    children UUID[],
+--     tags TEXT[],
+--     collaborators UUID[]
 );
 
 

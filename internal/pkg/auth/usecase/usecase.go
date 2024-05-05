@@ -117,6 +117,19 @@ func (uc *AuthUsecase) CheckUser(ctx context.Context, id uuid.UUID) (models.User
 	return userData, nil
 }
 
+func (uc *AuthUsecase) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	userData, err := uc.repo.GetUserByUsername(ctx, username)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.User{}, auth.ErrUserNotFound
+	}
+
+	logger.Info("success")
+	return userData, nil
+}
+
 func (uc *AuthUsecase) UpdateProfile(ctx context.Context, userID uuid.UUID, payload models.ProfileUpdatePayload) (models.User, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

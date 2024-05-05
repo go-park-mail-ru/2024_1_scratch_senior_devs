@@ -94,7 +94,7 @@ func (h *GrpcNoteHandler) CheckCollaborator(ctx context.Context, in *generatedNo
 func (h *GrpcNoteHandler) AddCollaborator(ctx context.Context, in *generatedNote.AddCollaboratorRequest) (*generatedNote.AddCollaboratorResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	if err := h.uc.AddCollaborator(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId), in.Username); err != nil {
+	if err := h.uc.AddCollaborator(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId), uuid.FromStringOrNil(in.GuestId)); err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}

@@ -120,21 +120,21 @@ func main() {
 
 	logMW := log.CreateLogMiddleware(logger)
 
-	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
-	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub)
-
-	NoteClient := grpcNote.NewNoteClient(noteConn)
-	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient, NoteHub)
-
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
 
-	AuthClient := grpcAuth.NewAuthClient(authConn)
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteClient, cfg.AuthHandler, cfg.Validation)
+	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
+	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
 	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, cfg.Attach)
+
+	AuthClient := grpcAuth.NewAuthClient(authConn)
+	NoteClient := grpcNote.NewNoteClient(noteConn)
+
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteClient, cfg.AuthHandler, cfg.Validation)
+	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient, AuthClient, NoteHub)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 

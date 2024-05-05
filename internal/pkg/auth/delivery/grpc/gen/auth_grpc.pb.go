@@ -25,6 +25,7 @@ type AuthClient interface {
 	SignUp(ctx context.Context, in *UserFormData, opts ...grpc.CallOption) (*SignUpResponse, error)
 	SignIn(ctx context.Context, in *UserFormData, opts ...grpc.CallOption) (*SignInResponse, error)
 	CheckUser(ctx context.Context, in *CheckUserRequest, opts ...grpc.CallOption) (*User, error)
+	GetUserByUsername(ctx context.Context, in *GetUserByUsernameRequest, opts ...grpc.CallOption) (*User, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*User, error)
 	UpdateProfileAvatar(ctx context.Context, in *UpdateProfileAvatarRequest, opts ...grpc.CallOption) (*User, error)
 	GenerateAndUpdateSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*GenerateAndUpdateSecretResponse, error)
@@ -60,6 +61,15 @@ func (c *authClient) SignIn(ctx context.Context, in *UserFormData, opts ...grpc.
 func (c *authClient) CheckUser(ctx context.Context, in *CheckUserRequest, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
 	err := c.cc.Invoke(ctx, "/auth.Auth/CheckUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) GetUserByUsername(ctx context.Context, in *GetUserByUsernameRequest, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/auth.Auth/GetUserByUsername", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +119,7 @@ type AuthServer interface {
 	SignUp(context.Context, *UserFormData) (*SignUpResponse, error)
 	SignIn(context.Context, *UserFormData) (*SignInResponse, error)
 	CheckUser(context.Context, *CheckUserRequest) (*User, error)
+	GetUserByUsername(context.Context, *GetUserByUsernameRequest) (*User, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*User, error)
 	UpdateProfileAvatar(context.Context, *UpdateProfileAvatarRequest) (*User, error)
 	GenerateAndUpdateSecret(context.Context, *SecretRequest) (*GenerateAndUpdateSecretResponse, error)
@@ -128,6 +139,9 @@ func (UnimplementedAuthServer) SignIn(context.Context, *UserFormData) (*SignInRe
 }
 func (UnimplementedAuthServer) CheckUser(context.Context, *CheckUserRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckUser not implemented")
+}
+func (UnimplementedAuthServer) GetUserByUsername(context.Context, *GetUserByUsernameRequest) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserByUsername not implemented")
 }
 func (UnimplementedAuthServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
@@ -204,6 +218,24 @@ func _Auth_CheckUser_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServer).CheckUser(ctx, req.(*CheckUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_GetUserByUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByUsernameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).GetUserByUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/GetUserByUsername",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).GetUserByUsername(ctx, req.(*GetUserByUsernameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -298,6 +330,10 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckUser",
 			Handler:    _Auth_CheckUser_Handler,
+		},
+		{
+			MethodName: "GetUserByUsername",
+			Handler:    _Auth_GetUserByUsername_Handler,
 		},
 		{
 			MethodName: "UpdateProfile",

@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 	"github.com/gorilla/websocket"
 
+	authGen "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 
@@ -27,14 +28,16 @@ import (
 const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
 
 type NoteHandler struct {
-	client gen.NoteClient
-	hub    hub.HubInterface
+	client     gen.NoteClient
+	authClient authGen.AuthClient
+	hub        hub.HubInterface
 }
 
-func CreateNotesHandler(client gen.NoteClient, hub hub.HubInterface) *NoteHandler {
+func CreateNotesHandler(client gen.NoteClient, authClient authGen.AuthClient, hub hub.HubInterface) *NoteHandler {
 	return &NoteHandler{
-		client: client,
-		hub:    hub,
+		client:     client,
+		authClient: authClient,
+		hub:        hub,
 	}
 }
 
@@ -532,13 +535,26 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	guest, err := h.authClient.GetUserByUsername(r.Context(), &authGen.GetUserByUsernameRequest{Username: payload.Username})
+	if err := responses.GetRequestData(r, &payload); err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("user not found"))
+		return
+	}
+
+	if jwtPayload.Id == uuid.FromStringOrNil(guest.Id) {
+		log.LogHandlerError(logger, http.StatusBadRequest, "tried to invite self to note")
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("Вы реально думали, что можно вот так просто взять и пригласить в заметку самого себя?"))
+		return
+	}
+
 	_, err = h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
-		NoteId:   noteIdString,           //note Id we add collaborator to (get from request URl)
-		Username: payload.Username,       //name of user we want to make a collaborator (get from request body)
-		UserId:   jwtPayload.Id.String(), //current users id
+		NoteId:  noteIdString,
+		UserId:  jwtPayload.Id.String(),
+		GuestId: guest.Id,
 	})
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusNotFound, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}

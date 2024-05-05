@@ -38,7 +38,7 @@ func (m *MockNoteUsecase) EXPECT() *MockNoteUsecaseMockRecorder {
 }
 
 // AddCollaborator mocks base method.
-func (m *MockNoteUsecase) AddCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) error {
+func (m *MockNoteUsecase) AddCollaborator(arg0 context.Context, arg1, arg2, arg3 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -224,7 +224,7 @@ func (m *MockNoteBaseRepo) EXPECT() *MockNoteBaseRepoMockRecorder {
 }
 
 // AddCollaborator mocks base method.
-func (m *MockNoteBaseRepo) AddCollaborator(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
+func (m *MockNoteBaseRepo) AddCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

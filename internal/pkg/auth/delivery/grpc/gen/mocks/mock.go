@@ -96,6 +96,26 @@ func (mr *MockAuthClientMockRecorder) GenerateAndUpdateSecret(ctx, in interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAndUpdateSecret", reflect.TypeOf((*MockAuthClient)(nil).GenerateAndUpdateSecret), varargs...)
 }
 
+// GetUserByUsername mocks base method.
+func (m *MockAuthClient) GetUserByUsername(ctx context.Context, in *gen.GetUserByUsernameRequest, opts ...grpc.CallOption) (*gen.User, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetUserByUsername", varargs...)
+	ret0, _ := ret[0].(*gen.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockAuthClientMockRecorder) GetUserByUsername(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockAuthClient)(nil).GetUserByUsername), varargs...)
+}
+
 // SignIn mocks base method.
 func (m *MockAuthClient) SignIn(ctx context.Context, in *gen.UserFormData, opts ...grpc.CallOption) (*gen.SignInResponse, error) {
 	m.ctrl.T.Helper()
@@ -242,6 +262,21 @@ func (m *MockAuthServer) GenerateAndUpdateSecret(arg0 context.Context, arg1 *gen
 func (mr *MockAuthServerMockRecorder) GenerateAndUpdateSecret(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAndUpdateSecret", reflect.TypeOf((*MockAuthServer)(nil).GenerateAndUpdateSecret), arg0, arg1)
+}
+
+// GetUserByUsername mocks base method.
+func (m *MockAuthServer) GetUserByUsername(arg0 context.Context, arg1 *gen.GetUserByUsernameRequest) (*gen.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByUsername", arg0, arg1)
+	ret0, _ := ret[0].(*gen.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockAuthServerMockRecorder) GetUserByUsername(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockAuthServer)(nil).GetUserByUsername), arg0, arg1)
 }
 
 // SignIn mocks base method.

@@ -93,6 +93,19 @@ func (h *GrpcAuthHandler) CheckUser(ctx context.Context, in *generatedAuth.Check
 	return getUser(user), nil
 }
 
+func (h *GrpcAuthHandler) GetUserByUsername(ctx context.Context, in *generatedAuth.GetUserByUsernameRequest) (*generatedAuth.User, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	user, err := h.uc.GetUserByUsername(ctx, in.Username)
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return getUser(user), nil
+}
+
 func (h *GrpcAuthHandler) UpdateProfile(ctx context.Context, in *generatedAuth.UpdateProfileRequest) (*generatedAuth.User, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

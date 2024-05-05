@@ -29,6 +29,7 @@ type AuthUsecase interface {
 	SignUp(context.Context, models.UserFormData) (models.User, string, time.Time, error)
 	SignIn(context.Context, models.UserFormData) (models.User, string, time.Time, error)
 	CheckUser(context.Context, uuid.UUID) (models.User, error)
+	GetUserByUsername(context.Context, string) (models.User, error)
 	UpdateProfile(context.Context, uuid.UUID, models.ProfileUpdatePayload) (models.User, error)
 	UpdateProfileAvatar(context.Context, uuid.UUID, io.ReadSeeker, string) (models.User, error)
 	GenerateAndUpdateSecret(context.Context, string) ([]byte, error)

@@ -21,7 +21,7 @@ type NoteUsecase interface {
 	CreateSubNote(context.Context, uuid.UUID, []byte, uuid.UUID) (models.Note, error)
 
 	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
-	AddCollaborator(context.Context, uuid.UUID, uuid.UUID, string) error
+	AddCollaborator(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error
 
 	AddTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error)
 	DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error)
@@ -42,7 +42,7 @@ type NoteBaseRepo interface {
 	GetUpdates(context.Context, uuid.UUID, time.Time) ([]models.Message, error)
 
 	CheckCollaborator(context.Context, uuid.UUID, uuid.UUID) (bool, error)
-	AddCollaborator(context.Context, uuid.UUID, string) error
+	AddCollaborator(context.Context, uuid.UUID, uuid.UUID) error
 
 	AddTag(ctx context.Context, tagName string, noteId uuid.UUID) error
 	DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID) error
