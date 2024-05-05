@@ -229,8 +229,8 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 	}
 
 	if len(parent.Children) >= uc.constraints.MaxSubnotes {
-		logger.Error("too many subnotes")
-		return models.Note{}, errors.New("too many subnotes")
+		logger.Error(note.ErrTooManySubnotes)
+		return models.Note{}, errors.New(note.ErrTooManySubnotes)
 	}
 
 	depth, err := uc.getDepth(ctx, parent.Parent, 1)
@@ -239,8 +239,8 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		return models.Note{}, err
 	}
 	if depth >= uc.constraints.MaxDepth {
-		logger.Error("too deep")
-		return models.Note{}, errors.New("too deep")
+		logger.Error(note.ErrTooDeep)
+		return models.Note{}, errors.New(note.ErrTooDeep)
 	}
 
 	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
@@ -306,13 +306,13 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 	}
 
 	if slices.Contains(currentNote.Collaborators, guestID) {
-		logger.Error("yet a collaborator")
-		return errors.New("yet a collaborator")
+		logger.Error(note.ErrAlreadyCollaborator)
+		return errors.New(note.ErrAlreadyCollaborator)
 	}
 
 	if len(currentNote.Collaborators) >= uc.constraints.MaxCollaborators {
-		logger.Error("too many collaborators")
-		return errors.New("too many collaborators")
+		logger.Error(note.ErrTooManyCollaborators)
+		return errors.New(note.ErrTooManyCollaborators)
 	}
 
 	if err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
@@ -355,8 +355,8 @@ func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.U
 	}
 
 	if len(updatedNote.Tags) >= uc.constraints.MaxTags {
-		logger.Error("too many tags")
-		return models.Note{}, errors.New("too many tags")
+		logger.Error(note.ErrTooManyTags)
+		return models.Note{}, errors.New(note.ErrTooManyTags)
 	}
 
 	if err := uc.baseRepo.AddTag(ctx, tagName, noteId); err != nil {

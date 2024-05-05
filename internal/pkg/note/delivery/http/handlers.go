@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"errors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -443,6 +444,12 @@ func (h *NoteHandler) CreateSubNote(w http.ResponseWriter, r *http.Request) {
 		ParentId: noteIdString,
 	})
 	if err != nil {
+		if err.Error() == note.ErrTooManySubnotes || err.Error() == note.ErrTooDeep {
+			log.LogHandlerError(logger, http.StatusConflict, err.Error())
+			responses.WriteErrorMessage(w, http.StatusConflict, err)
+			return
+		}
+
 		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("note not found"))
 		return
@@ -555,7 +562,7 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		GuestId: guest.Id,
 	})
 	if err != nil {
-		if err.Error() == "yet a collaborator" {
+		if err.Error() == note.ErrAlreadyCollaborator || err.Error() == note.ErrTooManyCollaborators {
 			log.LogHandlerError(logger, http.StatusConflict, err.Error())
 			responses.WriteErrorMessage(w, http.StatusConflict, err)
 			return
@@ -602,18 +609,24 @@ func (h *NoteHandler) AddTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	note, err := h.client.AddTag(r.Context(), &gen.TagRequest{
+	currentNote, err := h.client.AddTag(r.Context(), &gen.TagRequest{
 		TagName: tagName.TagName,
 		NoteId:  noteIdString,
 		UserId:  jwtPayload.Id.String(),
 	})
 	if err != nil {
+		if err.Error() == note.ErrTooManyTags {
+			log.LogHandlerError(logger, http.StatusConflict, err.Error())
+			responses.WriteErrorMessage(w, http.StatusConflict, err)
+			return
+		}
+
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	resultNote, err := getNote(note.Note)
+	resultNote, err := getNote(currentNote.Note)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

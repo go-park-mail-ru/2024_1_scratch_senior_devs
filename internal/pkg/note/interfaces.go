@@ -11,6 +11,14 @@ import (
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/mock.go
 
+const (
+	ErrTooDeep              = "too deep"
+	ErrTooManyTags          = "too many tags"
+	ErrTooManySubnotes      = "too many subnotes"
+	ErrTooManyCollaborators = "too many collaborators"
+	ErrAlreadyCollaborator  = "already a collaborator"
+)
+
 type NoteUsecase interface {
 	GetAllNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
 	GetNote(context.Context, uuid.UUID, uuid.UUID) (models.Note, error)
