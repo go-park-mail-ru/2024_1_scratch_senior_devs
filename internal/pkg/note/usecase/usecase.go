@@ -195,13 +195,15 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	newNote := models.Note{
-		Id:         uuid.NewV4(),
-		Data:       noteData,
-		CreateTime: time.Now().UTC(),
-		UpdateTime: time.Now().UTC(),
-		OwnerId:    userId,
-		Parent:     parentID,
-		Children:   []uuid.UUID{},
+		Id:            uuid.NewV4(),
+		Data:          noteData,
+		CreateTime:    time.Now().UTC(),
+		UpdateTime:    time.Now().UTC(),
+		OwnerId:       userId,
+		Parent:        parentID,
+		Children:      []uuid.UUID{},
+		Tags:          []string{},
+		Collaborators: []uuid.UUID{},
 	}
 
 	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
