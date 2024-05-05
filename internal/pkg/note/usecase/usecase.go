@@ -268,7 +268,7 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 		return errors.New("not found")
 	}
 
-	if slices.Contains(currentNote.Collaborators, userID) {
+	if slices.Contains(currentNote.Collaborators, guestID) {
 		logger.Error("yet a collaborator")
 		return errors.New("yet a collaborator")
 	}
@@ -278,7 +278,7 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 		return err
 	}
 
-	for _, child := range currentNote.Collaborators {
+	for _, child := range currentNote.Children {
 		if err := uc.addCollaboratorRecursive(ctx, child, guestID); err != nil {
 			logger.Error(err.Error())
 			return err
