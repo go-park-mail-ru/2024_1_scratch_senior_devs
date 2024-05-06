@@ -1,14 +1,16 @@
 package models
 
 import (
-	"github.com/satori/uuid"
 	"time"
+
+	"github.com/satori/uuid"
 )
 
 type Message struct {
 	NoteId      uuid.UUID `json:"note_id"`
 	Created     time.Time `json:"created"`
 	MessageInfo []byte    `json:"message_info"`
+	Type        string    `json:"type" default:"updated"`
 }
 
 type CacheMessage struct {
@@ -16,6 +18,7 @@ type CacheMessage struct {
 	Username    string    `json:"username"`
 	Created     time.Time `json:"created"`
 	MessageInfo []byte    `json:"message_info"`
+	Type        string    `json:"type" default:"updated"`
 }
 
 type JoinMessage struct {

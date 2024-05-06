@@ -1305,6 +1305,8 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			} else {
 				out.MessageInfo = in.Bytes()
 			}
+		case "type":
+			out.Type = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1333,6 +1335,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"message_info\":"
 		out.RawString(prefix)
 		out.Base64Bytes(in.MessageInfo)
+	}
+	{
+		const prefix string = ",\"type\":"
+		out.RawString(prefix)
+		out.String(string(in.Type))
 	}
 	out.RawByte('}')
 }
@@ -1899,6 +1906,8 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			} else {
 				out.MessageInfo = in.Bytes()
 			}
+		case "type":
+			out.Type = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1932,6 +1941,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"message_info\":"
 		out.RawString(prefix)
 		out.Base64Bytes(in.MessageInfo)
+	}
+	{
+		const prefix string = ",\"type\":"
+		out.RawString(prefix)
+		out.String(string(in.Type))
 	}
 	out.RawByte('}')
 }

@@ -3,6 +3,11 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"log/slog"
+	"sync"
+	"time"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
@@ -10,10 +15,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/satori/uuid"
-	"io"
-	"log/slog"
-	"sync"
-	"time"
 )
 
 type Hub struct {
@@ -116,6 +117,8 @@ func (h *Hub) Run(ctx context.Context) {
 					message := h.cache.Get(noteID).Value()
 
 					if !message.Created.Before(h.currentOffset) {
+						message.Type = "updated"
+
 						if err := connect.WriteJSON(message); err != nil {
 							logger.Error("can`t write hub`s message: " + err.Error())
 						}
@@ -127,6 +130,7 @@ func (h *Hub) Run(ctx context.Context) {
 					}
 
 					for _, message := range messages {
+						message.Type = "updated"
 						if err := connect.WriteJSON(message); err != nil {
 							continue
 						}
