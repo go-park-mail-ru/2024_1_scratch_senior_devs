@@ -43,7 +43,7 @@ grpc:
   note_port: 8082
   note_ip: note
 hub:
-  period: 1s
+  period: 100ms
   cache_ttl: 1m0s
 constraints:
   max_subnotes: 10
