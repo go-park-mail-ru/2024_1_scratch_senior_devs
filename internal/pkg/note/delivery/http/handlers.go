@@ -3,12 +3,13 @@ package http
 import (
 	"encoding/json"
 	"errors"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 	"github.com/gorilla/websocket"

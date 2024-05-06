@@ -5,19 +5,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen/mocks"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen/mocks"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	mock_hub "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub/mocks"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 	mock_grpc "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen/mocks"
-
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/satori/uuid"
@@ -317,7 +315,200 @@ func TestNoteHandler_AddNote(t *testing.T) {
 			handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
 			handler.AddNote(w, r)
 
-			//assert.Equal(t, tt.expectedStatus, w.Code)
+			assert.Equal(t, tt.expectedStatus, w.Code)
+		})
+	}
+}
+
+func TestNoteHandler_DeleteNote(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	tests := []struct {
+		name           string
+		expectedStatus int
+		mockUsecase    func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface)
+	}{
+		{
+			name:           "Test_DeleteNote_Success",
+			expectedStatus: http.StatusNoContent,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+
+				mockClient.EXPECT().DeleteNote(gomock.Any(), &gen.DeleteNoteRequest{
+					Id:     noteId.String(),
+					UserId: userId.String(),
+				}).Return(&gen.DeleteNoteResponse{}, nil)
+			},
+		},
+		{
+			name:           "Test_DeleteNote_Unauthorized",
+			expectedStatus: http.StatusUnauthorized,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+
+			},
+		},
+		{
+			name:           "Test_DeleteNote_Fail_BadRequest",
+			expectedStatus: http.StatusBadRequest,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+
+			},
+		},
+		{
+			name:           "Test_DeleteNote_Fail_NotFound",
+			expectedStatus: http.StatusNotFound,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockClient.EXPECT().DeleteNote(gomock.Any(), &gen.DeleteNoteRequest{
+					Id:     noteId.String(),
+					UserId: userId.String(),
+				}).Return(&gen.DeleteNoteResponse{}, errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockClient := mock_grpc.NewMockNoteClient(ctrl)
+			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
+			mockHub := mock_hub.NewMockHubInterface(ctrl)
+
+			defer ctrl.Finish()
+
+			r := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewReader([]byte{}))
+			ctx := context.Background()
+			if tt.expectedStatus != http.StatusUnauthorized {
+				ctx = context.WithValue(r.Context(), config.PayloadContextKey, models.JwtPayload{
+					Id:       userId,
+					Username: "username",
+				})
+			}
+			w := httptest.NewRecorder()
+			r = r.WithContext(ctx)
+			if tt.expectedStatus == http.StatusBadRequest {
+				r = mux.SetURLVars(r, map[string]string{"id": ""})
+
+			} else {
+				r = mux.SetURLVars(r, map[string]string{"id": noteId.String()})
+
+			}
+
+			handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
+			tt.mockUsecase(mockClient, mockAuthClient, mockHub)
+			handler.DeleteNote(w, r)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
+		})
+	}
+}
+
+func TestNoteHandler_GetTags(t *testing.T) {
+	userId := uuid.NewV4()
+
+	tests := []struct {
+		name             string
+		expectedStatus   int
+		mockUsecase      func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface)
+		expectedResponse models.GetTagsResponse
+	}{
+		{
+			name:           "Test_GetTags_Success",
+			expectedStatus: http.StatusOK,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockClient.EXPECT().GetTags(gomock.Any(), gomock.Any()).Return(&gen.GetTagsResponse{
+					Tags: []string{"first", "second"},
+				}, nil)
+			},
+			expectedResponse: models.GetTagsResponse{
+				Tags: []string{"first", "second"},
+			},
+		},
+		{
+			name:           "Test_GetTags_Unauthorized",
+			expectedStatus: http.StatusUnauthorized,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+
+			},
+			expectedResponse: models.GetTagsResponse{},
+		},
+		{
+			name:           "Test_GetTags_BadRequest",
+			expectedStatus: http.StatusBadRequest,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockClient.EXPECT().GetTags(gomock.Any(), gomock.Any()).Return(&gen.GetTagsResponse{}, errors.New("error"))
+			},
+			expectedResponse: models.GetTagsResponse{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockClient := mock_grpc.NewMockNoteClient(ctrl)
+			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
+			mockHub := mock_hub.NewMockHubInterface(ctrl)
+
+			defer ctrl.Finish()
+
+			r := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewReader([]byte{}))
+			ctx := context.Background()
+			if tt.expectedStatus != http.StatusUnauthorized {
+				ctx = context.WithValue(r.Context(), config.PayloadContextKey, models.JwtPayload{
+					Id:       userId,
+					Username: "username",
+				})
+			}
+			w := httptest.NewRecorder()
+			r = r.WithContext(ctx)
+
+			handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
+			tt.mockUsecase(mockClient, mockAuthClient, mockHub)
+			handler.GetTags(w, r)
+
+			data, _ := json.Marshal(tt.expectedResponse)
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedStatus == http.StatusOK {
+				assert.Equal(t, data, w.Body.Bytes())
+			}
+		})
+	}
+}
+
+func TestNoteHandler_AddTag(t *testing.T) {
+	userId := uuid.NewV4()
+
+	tests := []struct {
+		name             string
+		expectedStatus   int
+		mockUsecase      func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface)
+		expectedResponse models.GetTagsResponse
+	}{}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockClient := mock_grpc.NewMockNoteClient(ctrl)
+			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
+			mockHub := mock_hub.NewMockHubInterface(ctrl)
+
+			defer ctrl.Finish()
+
+			r := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewReader([]byte{}))
+			ctx := context.Background()
+			if tt.expectedStatus != http.StatusUnauthorized {
+				ctx = context.WithValue(r.Context(), config.PayloadContextKey, models.JwtPayload{
+					Id:       userId,
+					Username: "username",
+				})
+			}
+			w := httptest.NewRecorder()
+			r = r.WithContext(ctx)
+
+			handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
+			tt.mockUsecase(mockClient, mockAuthClient, mockHub)
+			handler.GetTags(w, r)
+
+			data, _ := json.Marshal(tt.expectedResponse)
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedStatus == http.StatusOK {
+				assert.Equal(t, data, w.Body.Bytes())
+			}
 		})
 	}
 }
