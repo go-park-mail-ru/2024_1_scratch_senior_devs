@@ -15,19 +15,17 @@ import (
 
 const (
 	getAllNotes = `
-		SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators FROM notes
-		WHERE parent = '00000000-0000-0000-0000-000000000000'::UUID
-		AND (
-			owner_id = $1
-			OR $1 = ANY(collaborators)
-		)
-		AND (
-			cardinality($4::TEXT[]) = 0 OR $4::TEXT[] IS NULL OR EXISTS (
-				SELECT 1 FROM unnest(tags) AS tag WHERE tag = ANY($4)
-			)
-		)
-		ORDER BY update_time DESC
-		LIMIT $2 OFFSET $3;
+	SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators FROM notes
+	WHERE parent = '00000000-0000-0000-0000-000000000000'::UUID
+	AND (
+	 owner_id = $1
+	 OR $1 = ANY(collaborators)
+	)
+	AND (
+	 cardinality($4::TEXT[]) = 0 OR $4::TEXT[] IS NULL OR array(select unnest($4::TEXT[]) except select unnest(tags)) = '{}'
+	)
+	ORDER BY update_time DESC
+	LIMIT $2 OFFSET $3;
 	`
 	getNote    = `SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators FROM notes WHERE id = $1;`
 	createNote = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[]);"
