@@ -565,7 +565,7 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 
 	if jwtPayload.Id == uuid.FromStringOrNil(guest.Id) {
 		log.LogHandlerError(logger, http.StatusBadRequest, "tried to invite self to note")
-		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("Вы реально думали, что можно вот так просто взять и пригласить в заметку самого себя?"))
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("вы реально думали, что можно вот так просто взять и пригласить в заметку самого себя?"))
 		return
 	}
 
