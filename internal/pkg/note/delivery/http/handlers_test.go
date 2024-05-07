@@ -11,11 +11,13 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	authGen "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen/mocks"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	mock_hub "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub/mocks"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
+
 	mock_grpc "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
@@ -84,7 +86,6 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			//mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
 			mockClient := mock_grpc.NewMockNoteClient(ctrl)
 			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
 			mockHub := mock_hub.NewMockHubInterface(ctrl)
@@ -147,7 +148,6 @@ func TestNoteHandler_GetNote(t *testing.T) {
 		username       string
 		expectedData   models.Note
 	}{
-		// TODO: Add test cases.
 		{
 			name:           successTestName,
 			expectedStatus: 200,
@@ -193,7 +193,6 @@ func TestNoteHandler_GetNote(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			//mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
 			mockClient := mock_grpc.NewMockNoteClient(ctrl)
 			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
 			mockHub := mock_hub.NewMockHubInterface(ctrl)
@@ -281,7 +280,6 @@ func TestNoteHandler_AddNote(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			//mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
 			mockClient := mock_grpc.NewMockNoteClient(ctrl)
 			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
 			mockHub := mock_hub.NewMockHubInterface(ctrl)
@@ -573,6 +571,19 @@ func TestNoteHandler_AddTag(t *testing.T) {
 			},
 			expectedResponse: models.Note{},
 		},
+		{
+			requestBody:    []byte("{\"tag_name\":\"tag\"}"),
+			name:           "Test_AddTag_TooManyErr",
+			expectedStatus: http.StatusConflict,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockClient.EXPECT().AddTag(gomock.Any(), &gen.TagRequest{
+					TagName: "tag",
+					NoteId:  noteId.String(),
+					UserId:  userId.String(),
+				}).Return(&gen.GetNoteResponse{}, errors.New(RpcErrorPrefix+note.ErrTooManyTags))
+			},
+			expectedResponse: models.Note{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -832,7 +843,7 @@ func TestNoteHandler_CreateSubNote(t *testing.T) {
 					UserId:   userId.String(),
 					NoteData: "\"\"",
 					ParentId: noteId.String(),
-				}).Return(&gen.CreateSubNoteResponse{}, errors.New("rpc error: code = Unknown desc = "+note.ErrTooManySubnotes))
+				}).Return(&gen.CreateSubNoteResponse{}, errors.New(RpcErrorPrefix+note.ErrTooManySubnotes))
 			},
 			expectedResponse: models.Note{},
 		},
@@ -845,7 +856,7 @@ func TestNoteHandler_CreateSubNote(t *testing.T) {
 					UserId:   userId.String(),
 					NoteData: "\"\"",
 					ParentId: noteId.String(),
-				}).Return(&gen.CreateSubNoteResponse{}, errors.New("rpc error: code = Unknown desc = "+note.ErrTooDeep))
+				}).Return(&gen.CreateSubNoteResponse{}, errors.New(RpcErrorPrefix+note.ErrTooDeep))
 			},
 			expectedResponse: models.Note{},
 		},
@@ -1027,6 +1038,174 @@ func TestNoteHandler_UpdateNote(t *testing.T) {
 			handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
 			tt.mockUsecase(mockClient, mockAuthClient, mockHub)
 			handler.UpdateNote(w, r)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
+
+		})
+	}
+}
+
+func TestNoteHandler_AddCollaborator(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	guestId := uuid.NewV4()
+
+	tests := []struct {
+		requestBody    []byte
+		name           string
+		expectedStatus int
+		mockUsecase    func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface)
+	}{
+		{
+			requestBody:    []byte("{\"username\":\"guestuser\"}"),
+			name:           "Test_AddCollaborator_Success",
+			expectedStatus: http.StatusNoContent,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockAuth.EXPECT().GetUserByUsername(gomock.Any(), &authGen.GetUserByUsernameRequest{
+					Username: "guestuser",
+				}).Return(&authGen.User{
+					Id:         guestId.String(),
+					Username:   "guestuser",
+					CreateTime: time.Time{}.String(),
+				}, nil)
+				mockClient.EXPECT().AddCollaborator(gomock.Any(), &gen.AddCollaboratorRequest{
+					NoteId:  noteId.String(),
+					UserId:  userId.String(),
+					GuestId: guestId.String(),
+				}).Return(&gen.AddCollaboratorResponse{}, nil)
+
+			},
+		},
+		{
+			requestBody:    []byte(""),
+			name:           "Test_AddCollaborator_Unauthorized",
+			expectedStatus: http.StatusUnauthorized,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+			},
+		},
+		{
+			requestBody:    []byte(""),
+			name:           "Test_AddCollaborator_BadRequest",
+			expectedStatus: http.StatusBadRequest,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+			},
+		},
+
+		{
+			requestBody:    []byte("{\"username\":\"guestuser\"}"),
+			name:           "Test_AddCollaborator_NotFound",
+			expectedStatus: http.StatusNotFound,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockAuth.EXPECT().GetUserByUsername(gomock.Any(), &authGen.GetUserByUsernameRequest{
+					Username: "guestuser",
+				}).Return(&authGen.User{
+					Id:         guestId.String(),
+					Username:   "guestuser",
+					CreateTime: time.Time{}.String(),
+				}, nil)
+				mockClient.EXPECT().AddCollaborator(gomock.Any(), &gen.AddCollaboratorRequest{
+					NoteId:  noteId.String(),
+					UserId:  userId.String(),
+					GuestId: guestId.String(),
+				}).Return(&gen.AddCollaboratorResponse{}, errors.New("rpc error: code = Unknown desc = error"))
+			},
+		},
+		{
+			requestBody:    []byte("{\"username\":\"guestuser\"}"),
+			name:           "Test_AddCollaborator_GetUserError",
+			expectedStatus: http.StatusNotFound,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+
+				mockAuth.EXPECT().GetUserByUsername(gomock.Any(), &authGen.GetUserByUsernameRequest{
+					Username: "guestuser",
+				}).Return(&authGen.User{}, errors.New("rpc error: code = Unknown desc = error"))
+
+			},
+		},
+		{
+			requestBody:    []byte("{\"username\":\"username\"}"),
+			name:           "Test_AddCollaborator_AddedHimselfErr",
+			expectedStatus: http.StatusBadRequest,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockAuth.EXPECT().GetUserByUsername(gomock.Any(), &authGen.GetUserByUsernameRequest{
+					Username: "username",
+				}).Return(&authGen.User{
+					Id:         userId.String(),
+					Username:   "username",
+					CreateTime: time.Time{}.String(),
+				}, nil)
+
+			},
+		},
+		{
+			requestBody:    []byte("{\"username\":\"guestuser\"}"),
+			name:           "Test_AddCollaborator_AlreadyCollaborator",
+			expectedStatus: http.StatusConflict,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockAuth.EXPECT().GetUserByUsername(gomock.Any(), &authGen.GetUserByUsernameRequest{
+					Username: "guestuser",
+				}).Return(&authGen.User{
+					Id:         guestId.String(),
+					Username:   "guestuser",
+					CreateTime: time.Time{}.String(),
+				}, nil)
+				mockClient.EXPECT().AddCollaborator(gomock.Any(), &gen.AddCollaboratorRequest{
+					NoteId:  noteId.String(),
+					UserId:  userId.String(),
+					GuestId: guestId.String(),
+				}).Return(&gen.AddCollaboratorResponse{}, errors.New(RpcErrorPrefix+note.ErrAlreadyCollaborator))
+			},
+		},
+		{
+			requestBody:    []byte("{\"username\":\"guestuser\"}"),
+			name:           "Test_AddCollaborator_TooManyCollaboratorsErr",
+			expectedStatus: http.StatusExpectationFailed,
+			mockUsecase: func(mockClient *mock_grpc.MockNoteClient, mockAuth *mock_auth.MockAuthClient, mockHub *mock_hub.MockHubInterface) {
+				mockAuth.EXPECT().GetUserByUsername(gomock.Any(), &authGen.GetUserByUsernameRequest{
+					Username: "guestuser",
+				}).Return(&authGen.User{
+					Id:         guestId.String(),
+					Username:   "guestuser",
+					CreateTime: time.Time{}.String(),
+				}, nil)
+				mockClient.EXPECT().AddCollaborator(gomock.Any(), &gen.AddCollaboratorRequest{
+					NoteId:  noteId.String(),
+					UserId:  userId.String(),
+					GuestId: guestId.String(),
+				}).Return(&gen.AddCollaboratorResponse{}, errors.New(RpcErrorPrefix+note.ErrTooManyCollaborators))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockClient := mock_grpc.NewMockNoteClient(ctrl)
+			mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
+			mockHub := mock_hub.NewMockHubInterface(ctrl)
+
+			defer ctrl.Finish()
+
+			r := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewReader(tt.requestBody))
+			ctx := context.Background()
+			if tt.expectedStatus != http.StatusUnauthorized {
+				ctx = context.WithValue(r.Context(), config.PayloadContextKey, models.JwtPayload{
+					Id:       userId,
+					Username: "username",
+				})
+			}
+			w := httptest.NewRecorder()
+			r = r.WithContext(ctx)
+			if tt.name == "Test_AddCollaborator_BadRequest" {
+				r = mux.SetURLVars(r, map[string]string{"id": ""})
+
+			} else {
+				r = mux.SetURLVars(r, map[string]string{"id": noteId.String()})
+
+			}
+
+			handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
+			tt.mockUsecase(mockClient, mockAuthClient, mockHub)
+			handler.AddCollaborator(w, r)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
 
