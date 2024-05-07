@@ -128,10 +128,11 @@ func TestHub_AddClient(t *testing.T) {
 		defer s.Close()
 
 		u := "ws" + strings.TrimPrefix(s.URL, "http")
-		connection, _, err := websocket.DefaultDialer.Dial(u, nil)
+		connection, res, err := websocket.DefaultDialer.Dial(u, nil)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
+		defer res.Body.Close()
 		defer connection.Close()
 
 		hub := NewHub(mockRepo, hubConfig)
@@ -193,10 +194,11 @@ func TestHub_Run(t *testing.T) {
 		defer s.Close()
 
 		u := "ws" + strings.TrimPrefix(s.URL, "http")
-		connection, _, err := websocket.DefaultDialer.Dial(u, nil)
+		connection, res, err := websocket.DefaultDialer.Dial(u, nil)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
+		defer res.Body.Close()
 		defer connection.Close()
 
 		hub := NewHub(mockRepo, hubConfig)
