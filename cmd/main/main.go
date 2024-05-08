@@ -118,12 +118,12 @@ func main() {
 
 	logMW := log.CreateLogMiddleware(logger)
 
-	postgresMetrics, err := metrics.NewDatabaseMetrics("main postgres")
+	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "main")
 	if err != nil {
 		logger.Error("cant create metrics")
 	}
 
-	redisMetrics, err := metrics.NewDatabaseMetrics("main redis")
+	redisMetrics, err := metrics.NewDatabaseMetrics("redis", "main")
 	if err != nil {
 		logger.Error("cant create metrics")
 	}

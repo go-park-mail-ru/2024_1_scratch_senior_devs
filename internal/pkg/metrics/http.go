@@ -20,7 +20,7 @@ func NewHttpMetrics(name string) (*HttpMetrics, error) {
 			Name: "hits_total",
 			Help: "Number of total hits.",
 		},
-		[]string{"path", "service"},
+		[]string{"path", "service", "status"},
 	)
 	if err := prometheus.Register(metr.HitsTotal); err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func NewHttpMetrics(name string) (*HttpMetrics, error) {
 			Name: "errors_total",
 			Help: "Number of total errors.",
 		},
-		[]string{"path", "service"},
+		[]string{"path", "service", "status"},
 	)
 	if err := prometheus.Register(metr.Errors); err != nil {
 		return nil, err
@@ -47,11 +47,11 @@ func NewHttpMetrics(name string) (*HttpMetrics, error) {
 	}
 	return &metr, nil
 }
-func (m *HttpMetrics) IncreaseHits(path string) {
-	m.HitsTotal.WithLabelValues(path, m.name).Inc()
+func (m *HttpMetrics) IncreaseHits(path string, status string) {
+	m.HitsTotal.WithLabelValues(path, m.name, status).Inc()
 }
-func (m *HttpMetrics) IncreaseErrors(path string) {
-	m.Errors.WithLabelValues(path, m.name).Inc()
+func (m *HttpMetrics) IncreaseErrors(path string, status string) {
+	m.Errors.WithLabelValues(path, m.name, status).Inc()
 }
 func (metr *HttpMetrics) ObserveResponseTime(status int, path string, observeTime float64) {
 	metr.Times.WithLabelValues(strconv.Itoa(status), path).Observe(observeTime)

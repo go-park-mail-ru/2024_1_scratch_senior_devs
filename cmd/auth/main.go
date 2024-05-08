@@ -64,7 +64,7 @@ func run() (err error) {
 		return
 	}
 
-	postgresMetrics, err := metrics.NewDatabaseMetrics("auth postgres")
+	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "auth")
 	if err != nil {
 		logger.Error("cant create metrics")
 	}

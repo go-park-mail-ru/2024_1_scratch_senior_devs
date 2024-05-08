@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
@@ -43,10 +44,10 @@ func CreateHttpMetricsMiddleware(metr *metrics.HttpMetrics, logger *slog.Logger)
 			route := mux.CurrentRoute(r)
 			path, _ := route.GetPathTemplate()
 			statusCode := rw.statusCode
-			if statusCode != http.StatusOK {
-				metr.IncreaseErrors(path)
+			if statusCode != http.StatusOK && statusCode != http.StatusCreated {
+				metr.IncreaseErrors(path, strconv.Itoa(statusCode))
 			}
-			metr.IncreaseHits(path)
+			metr.IncreaseHits(path, strconv.Itoa(statusCode))
 			metr.ObserveResponseTime(status, path, time.Since(start).Seconds())
 		})
 	}

@@ -5,20 +5,21 @@ import (
 )
 
 type DatabaseMetrics struct {
-	name   string
-	Times  *prometheus.HistogramVec
-	Errors *prometheus.CounterVec
+	db      string
+	service string
+	Times   *prometheus.HistogramVec
+	Errors  *prometheus.CounterVec
 }
 
-func NewDatabaseMetrics(name string) (DatabaseMetrics, error) {
-	metr := DatabaseMetrics{name: name}
+func NewDatabaseMetrics(name string, service string) (DatabaseMetrics, error) {
+	metr := DatabaseMetrics{db: name, service: service}
 
 	metr.Errors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "db_errors_total",
+			Name: name + "_db_errors_total",
 			Help: "Number of total errors.",
 		},
-		[]string{"query", "db"},
+		[]string{"query", "db", "service"},
 	)
 	if err := prometheus.Register(metr.Errors); err != nil {
 		return DatabaseMetrics{}, err
@@ -26,9 +27,9 @@ func NewDatabaseMetrics(name string) (DatabaseMetrics, error) {
 
 	metr.Times = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: "db_total_times",
+			Name: name + "_db_total_times",
 		},
-		[]string{"query", "db"},
+		[]string{"query", "db", "service"},
 	)
 	if err := prometheus.Register(metr.Times); err != nil {
 		return DatabaseMetrics{}, err
@@ -38,9 +39,9 @@ func NewDatabaseMetrics(name string) (DatabaseMetrics, error) {
 }
 
 func (m *DatabaseMetrics) IncreaseErrors(queryName string) {
-	m.Errors.WithLabelValues(queryName, m.name).Inc()
+	m.Errors.WithLabelValues(queryName, m.db, m.service).Inc()
 }
 
 func (m *DatabaseMetrics) ObserveResponseTime(queryName string, observeTime float64) {
-	m.Times.WithLabelValues(queryName, m.name).Observe(observeTime)
+	m.Times.WithLabelValues(queryName, m.db, m.service).Observe(observeTime)
 }

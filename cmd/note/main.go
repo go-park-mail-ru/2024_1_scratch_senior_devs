@@ -71,14 +71,14 @@ func run() (err error) {
 		return
 	}
 
-	postgresMetrics, err := metrics.NewDatabaseMetrics("note postgres")
+	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "note")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error(err.Error())
 	}
 
-	elasticMetrics, err := metrics.NewDatabaseMetrics("note elastic")
+	elasticMetrics, err := metrics.NewDatabaseMetrics("elastic", "note")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error(err.Error())
 	}
 
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db, &postgresMetrics)
@@ -89,7 +89,7 @@ func run() (err error) {
 
 	grpcMetrics, err := metrics.NewGrpcMetrics("note")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error(err.Error())
 	}
 	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
 	logMw := log.NewGrpcLogMw(logger)
