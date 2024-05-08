@@ -64,7 +64,12 @@ func run() (err error) {
 		return
 	}
 
-	AuthRepo := authRepo.CreateAuthRepo(db)
+	postgresMetrics, err := metrics.NewDatabaseMetrics("auth postgres")
+	if err != nil {
+		logger.Error("cant create metrics")
+	}
+
+	AuthRepo := authRepo.CreateAuthRepo(db, &postgresMetrics)
 	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, cfg.AuthUsecase, cfg.Validation)
 	AuthDelivery := grpcAuth.NewGrpcAuthHandler(AuthUsecase)
 

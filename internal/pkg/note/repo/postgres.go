@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"log/slog"
 	"time"
 
@@ -52,12 +53,14 @@ const (
 )
 
 type NotePostgres struct {
-	db pgxtype.Querier
+	db   pgxtype.Querier
+	metr metrics.DBMetrics
 }
 
-func CreateNotePostgres(db pgxtype.Querier) *NotePostgres {
+func CreateNotePostgres(db pgxtype.Querier, metr metrics.DBMetrics) *NotePostgres {
 	return &NotePostgres{
-		db: db,
+		db:   db,
+		metr: metr,
 	}
 }
 
@@ -66,9 +69,12 @@ func (repo *NotePostgres) GetTags(ctx context.Context, userID uuid.UUID) ([]stri
 
 	result := make([]string, 0)
 
+	start := time.Now()
 	query, err := repo.db.Query(ctx, getTags, userID)
+	repo.metr.ObserveResponseTime("getTags", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getTags")
 		return result, err
 	}
 
@@ -87,9 +93,12 @@ func (repo *NotePostgres) GetTags(ctx context.Context, userID uuid.UUID) ([]stri
 func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, guestID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, addCollaborator, guestID, noteID)
+	repo.metr.ObserveResponseTime("addCollaborator", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("addCollaborator")
 		return err
 	}
 
@@ -101,9 +110,12 @@ func (repo *NotePostgres) GetUpdates(ctx context.Context, noteID uuid.UUID, offs
 
 	result := make([]models.Message, 0)
 
+	start := time.Now()
 	query, err := repo.db.Query(ctx, getUpdates, noteID, offset)
+	repo.metr.ObserveResponseTime("getUpdates", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getUpdates")
 		return result, err
 	}
 
@@ -123,10 +135,13 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	result := make([]models.Note, 0, count)
-	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset, tags)
 
+	start := time.Now()
+	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset, tags)
+	repo.metr.ObserveResponseTime("getAllNotes", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getAllNotes")
 		return result, err
 	}
 
@@ -148,6 +163,7 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 
 	resultNote := models.Note{}
 
+	start := time.Now()
 	err := repo.db.QueryRow(ctx, getNote, noteId).Scan(
 		&resultNote.Id,
 		&resultNote.Data,
@@ -159,9 +175,10 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 		&resultNote.Tags,
 		&resultNote.Collaborators,
 	)
-
+	repo.metr.ObserveResponseTime("getNote", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getNote")
 		return models.Note{}, err
 	}
 
@@ -172,9 +189,12 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId, note.Parent, note.Children, note.Tags, note.Collaborators)
+	repo.metr.ObserveResponseTime("createNote", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("createNote")
 		return err
 	}
 
@@ -185,10 +205,12 @@ func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) erro
 func (repo *NotePostgres) UpdateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, updateNote, note.Data, note.UpdateTime, note.Id)
-
+	repo.metr.ObserveResponseTime("updateNote", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("updateNote")
 		return err
 	}
 
@@ -200,9 +222,12 @@ func (repo *NotePostgres) UpdateNote(ctx context.Context, note models.Note) erro
 func (repo *NotePostgres) DeleteNote(ctx context.Context, id uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, deleteNote, id)
+	repo.metr.ObserveResponseTime("deleteNote", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("deleteNote")
 		return err
 	}
 
@@ -213,9 +238,12 @@ func (repo *NotePostgres) DeleteNote(ctx context.Context, id uuid.UUID) error {
 func (repo *NotePostgres) AddSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, addSubNote, childID, id)
+	repo.metr.ObserveResponseTime("addSubNote", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("addSubNote")
 		return err
 	}
 
@@ -226,9 +254,12 @@ func (repo *NotePostgres) AddSubNote(ctx context.Context, id uuid.UUID, childID 
 func (repo *NotePostgres) RemoveSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, removeSubNote, childID, id)
+	repo.metr.ObserveResponseTime("removeSubNote", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("removeSubNote")
 		return err
 	}
 
@@ -239,9 +270,12 @@ func (repo *NotePostgres) RemoveSubNote(ctx context.Context, id uuid.UUID, child
 func (repo *NotePostgres) AddTag(ctx context.Context, tagName string, noteId uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, addTag, tagName, noteId)
+	repo.metr.ObserveResponseTime("addTag", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("addTag")
 		return err
 	}
 
@@ -252,9 +286,12 @@ func (repo *NotePostgres) AddTag(ctx context.Context, tagName string, noteId uui
 func (repo *NotePostgres) DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, deleteTag, tagName, noteId)
+	repo.metr.ObserveResponseTime("deleteTag", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("deleteTag")
 		return err
 	}
 

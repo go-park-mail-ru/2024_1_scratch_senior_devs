@@ -17,7 +17,7 @@ func NewGrpcMetrics(name string) (*GrpcMetrics, error) {
 	var metr GrpcMetrics
 	metr.HitsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: name + "_hits_total",
+			Name: "hits_total",
 			Help: "Number of total hits.",
 		},
 		[]string{"path", "service"},
@@ -27,7 +27,7 @@ func NewGrpcMetrics(name string) (*GrpcMetrics, error) {
 	}
 	metr.Errors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: name + "_errors_total",
+			Name: "errors_total",
 			Help: "Number of total errors.",
 		},
 		[]string{"path", "service"},
@@ -38,7 +38,7 @@ func NewGrpcMetrics(name string) (*GrpcMetrics, error) {
 	metr.name = name
 	metr.Times = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: name + "_times",
+			Name: "total_times",
 		},
 		[]string{"status", "path"},
 	)

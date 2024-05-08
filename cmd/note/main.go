@@ -71,8 +71,18 @@ func run() (err error) {
 		return
 	}
 
-	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
-	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic)
+	postgresMetrics, err := metrics.NewDatabaseMetrics("note postgres")
+	if err != nil {
+		logger.Error("cant create metrics")
+	}
+
+	elasticMetrics, err := metrics.NewDatabaseMetrics("note elastic")
+	if err != nil {
+		logger.Error("cant create metrics")
+	}
+
+	NoteBaseRepo := noteRepo.CreateNotePostgres(db, &postgresMetrics)
+	NoteSearchRepo := noteRepo.CreateNoteElastic(elasticClient, cfg.Elastic, &elasticMetrics)
 
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, cfg.Elastic, cfg.Constraints, &sync.WaitGroup{})
 	NoteDelivery := grpcNote.NewGrpcNoteHandler(NoteUsecase)

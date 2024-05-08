@@ -90,7 +90,6 @@ func main() {
 	authConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.AuthIP, cfg.Grpc.AuthPort),
 		grpc.WithTransportCredentials(tlsCredentials),
-		//grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		logger.Error("fail grpc.Dial auth: " + err.Error())
@@ -101,7 +100,6 @@ func main() {
 	noteConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.NoteIP, cfg.Grpc.NotePort),
 		grpc.WithTransportCredentials(tlsCredentials),
-		//grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		logger.Error("fail grpc.Dial note: " + err.Error())
@@ -120,13 +118,23 @@ func main() {
 
 	logMW := log.CreateLogMiddleware(logger)
 
-	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker)
+	postgresMetrics, err := metrics.NewDatabaseMetrics("main postgres")
+	if err != nil {
+		logger.Error("cant create metrics")
+	}
+
+	redisMetrics, err := metrics.NewDatabaseMetrics("main redis")
+	if err != nil {
+		logger.Error("cant create metrics")
+	}
+
+	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker, &redisMetrics)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
 
-	NoteBaseRepo := noteRepo.CreateNotePostgres(db)
+	NoteBaseRepo := noteRepo.CreateNotePostgres(db, &postgresMetrics)
 	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub)
 
-	AttachRepo := attachRepo.CreateAttachRepo(db)
+	AttachRepo := attachRepo.CreateAttachRepo(db, &postgresMetrics)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
 	AttachDelivery := attachDelivery.CreateAttachHandler(AttachUsecase, cfg.Attach)
 

@@ -41,7 +41,7 @@ func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID
 	}
 	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
-		return models.Attach{}, nil
+		return models.Attach{}, errors.New("not found")
 	}
 
 	attachBasePath := os.Getenv("ATTACHES_BASE_PATH")
@@ -118,7 +118,7 @@ func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, user
 	}
 	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
-		return models.Attach{}, nil
+		return models.Attach{}, errors.New("not found")
 	}
 
 	return attachData, nil

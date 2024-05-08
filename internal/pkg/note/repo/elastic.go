@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
@@ -24,24 +26,29 @@ var (
 type NoteElastic struct {
 	elastic *elastic.Client
 	cfg     config.ElasticConfig
+	metr    metrics.DBMetrics
 }
 
-func CreateNoteElastic(elastic *elastic.Client, cfg config.ElasticConfig) *NoteElastic {
+func CreateNoteElastic(elastic *elastic.Client, cfg config.ElasticConfig, metr metrics.DBMetrics) *NoteElastic {
 	return &NoteElastic{
 		elastic: elastic,
 		cfg:     cfg,
+		metr:    metr,
 	}
 }
 
 func (repo *NoteElastic) updateNullFieldToEmptyArray(ctx context.Context, fieldName string, noteID uuid.UUID) error {
 	script := elastic.NewScript(fmt.Sprintf("if (ctx._source.%s == null) {ctx._source.%s = []; }", fieldName, fieldName))
 
+	start := time.Now()
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(noteID.String()).
 		Script(script).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
+		repo.metr.IncreaseErrors(log.GFN())
 		return err
 	}
 
@@ -68,6 +75,7 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 		fullQuery = fullQuery.Filter(tagsQuery)
 	}
 
+	start := time.Now()
 	search, err := repo.elastic.Search().
 		Query(fullQuery).
 		Index(repo.cfg.ElasticIndexName).
@@ -75,8 +83,10 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 		Size(int(count)).
 		Sort("update_time", false).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return []models.Note{}, ErrCantGetResponse
 	}
 
@@ -109,13 +119,16 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.ElasticNote
 		return err
 	}
 
+	start := time.Now()
 	_, err = repo.elastic.Index().
 		Index(repo.cfg.ElasticIndexName).
 		Id(note.Id.String()).
 		BodyJson(noteMap).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return ErrCantGetResponse
 	}
 
@@ -138,13 +151,16 @@ func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.ElasticNote
 		return err
 	}
 
+	start := time.Now()
 	_, err = repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(note.Id.String()).
 		Doc(noteMap).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return ErrCantGetResponse
 	}
 
@@ -156,12 +172,15 @@ func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.ElasticNote
 func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.elastic.Delete().
 		Index(repo.cfg.ElasticIndexName).
 		Id(id.String()).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return ErrCantGetResponse
 	}
 
@@ -174,13 +193,16 @@ func (repo *NoteElastic) AddSubNote(ctx context.Context, id uuid.UUID, childID u
 
 	script := elastic.NewScript("ctx._source.children.add(params.childID)").Lang("painless").Param("childID", childID.String())
 
+	start := time.Now()
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(id.String()).
 		Script(script).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return err
 	}
 
@@ -193,13 +215,16 @@ func (repo *NoteElastic) RemoveSubNote(ctx context.Context, id uuid.UUID, childI
 
 	script := elastic.NewScript("ctx._source.children.removeIfContains(params.childID)").Lang("painless").Param("childID", childID.String())
 
+	start := time.Now()
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(id.String()).
 		Script(script).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return err
 	}
 
@@ -212,13 +237,16 @@ func (repo *NoteElastic) AddCollaborator(ctx context.Context, noteID uuid.UUID, 
 
 	script := elastic.NewScript("ctx._source.collaborators.add(params.collaboratorID)").Lang("painless").Param("collaboratorID", userID.String())
 
+	start := time.Now()
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(noteID.String()).
 		Script(script).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return err
 	}
 
@@ -236,13 +264,16 @@ func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid
 
 	script := elastic.NewScript("ctx._source.tags.add(params.tagName)").Lang("painless").Param("tagName", tagName)
 
+	start := time.Now()
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(noteID.String()).
 		Script(script).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return err
 	}
 
@@ -255,13 +286,16 @@ func (repo *NoteElastic) DeleteTag(ctx context.Context, tagName string, noteID u
 
 	script := elastic.NewScript("if (ctx._source.tags.contains(params.tagName)) { ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName)) }").Lang("painless").Param("tagName", tagName)
 
+	start := time.Now()
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(noteID.String()).
 		Script(script).
 		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
 		return err
 	}
 
