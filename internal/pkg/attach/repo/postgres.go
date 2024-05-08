@@ -2,7 +2,9 @@ package repo
 
 import (
 	"context"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"log/slog"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
@@ -17,12 +19,14 @@ const (
 )
 
 type AttachRepo struct {
-	db pgxtype.Querier
+	db   pgxtype.Querier
+	metr metrics.DBMetrics
 }
 
-func CreateAttachRepo(db pgxtype.Querier) *AttachRepo {
+func CreateAttachRepo(db pgxtype.Querier, metr metrics.DBMetrics) *AttachRepo {
 	return &AttachRepo{
-		db: db,
+		db:   db,
+		metr: metr,
 	}
 }
 
@@ -31,13 +35,16 @@ func (repo *AttachRepo) GetAttach(ctx context.Context, id uuid.UUID) (models.Att
 
 	attach := models.Attach{}
 
+	start := time.Now()
 	err := repo.db.QueryRow(ctx, getAttach, id).Scan(
 		&attach.Id,
 		&attach.Path,
 		&attach.NoteId,
 	)
+	repo.metr.ObserveResponseTime("getAttach", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getAttach")
 		return models.Attach{}, err
 	}
 
@@ -48,9 +55,12 @@ func (repo *AttachRepo) GetAttach(ctx context.Context, id uuid.UUID) (models.Att
 func (repo *AttachRepo) AddAttach(ctx context.Context, attach models.Attach) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, createAttach, attach.Id, attach.Path, attach.NoteId)
+	repo.metr.ObserveResponseTime("createAttach", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("createAttach")
 		return err
 	}
 
@@ -61,9 +71,12 @@ func (repo *AttachRepo) AddAttach(ctx context.Context, attach models.Attach) err
 func (repo *AttachRepo) DeleteAttach(ctx context.Context, id uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, deleteAttach, id)
+	repo.metr.ObserveResponseTime("deleteAttach", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("deleteAttach")
 		return err
 	}
 

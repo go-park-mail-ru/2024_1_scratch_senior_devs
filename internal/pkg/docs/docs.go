@@ -77,10 +77,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "attach",
-                        "schema": {
-                            "type": "file"
-                        }
+                        "description": "OK"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -137,10 +134,7 @@ const docTemplate = `{
                 "operationId": "get-qr-code",
                 "responses": {
                     "200": {
-                        "description": "QR-code",
-                        "schema": {
-                            "type": "file"
-                        }
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request"
@@ -451,6 +445,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/note/{id}/add_subnote": {
+            "post": {
+                "description": "Create new subnote in current note",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "note"
+                ],
+                "summary": "Create subnote",
+                "operationId": "create-subnote",
+                "parameters": [
+                    {
+                        "description": "note data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpsertNoteRequestForSwagger"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "note id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "note",
+                        "schema": {
+                            "$ref": "#/definitions/models.NoteForSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "note not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/note/{id}/delete": {
             "delete": {
                 "description": "Delete selected note of current user",
@@ -684,6 +735,12 @@ const docTemplate = `{
         "models.NoteForSwagger": {
             "type": "object",
             "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "create_time": {
                     "type": "string"
                 },
@@ -696,7 +753,21 @@ const docTemplate = `{
                 "owner_id": {
                     "type": "string"
                 },
+                "parent": {
+                    "type": "string"
+                },
                 "update_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Passwords": {
+            "type": "object",
+            "properties": {
+                "new": {
+                    "type": "string"
+                },
+                "old": {
                     "type": "string"
                 }
             }
@@ -708,7 +779,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "$ref": "#/definitions/models.passwords"
+                    "$ref": "#/definitions/models.Passwords"
                 }
             }
         },
@@ -764,17 +835,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.passwords": {
-            "type": "object",
-            "properties": {
-                "new": {
-                    "type": "string"
-                },
-                "old": {
                     "type": "string"
                 }
             }

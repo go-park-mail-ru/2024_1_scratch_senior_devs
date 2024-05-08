@@ -13,7 +13,9 @@ services:
         condition: service_started
       redis:
         condition: service_started
-      elastic:
+      auth:
+        condition: service_started
+      note:
         condition: service_started
     restart: always
     ports:
@@ -25,11 +27,53 @@ services:
         source: /var/log/
         target: /var/log/
       - type: bind
-        source: /opt/images/
-        target: /opt/images/
-      - type: bind
         source: /opt/attaches/
         target: /opt/attaches/
+  auth:
+    container_name: auth
+    build:
+      context: .
+      dockerfile: ./build/auth.Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+    ports:
+      - "8081:8081"
+    networks:
+      - YouNote-network
+    volumes:
+      - type: bind
+        source: /var/log/
+        target: /var/log/
+      - type: bind
+        source: /opt/images/
+        target: /opt/images/
+  note:
+    container_name: note
+    build:
+      context: .
+      dockerfile: ./build/note.Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      elastic:
+        condition: service_started
+    restart: always
+    ports:
+      - "8082:8082"
+    networks:
+      - YouNote-network
+    volumes:
+      - type: bind
+        source: /var/log/
+        target: /var/log/
   postgres:
     env_file:
       - .env
@@ -119,7 +163,46 @@ services:
       - .env
     networks:
       - YouNote-network
-
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "8090:9090"
+    networks:
+      - YouNote-network
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    volumes:
+      - younote-grafana-data:/var/lib/grafana/
+    networks:
+      - YouNote-network
+    ports:
+      - "8070:3000"
+  node_exporter:
+    depends_on:
+      - prometheus
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.ignored-mount-points
+      - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
+    hostname: node_exporter
+    ports:
+      - "8085:9100"
+    networks:
+       - YouNote-network
+       
 networks:
   YouNote-network:
     name: YouNote-network
@@ -129,3 +212,4 @@ volumes:
   younote-db-data:
   younote-redis-data:
   younote-elastic-data:
+  younote-grafana-data:

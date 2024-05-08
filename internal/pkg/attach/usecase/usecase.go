@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"slices"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/attach"
@@ -33,14 +34,14 @@ func CreateAttachUsecase(repo attach.AttachRepo, noteRepo note.NoteBaseRepo) *At
 func (uc *AttachUsecase) AddAttach(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, attach io.ReadSeeker, extension string) (models.Attach, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	noteData, err := uc.noteRepo.ReadNote(ctx, noteID)
+	resultNote, err := uc.noteRepo.ReadNote(ctx, noteID)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Attach{}, err
 	}
-	if noteData.OwnerId != userID {
-		logger.Error("user is not owner of note")
-		return models.Attach{}, ErrNoteNotFound
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return models.Attach{}, errors.New("not found")
 	}
 
 	attachBasePath := os.Getenv("ATTACHES_BASE_PATH")
@@ -77,15 +78,14 @@ func (uc *AttachUsecase) DeleteAttach(ctx context.Context, attachID uuid.UUID, u
 		return err
 	}
 
-	noteData, err := uc.noteRepo.ReadNote(ctx, attachData.NoteId)
+	resultNote, err := uc.noteRepo.ReadNote(ctx, attachData.NoteId)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
 	}
-
-	if noteData.OwnerId != userID {
-		logger.Error("user is not owner of note")
-		return ErrNoteNotFound
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return nil
 	}
 
 	err = uc.repo.DeleteAttach(ctx, attachID)
@@ -111,15 +111,15 @@ func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, user
 		return models.Attach{}, err
 	}
 
-	noteData, err := uc.noteRepo.ReadNote(ctx, attachData.NoteId)
+	resultNote, err := uc.noteRepo.ReadNote(ctx, attachData.NoteId)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Attach{}, err
 	}
-
-	if noteData.OwnerId != userID {
-		logger.Error("user is not owner of note")
-		return models.Attach{}, ErrNoteNotFound
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return models.Attach{}, errors.New("not found")
 	}
+
 	return attachData, nil
 }

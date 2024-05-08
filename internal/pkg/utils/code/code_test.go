@@ -1,9 +1,10 @@
 package code
 
 import (
-	"github.com/stretchr/testify/assert"
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateSecret(t *testing.T) {
@@ -26,6 +27,34 @@ func TestGenerateSecret(t *testing.T) {
 				if !slices.Contains(alphabet, sym) {
 					assert.Fail(t, "incorrect symbol in secret")
 				}
+			}
+		})
+	}
+}
+
+func TestCheckCode(t *testing.T) {
+	type args struct {
+		code   string
+		secret string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Test1",
+			args: args{
+				code:   "123123",
+				secret: "asfdfsdvfvf",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := CheckCode(tt.args.code, tt.args.secret); (err != nil) != tt.wantErr {
+				t.Errorf("CheckCode() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

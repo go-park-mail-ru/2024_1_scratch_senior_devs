@@ -82,6 +82,21 @@ func (mr *MockAuthUsecaseMockRecorder) GenerateAndUpdateSecret(arg0, arg1 interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAndUpdateSecret", reflect.TypeOf((*MockAuthUsecase)(nil).GenerateAndUpdateSecret), arg0, arg1)
 }
 
+// GetUserByUsername mocks base method.
+func (m *MockAuthUsecase) GetUserByUsername(arg0 context.Context, arg1 string) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByUsername", arg0, arg1)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockAuthUsecaseMockRecorder) GetUserByUsername(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockAuthUsecase)(nil).GetUserByUsername), arg0, arg1)
+}
+
 // SignIn mocks base method.
 func (m *MockAuthUsecase) SignIn(arg0 context.Context, arg1 models.UserFormData) (models.User, string, time.Time, error) {
 	m.ctrl.T.Helper()

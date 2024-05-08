@@ -3,7 +3,9 @@ package repo
 import (
 	"context"
 	"database/sql"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"log/slog"
+	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 
@@ -24,12 +26,14 @@ const (
 )
 
 type AuthRepo struct {
-	db pgxtype.Querier
+	db   pgxtype.Querier
+	metr metrics.DBMetrics
 }
 
-func CreateAuthRepo(db pgxtype.Querier) *AuthRepo {
+func CreateAuthRepo(db pgxtype.Querier, metr metrics.DBMetrics) *AuthRepo {
 	return &AuthRepo{
-		db: db,
+		db:   db,
+		metr: metr,
 	}
 }
 
@@ -41,9 +45,12 @@ func (repo *AuthRepo) CreateUser(ctx context.Context, user models.User) error {
 		Valid:  user.SecondFactor != "",
 	}
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, createUser, user.Id, user.Description, user.Username, user.PasswordHash, user.CreateTime, user.ImagePath, userSecret)
+	repo.metr.ObserveResponseTime("createUser", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("createUser")
 		return err
 	}
 
@@ -58,6 +65,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 	description := sql.NullString{}
 	secret := sql.NullString{}
 
+	start := time.Now()
 	err := repo.db.QueryRow(ctx, getUserById, id).Scan(
 		&description,
 		&resultUser.Username,
@@ -66,6 +74,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 		&resultUser.ImagePath,
 		&secret,
 	)
+	repo.metr.ObserveResponseTime("getUserById", time.Since(start).Seconds())
 
 	if description.Valid {
 		resultUser.Description = description.String
@@ -77,6 +86,7 @@ func (repo *AuthRepo) GetUserById(ctx context.Context, id uuid.UUID) (models.Use
 
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getUserById")
 		return models.User{}, err
 	}
 
@@ -91,6 +101,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 	description := sql.NullString{}
 	secret := sql.NullString{}
 
+	start := time.Now()
 	err := repo.db.QueryRow(ctx, getUserByUsername, username).Scan(
 		&resultUser.Id,
 		&description,
@@ -99,6 +110,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 		&resultUser.ImagePath,
 		&secret,
 	)
+	repo.metr.ObserveResponseTime("getUserByUsername", time.Since(start).Seconds())
 
 	if description.Valid {
 		resultUser.Description = description.String
@@ -110,6 +122,7 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getUserByUsername")
 		return models.User{}, err
 	}
 
@@ -120,9 +133,12 @@ func (repo *AuthRepo) GetUserByUsername(ctx context.Context, username string) (m
 func (repo *AuthRepo) UpdateProfile(ctx context.Context, user models.User) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, updateProfile, user.Description, user.PasswordHash, user.Id)
+	repo.metr.ObserveResponseTime("updateProfile", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("updateProfile")
 		return err
 	}
 
@@ -133,9 +149,12 @@ func (repo *AuthRepo) UpdateProfile(ctx context.Context, user models.User) error
 func (repo *AuthRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID, imagePath string) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, updateProfileAvatar, imagePath, userID)
+	repo.metr.ObserveResponseTime("updateProfileAvatar", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("updateProfileAvatar")
 		return err
 	}
 
@@ -146,9 +165,12 @@ func (repo *AuthRepo) UpdateProfileAvatar(ctx context.Context, userID uuid.UUID,
 func (repo *AuthRepo) UpdateSecret(ctx context.Context, username string, secret string) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, updateSecondFactor, secret, username)
+	repo.metr.ObserveResponseTime("updateSecondFactor", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("updateSecondFactor")
 		return err
 	}
 
@@ -159,9 +181,12 @@ func (repo *AuthRepo) UpdateSecret(ctx context.Context, username string, secret 
 func (repo *AuthRepo) DeleteSecret(ctx context.Context, username string) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	start := time.Now()
 	_, err := repo.db.Exec(ctx, deleteSecondFactor, username)
+	repo.metr.ObserveResponseTime("deleteSecondFactor", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("deleteSecondFactor")
 		return err
 	}
 

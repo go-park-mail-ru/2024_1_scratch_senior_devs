@@ -33,13 +33,20 @@ attach:
     image/webp: .webp
     image/png: .png
     video/mp4: .mp4
+    application/pdf: .pdf
 elastic:
   elastic_index_name: notes
-  elastic_search_value_min_length: 2
-
-
-
-
-
-
-
+  elastic_search_value_min_length: 3
+grpc:
+  auth_port: 8081
+  auth_ip: auth
+  note_port: 8082
+  note_ip: note
+hub:
+  period: 100ms
+  cache_ttl: 1m0s
+constraints:
+  max_subnotes: 10
+  max_depth: 3
+  max_collaborators: 10
+  max_tags: 10

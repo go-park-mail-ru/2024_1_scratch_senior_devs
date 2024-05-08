@@ -1,0 +1,117 @@
+syntax = "proto3";
+package note;
+option go_package = "./internal/pkg/note/delivery/grpc/gen/;gen";
+
+service Note {
+     rpc GetAllNotes(GetAllRequest) returns (GetAllResponse) {}
+     rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {}
+     rpc AddNote(AddNoteRequest) returns (AddNoteResponse) {}
+     rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {}
+     rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {}
+     rpc CreateSubNote(CreateSubNoteRequest) returns (CreateSubNoteResponse) {}
+     rpc AddCollaborator(AddCollaboratorRequest) returns (AddCollaboratorResponse) {}
+     rpc AddTag(TagRequest) returns (GetNoteResponse) {}
+     rpc DeleteTag(TagRequest) returns (GetNoteResponse) {}
+     rpc GetTags(GetTagsRequest) returns (GetTagsResponse) {}
+     rpc CheckPermissions(CheckPermissionsRequest) returns (CheckPermissionsResponse) {}
+}
+
+message GetTagsRequest {
+     string UserId = 1;
+}
+
+message GetTagsResponse {
+     repeated string Tags = 1;
+}
+
+message TagRequest {
+     string TagName = 1;
+     string NoteId = 2;
+     string UserId = 3;
+}
+
+message AddCollaboratorRequest {
+     string NoteId = 1;
+     string UserId = 2;
+     string GuestId = 3;
+}
+
+message AddCollaboratorResponse {}
+
+message GetAllRequest{
+     int64 Count = 1;
+     int64 Offset = 2;
+     string Title = 3;
+     string UserId = 4;
+     repeated string Tags = 5;
+}
+
+message NoteModel {
+     string Id = 1;
+     string Data = 2;
+     string CreateTime = 3;
+     string UpdateTime = 4;
+     string OwnerId = 5;
+     string Parent = 6;
+     repeated string Children = 7;
+     repeated string Tags = 8;
+     repeated string Collaborators = 9;
+}
+
+message GetAllResponse {
+     repeated NoteModel Notes = 1;  
+}
+
+message GetNoteRequest{
+     string Id = 1;
+     string UserId = 2;
+}
+
+message GetNoteResponse {
+     NoteModel Note = 1;
+}
+
+message AddNoteRequest {
+     string Data = 1;
+     string UserId = 2;
+}
+
+message AddNoteResponse{
+     NoteModel Note = 1;
+}
+
+message UpdateNoteRequest{
+     string Data = 1;
+     string Id = 2;
+     string UserId = 3;
+}
+
+message UpdateNoteResponse{
+     NoteModel Note = 1;
+}
+
+message DeleteNoteRequest{
+     string Id = 1;
+     string UserId = 2;
+}
+
+message DeleteNoteResponse{}
+
+message CreateSubNoteRequest {
+     string UserId = 1;
+     string NoteData = 2;
+     string ParentId = 3;
+}
+
+message CreateSubNoteResponse {
+     NoteModel Note = 1;
+}
+
+message CheckPermissionsRequest {
+     string NoteId = 1;
+     string UserId = 2;
+}
+
+message CheckPermissionsResponse {
+     bool Result = 1;
+}

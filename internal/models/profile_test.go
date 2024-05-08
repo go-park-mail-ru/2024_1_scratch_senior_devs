@@ -1,9 +1,10 @@
 package models
 
 import (
+	"testing"
+
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestValidateProfile(t *testing.T) {
@@ -25,7 +26,7 @@ func TestValidateProfile(t *testing.T) {
 			name: "UserFormFata_ValidateSuccess",
 			data: ProfileUpdatePayload{
 				Description: "abc",
-				Password: passwords{
+				Password: Passwords{
 					Old: "12345678a",
 					New: "12345678b",
 				},
@@ -36,7 +37,7 @@ func TestValidateProfile(t *testing.T) {
 			name: "UserFormFata_ValidateFail",
 			data: ProfileUpdatePayload{
 				Description: "abc",
-				Password: passwords{
+				Password: Passwords{
 					Old: "12345678a",
 					New: "12345678",
 				},

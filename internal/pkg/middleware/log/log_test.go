@@ -1,21 +1,39 @@
 package log
 
 import (
+	"io"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestLogMiddleware(t *testing.T) {
-	// handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 	requestID := r.Context().Value(config.RequestIdContextKey)
+func TestCreateLogMiddleware(t *testing.T) {
 
-	// 	if requestID == nil {
-	// 		t.Errorf("requestID not set in context")
-	// 	}
-	// })
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "OnlyTest",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logger := slog.New(slog.NewJSONHandler(io.MultiWriter(os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
 
-	// middleware := LogMiddleware(handler)
-	// req := httptest.NewRequest("GET", "http://example.com", nil)
-	// w := httptest.NewRecorder()
+			mw := CreateLogMiddleware(logger)
+			handler := func(w http.ResponseWriter, r *http.Request) {}
+			req := httptest.NewRequest(http.MethodGet, "http://www.your-domain.com/", nil)
+			res := httptest.NewRecorder()
+			handler(res, req)
 
-	// middleware.ServeHTTP(w, req)
+			mw(http.HandlerFunc(handler)).ServeHTTP(res, req)
+			got := log.GetLoggerFromContext(req.Context())
+			assert.NotEqual(t, logger, got)
+		})
+	}
 }

@@ -8,8 +8,12 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"time"
 
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
+	"github.com/satori/uuid"
+
+	noteGen "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth"
@@ -22,20 +26,21 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
+const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
+
 type AuthHandler struct {
-	uc            auth.AuthUsecase
+	client        gen.AuthClient
 	blockerUC     auth.BlockerUsecase
-	noteUC        note.NoteUsecase
+	noteClient    noteGen.NoteClient
 	cfg           config.AuthHandlerConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, noteUC note.NoteUsecase, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
+func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, noteClient noteGen.NoteClient, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
 	return &AuthHandler{
-		uc:        uc,
-		blockerUC: blockerUC,
-		noteUC:    noteUC,
-
+		client:        client,
+		blockerUC:     blockerUC,
+		noteClient:    noteClient,
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
 	}
@@ -43,22 +48,41 @@ func CreateAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase, noteU
 
 func makeHelloNoteData(username string) []byte {
 	return []byte(fmt.Sprintf(`
-		{
-			"title": "You-note ❤️",
-			"content": [
-				{
-					"id": "1",
-					"type": "div",
-					"content": [
-						{
-							"id": "2",
-							"content": "Привет, %s!"
-						}
-					]
-				}
-			]
-		}
+	{
+		"title": "YouNote❤️",
+		"content": [
+		    {
+			   "pluginName": "textBlock",
+			   "content": "Привет, %s!"
+		    },
+		    {
+			   "pluginName": "div",
+			   "children": [
+				  {
+					 "pluginName": "br"
+				  }
+			   ]
+		    }
+		]
+	}
 	`, username))
+}
+
+func getUser(user *gen.User) (models.User, error) {
+	createTime, err := time.Parse(TimeLayout, user.CreateTime)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return models.User{
+		Id:           uuid.FromStringOrNil(user.Id),
+		Description:  user.Description,
+		Username:     user.Username,
+		PasswordHash: user.PasswordHash,
+		CreateTime:   createTime,
+		ImagePath:    user.ImagePath,
+		SecondFactor: models.Secret(user.SecondFactor),
+	}, nil
 }
 
 // SignUp godoc
@@ -88,25 +112,46 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUser, jwtToken, expTime, err := h.uc.SignUp(r.Context(), userData)
+	response, err := h.client.SignUp(r.Context(), &gen.UserFormData{
+		Username: userData.Username,
+		Password: userData.Password,
+		Code:     userData.Code,
+	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, auth.ErrCreatingUser)
 		return
 	}
 
-	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime, h.cfg.Jwt))
-	w.Header().Set("Authorization", "Bearer "+jwtToken)
-
-	protection.SetCsrfToken(w, h.cfg.Csrf)
-
-	if err := responses.WriteResponseData(w, newUser, http.StatusCreated); err != nil {
+	expTime, err := time.Parse(TimeLayout, response.Expires)
+	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	_, err = h.noteUC.CreateNote(r.Context(), newUser.Id, makeHelloNoteData(newUser.Username))
+	http.SetCookie(w, cookie.GenJwtTokenCookie(response.Token, expTime, h.cfg.Jwt))
+	w.Header().Set("Authorization", "Bearer "+response.Token)
+
+	protection.SetCsrfToken(w, h.cfg.Csrf)
+
+	realUser, err := getUser(response.User)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusCreated); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = h.noteClient.AddNote(r.Context(), &noteGen.AddNoteRequest{
+		Data:   string(makeHelloNoteData(response.User.Username)),
+		UserId: response.User.Id,
+	})
 	if err != nil {
 		logger.Error(err.Error())
 	}
@@ -186,7 +231,11 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, jwtToken, expTime, err := h.uc.SignIn(r.Context(), userData)
+	response, err := h.client.SignIn(r.Context(), &gen.UserFormData{
+		Username: userData.Username,
+		Password: userData.Password,
+		Code:     userData.Code,
+	})
 	if err != nil {
 		if errors.Is(err, auth.ErrFirstFactorPassed) {
 			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
@@ -199,12 +248,26 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, cookie.GenJwtTokenCookie(jwtToken, expTime, h.cfg.Jwt))
-	w.Header().Set("Authorization", "Bearer "+jwtToken)
+	expTime, err := time.Parse(TimeLayout, response.Expires)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, cookie.GenJwtTokenCookie(response.Token, expTime, h.cfg.Jwt))
+	w.Header().Set("Authorization", "Bearer "+response.Token)
 
 	protection.SetCsrfToken(w, h.cfg.Csrf)
 
-	if err := responses.WriteResponseData(w, user, http.StatusOK); err != nil {
+	realUser, err := getUser(response.User)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -233,14 +296,23 @@ func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId := jwtPayload.Id
-	currentUser, err := h.uc.CheckUser(r.Context(), userId)
+	currentUser, err := h.client.CheckUser(r.Context(), &gen.CheckUserRequest{
+		UserId: userId.String(),
+	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusUnauthorized, err.Error())
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	if err := responses.WriteResponseData(w, currentUser, http.StatusOK); err != nil {
+	realUser, err := getUser(currentUser)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -278,14 +350,30 @@ func (h *AuthHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.uc.UpdateProfile(r.Context(), jwtPayload.Id, payload)
+	user, err := h.client.UpdateProfile(r.Context(), &gen.UpdateProfileRequest{
+		UserId: jwtPayload.Id.String(),
+		Payload: &gen.ProfileUpdatePayload{
+			Description: payload.Description,
+			Password: &gen.Passwords{
+				Old: payload.Password.Old,
+				New: payload.Password.New,
+			},
+		},
+	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if err := responses.WriteResponseData(w, user, http.StatusOK); err != nil {
+	realUser, err := getUser(user)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -361,14 +449,25 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	user, err := h.uc.UpdateProfileAvatar(r.Context(), jwtPayload.Id, avatar, fileExtension)
+	user, err := h.client.UpdateProfileAvatar(r.Context(), &gen.UpdateProfileAvatarRequest{
+		UserId:    jwtPayload.Id.String(),
+		Avatar:    content,
+		Extension: fileExtension,
+	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if err := responses.WriteResponseData(w, user, http.StatusOK); err != nil {
+	realUser, err := getUser(user)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, realUser, http.StatusOK); err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -383,12 +482,11 @@ func (h *AuthHandler) UpdateProfileAvatar(w http.ResponseWriter, r *http.Request
 // @Tags 		auth
 // @ID			get-qr-code
 // @Produce		image/png
-// @Success		200		file	image/png	true	"QR-code"
+// @Success		200
 // @Failure		400
 // @Failure		401
 // @Router		/api/auth/get_qr [get]
 func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
-
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
@@ -398,14 +496,16 @@ func (h *AuthHandler) GetQRCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	byteSecret, err := h.uc.GenerateAndUpdateSecret(r.Context(), jwtPayload.Username)
+	byteSecret, err := h.client.GenerateAndUpdateSecret(r.Context(), &gen.SecretRequest{
+		Username: jwtPayload.Username,
+	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	secret := base32.StdEncoding.EncodeToString(byteSecret)
+	secret := base32.StdEncoding.EncodeToString(byteSecret.Secret)
 
 	URL, err := url.Parse("otpauth://totp")
 	if err != nil {
@@ -449,7 +549,9 @@ func (h *AuthHandler) DisableSecondFactor(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := h.uc.DeleteSecret(r.Context(), jwtPayload.Username); err != nil {
+	if _, err := h.client.DeleteSecret(r.Context(), &gen.SecretRequest{
+		Username: jwtPayload.Username,
+	}); err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return

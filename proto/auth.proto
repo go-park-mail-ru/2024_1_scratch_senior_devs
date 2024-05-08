@@ -1,0 +1,81 @@
+syntax = "proto3";
+package auth;
+option go_package = "./internal/pkg/auth/delivery/grpc/gen/;gen";
+
+service Auth {
+  rpc SignUp(UserFormData) returns (SignUpResponse) {}
+  rpc SignIn(UserFormData) returns (SignInResponse) {}
+  rpc CheckUser(CheckUserRequest) returns (User) {}
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (User) {}
+	rpc UpdateProfile(UpdateProfileRequest) returns (User) {}
+	rpc UpdateProfileAvatar(UpdateProfileAvatarRequest) returns (User) {}
+	rpc GenerateAndUpdateSecret(SecretRequest) returns (GenerateAndUpdateSecretResponse) {}
+	rpc DeleteSecret(SecretRequest) returns (EmptyMessage) {}
+}
+
+message UserFormData {
+  string Username = 1;
+  string Password = 2;
+  string Code = 3;
+}
+
+message User {
+  string Id = 1;
+  string Description = 2;
+  string Username = 3;
+  string PasswordHash = 4;
+  string CreateTime = 5;
+  string ImagePath = 6;
+  string SecondFactor = 7;
+}
+
+message SignInResponse {
+  User User = 1;
+  string Token = 2;
+  string Expires = 3;
+}
+
+message SignUpResponse {
+  User User = 1;
+  string Token = 2;
+  string Expires = 3;
+}
+
+message Passwords {
+  string Old = 1;
+  string New = 2;
+}
+
+message ProfileUpdatePayload {
+  string Description = 1;
+  Passwords Password = 2;
+}
+
+message UpdateProfileRequest {
+  string UserId = 1;
+  ProfileUpdatePayload Payload = 2;
+}
+
+message CheckUserRequest {
+  string UserId = 1;
+}
+
+message GetUserByUsernameRequest {
+  string Username = 1;
+}
+
+message UpdateProfileAvatarRequest {
+  string UserId = 1;
+  bytes Avatar = 2;
+  string Extension = 3;
+}
+
+message SecretRequest {
+  string Username = 1;
+}
+
+message GenerateAndUpdateSecretResponse {
+  bytes Secret = 1;
+}
+
+message EmptyMessage {}

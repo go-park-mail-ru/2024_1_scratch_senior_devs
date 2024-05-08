@@ -31,3 +31,10 @@ go.work
 local-*.*
 redis.conf
 elastic.conf
+
+*.pem
+*.key
+*.crt
+*.csr
+*.ext
+cert/

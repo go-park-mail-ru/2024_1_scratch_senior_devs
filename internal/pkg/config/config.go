@@ -19,6 +19,9 @@ type Config struct {
 	Validation  ValidationConfig  `yaml:"validation"`
 	Attach      AttachConfig      `yaml:"attach"`
 	Elastic     ElasticConfig     `yaml:"elastic"`
+	Grpc        GrpcConfig        `yaml:"grpc"`
+	Hub         HubConfig         `yaml:"hub"`
+	Constraints ConstraintsConfig `yaml:"constraints"`
 }
 
 type AuthHandlerConfig struct {
@@ -65,6 +68,25 @@ type ValidationConfig struct {
 type ElasticConfig struct {
 	ElasticIndexName            string `yaml:"elastic_index_name"`
 	ElasticSearchValueMinLength int    `yaml:"elastic_search_value_min_length"`
+}
+
+type GrpcConfig struct {
+	AuthPort string `yaml:"auth_port"`
+	AuthIP   string `yaml:"auth_ip"`
+	NotePort string `yaml:"note_port"`
+	NoteIP   string `yaml:"note_ip"`
+}
+
+type HubConfig struct {
+	Period   time.Duration `yaml:"period"`
+	CacheTtl time.Duration `yaml:"cache_ttl"`
+}
+
+type ConstraintsConfig struct {
+	MaxSubnotes      int `yaml:"max_subnotes"`
+	MaxDepth         int `yaml:"max_depth"`
+	MaxCollaborators int `yaml:"max_collaborators"`
+	MaxTags          int `yaml:"max_tags"`
 }
 
 const (

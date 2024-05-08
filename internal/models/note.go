@@ -8,11 +8,15 @@ import (
 )
 
 type Note struct {
-	Id         uuid.UUID `json:"id"`
-	Data       []byte    `json:"data,omitempty"`
-	CreateTime time.Time `json:"create_time"`
-	UpdateTime time.Time `json:"update_time"`
-	OwnerId    uuid.UUID `json:"owner_id"`
+	Id            uuid.UUID   `json:"id"`
+	Data          []byte      `json:"data,omitempty"`
+	CreateTime    time.Time   `json:"create_time"`
+	UpdateTime    time.Time   `json:"update_time"`
+	OwnerId       uuid.UUID   `json:"owner_id"`
+	Parent        uuid.UUID   `json:"parent"`
+	Children      []uuid.UUID `json:"children"`
+	Tags          []string    `json:"tags"`
+	Collaborators []uuid.UUID `json:"collaborators"`
 }
 
 func Sanitize(noteData []byte) []byte {
@@ -20,11 +24,15 @@ func Sanitize(noteData []byte) []byte {
 }
 
 type ElasticNote struct {
-	Id         uuid.UUID `json:"id"`
-	Data       string    `json:"data,omitempty"`
-	CreateTime time.Time `json:"create_time"`
-	UpdateTime time.Time `json:"update_time"`
-	OwnerId    uuid.UUID `json:"owner_id"`
+	Id            uuid.UUID   `json:"id"`
+	Data          string      `json:"data,omitempty"`
+	CreateTime    time.Time   `json:"create_time"`
+	UpdateTime    time.Time   `json:"update_time"`
+	OwnerId       uuid.UUID   `json:"owner_id"`
+	Parent        uuid.UUID   `json:"parent"`
+	Children      []uuid.UUID `json:"children"`
+	Tags          []string    `json:"tags"`
+	Collaborators []uuid.UUID `json:"collaborators"`
 }
 
 type NoteUpdate struct {
@@ -33,6 +41,10 @@ type NoteUpdate struct {
 
 type UpsertNoteRequest struct {
 	Data interface{} `json:"data"`
+}
+
+type AddCollaboratorRequest struct {
+	Username string `json:"username"`
 }
 
 // ================================================================
@@ -49,6 +61,8 @@ type NoteForSwagger struct {
 	CreateTime time.Time          `json:"create_time"`
 	UpdateTime time.Time          `json:"update_time,omitempty"`
 	OwnerId    uuid.UUID          `json:"owner_id"`
+	Parent     uuid.UUID          `json:"parent"`
+	Children   []uuid.UUID        `json:"children"`
 }
 
 type UpsertNoteRequestForSwagger struct {
