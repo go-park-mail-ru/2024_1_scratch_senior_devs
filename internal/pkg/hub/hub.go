@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"io"
 	"log/slog"
 	"sync"
@@ -23,14 +24,16 @@ type Hub struct {
 	repo          note.NoteBaseRepo
 	cache         *ttlcache.Cache[uuid.UUID, models.CacheMessage]
 	cfg           config.HubConfig
+	metr          metrics.WSMetrics
 }
 
-func NewHub(repo note.NoteBaseRepo, cfg config.HubConfig) *Hub {
+func NewHub(repo note.NoteBaseRepo, cfg config.HubConfig, metr metrics.WSMetrics) *Hub {
 	return &Hub{
 		repo:          repo,
 		currentOffset: time.Now().UTC(),
 		cache:         ttlcache.New[uuid.UUID, models.CacheMessage](ttlcache.WithTTL[uuid.UUID, models.CacheMessage](cfg.CacheTtl)),
 		cfg:           cfg,
+		metr:          metr,
 	}
 }
 
@@ -52,12 +55,14 @@ func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *websocket
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	h.connect.Store(client, noteID)
+	h.metr.IncreaseConnections()
 
 	go func() {
 		for {
 			messageType, reader, err := client.NextReader()
 			if err != nil {
 				_ = client.Close()
+				h.metr.DecreaseConnections()
 				return
 			}
 
@@ -96,6 +101,7 @@ func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *websocket
 
 	client.SetCloseHandler(func(code int, text string) error {
 		h.connect.Delete(client)
+		h.metr.DecreaseConnections()
 		return nil
 	})
 }

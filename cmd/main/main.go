@@ -112,7 +112,7 @@ func main() {
 	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 	Metrics, err := metrics.NewHttpMetrics("main")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error(err.Error())
 	}
 	MetricsMiddleware := metricsmw.CreateHttpMetricsMiddleware(Metrics, logger)
 
@@ -120,19 +120,24 @@ func main() {
 
 	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "main")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error(err.Error())
 	}
 
 	redisMetrics, err := metrics.NewDatabaseMetrics("redis", "main")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error(err.Error())
+	}
+
+	websocketMetrics, err := metrics.NewWebsocketMetrics()
+	if err != nil {
+		logger.Error(err.Error())
 	}
 
 	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker, &redisMetrics)
 	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
 
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db, &postgresMetrics)
-	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub)
+	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub, &websocketMetrics)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, &postgresMetrics)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)

@@ -56,3 +56,50 @@ func (mr *MockDBMetricsMockRecorder) ObserveResponseTime(queryName, observeTime 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ObserveResponseTime", reflect.TypeOf((*MockDBMetrics)(nil).ObserveResponseTime), queryName, observeTime)
 }
+
+// MockWSMetrics is a mock of WSMetrics interface.
+type MockWSMetrics struct {
+	ctrl     *gomock.Controller
+	recorder *MockWSMetricsMockRecorder
+}
+
+// MockWSMetricsMockRecorder is the mock recorder for MockWSMetrics.
+type MockWSMetricsMockRecorder struct {
+	mock *MockWSMetrics
+}
+
+// NewMockWSMetrics creates a new mock instance.
+func NewMockWSMetrics(ctrl *gomock.Controller) *MockWSMetrics {
+	mock := &MockWSMetrics{ctrl: ctrl}
+	mock.recorder = &MockWSMetricsMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockWSMetrics) EXPECT() *MockWSMetricsMockRecorder {
+	return m.recorder
+}
+
+// DecreaseConnections mocks base method.
+func (m *MockWSMetrics) DecreaseConnections() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "DecreaseConnections")
+}
+
+// DecreaseConnections indicates an expected call of DecreaseConnections.
+func (mr *MockWSMetricsMockRecorder) DecreaseConnections() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecreaseConnections", reflect.TypeOf((*MockWSMetrics)(nil).DecreaseConnections))
+}
+
+// IncreaseConnections mocks base method.
+func (m *MockWSMetrics) IncreaseConnections() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "IncreaseConnections")
+}
+
+// IncreaseConnections indicates an expected call of IncreaseConnections.
+func (mr *MockWSMetricsMockRecorder) IncreaseConnections() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncreaseConnections", reflect.TypeOf((*MockWSMetrics)(nil).IncreaseConnections))
+}
