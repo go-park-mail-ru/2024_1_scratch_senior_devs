@@ -856,3 +856,251 @@ func TestNoteUsecase_AddTag(t *testing.T) {
 		})
 	}
 }
+
+func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          4,
+		MaxSubnotes:      10,
+	}
+
+	noteId := uuid.NewV4()
+	guestId := uuid.NewV4()
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
+		wantErr    bool
+	}{
+		{
+			name:    "Test_addCollaboratorReqursive_ReadError",
+			wantErr: true,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId).Return(models.Note{}, errors.New("error"))
+			},
+		},
+		{
+			name:    "Test_addCollaboratorReqursive_AddError",
+			wantErr: true,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId).Return(models.Note{
+					Id: noteId,
+				}, nil)
+				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(errors.New("error"))
+
+			},
+		},
+		{
+			name:    "Test_addCollaboratorReqursive_NoChildren",
+			wantErr: false,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId).Return(models.Note{
+					Id: noteId,
+				}, nil)
+				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(nil)
+
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo)
+
+			err := uc.addCollaboratorRecursive(context.Background(), noteId, guestId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.AddTag error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
+
+func TestNoteUsecase_AddCollaborator(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          4,
+		MaxSubnotes:      10,
+	}
+
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+	guestId := uuid.NewV4()
+
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
+		wantErr    bool
+	}{
+		{
+			name: "Test_AddCollaborator_FailOnRead",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, errors.New("error")).Times(1)
+
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "Test_AddCollaborator_FailOnNotOwner",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, nil).Times(1)
+
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "Test_AddCollaborator_FailParentNotEmpty",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+					Id:      noteId,
+					OwnerId: userId,
+					Parent:  uuid.NewV4(),
+				}, nil).Times(1)
+
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "Test_AddCollaborator_FailAlreadyCollaborator",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+					Id:            noteId,
+					OwnerId:       userId,
+					Parent:        uuid.UUID{},
+					Collaborators: []uuid.UUID{guestId},
+				}, nil).Times(1)
+
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "Test_AddCollaborator_TooMany",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+					Id:            noteId,
+					OwnerId:       userId,
+					Parent:        uuid.UUID{},
+					Collaborators: make([]uuid.UUID, 20),
+				}, nil).Times(1)
+
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "Test_AddCollaborator_AddErr",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+					Id:      noteId,
+					OwnerId: userId,
+					Parent:  uuid.UUID{},
+				}, nil).Times(1)
+				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(errors.New("error"))
+
+			},
+
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo)
+
+			err := uc.AddCollaborator(context.Background(), noteId, userId, guestId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.AddTag error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestNoteUsecase_getDepth(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          4,
+		MaxSubnotes:      10,
+	}
+
+	// parentId := uuid.NewV4()
+	// childId := uuid.NewV4()
+	tests := []struct {
+		parentId   uuid.UUID
+		childId    uuid.UUID
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
+		wantErr    bool
+		currDepth  int
+	}{
+		{
+			name:      "Test_getDepth",
+			parentId:  uuid.UUID{},
+			childId:   uuid.UUID{},
+			currDepth: 1,
+			wantErr:   false,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+			},
+		},
+		// {
+		// 	name:      "Test_ReadErr",
+		// 	parentId:  parentId,
+		// 	childId:   childId,
+		// 	currDepth: 1,
+		// 	wantErr:   true,
+		// 	repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+		// 		baseRepo.EXPECT().ReadNote(gomock.Any(), parentId).Return(models.Note{}, errors.New("err"))
+		// 	},
+		// },
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo)
+
+			_, err := uc.getDepth(context.Background(), tt.childId, tt.currDepth)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.AddTag error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
