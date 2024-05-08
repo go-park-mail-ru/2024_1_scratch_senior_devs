@@ -15,7 +15,7 @@ func NewDatabaseMetrics(name string) (DatabaseMetrics, error) {
 
 	metr.Errors = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "errors_total",
+			Name: "db_errors_total",
 			Help: "Number of total errors.",
 		},
 		[]string{"query", "db"},
@@ -26,7 +26,7 @@ func NewDatabaseMetrics(name string) (DatabaseMetrics, error) {
 
 	metr.Times = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: "total_times",
+			Name: "db_total_times",
 		},
 		[]string{"query", "db"},
 	)
