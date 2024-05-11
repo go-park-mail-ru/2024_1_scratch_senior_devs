@@ -44,7 +44,7 @@ func CreateHttpMetricsMiddleware(metr *metrics.HttpMetrics, logger *slog.Logger)
 			route := mux.CurrentRoute(r)
 			path, _ := route.GetPathTemplate()
 			statusCode := rw.statusCode
-			if statusCode != http.StatusOK && statusCode != http.StatusCreated {
+			if statusCode != http.StatusOK && statusCode != http.StatusCreated && statusCode != http.StatusNoContent {
 				metr.IncreaseErrors(path, strconv.Itoa(statusCode))
 			}
 			metr.IncreaseHits(path, strconv.Itoa(statusCode))

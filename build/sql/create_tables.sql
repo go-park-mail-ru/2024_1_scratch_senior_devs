@@ -33,6 +33,14 @@ CREATE TABLE IF NOT EXISTS notes (
     collaborators UUID[]
 );
 
+CREATE TABLE IF NOT EXISTS all_tags (
+    tag_name    TEXT
+                CONSTRAINT tag_name_length CHECK (char_length(tag_name) <= 255),
+    user_id     UUID
+                REFERENCES users (id),
+    PRIMARY KEY (tag_name, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS attaches (
     id UUID PRIMARY KEY,
     path TEXT

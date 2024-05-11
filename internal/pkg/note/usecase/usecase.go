@@ -377,7 +377,12 @@ func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.U
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
+
 		if err := uc.searchRepo.AddTag(ctx, tagName, noteId); err != nil {
+			logger.Error(err.Error())
+		}
+
+		if err := uc.baseRepo.RememberTag(ctx, tagName, userId); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -425,6 +430,35 @@ func (uc *NoteUsecase) DeleteTag(ctx context.Context, tagName string, noteId uui
 
 	logger.Info("success")
 	return updatedNote, nil
+}
+
+func (uc *NoteUsecase) RememberTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := uc.baseRepo.RememberTag(ctx, tagName, userID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (uc *NoteUsecase) ForgetTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := uc.baseRepo.ForgetTag(ctx, tagName, userID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	if err := uc.baseRepo.DeleteTagFromAllNotes(ctx, tagName, userID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
 }
 
 func (uc *NoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {

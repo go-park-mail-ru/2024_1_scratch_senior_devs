@@ -42,14 +42,11 @@ const (
 
 	addTag    = "UPDATE notes SET tags = array_append(tags, $1) WHERE id = $2;"
 	deleteTag = "UPDATE notes SET tags = array_remove(tags, $1) WHERE id = $2;"
-	getTags   = `
-		SELECT DISTINCT unnest(tags) AS tag FROM notes 
-		WHERE parent = '00000000-0000-0000-0000-000000000000'::UUID
-		AND (
-			owner_id = $1
-			OR $1 = ANY(collaborators)
-		);
-	`
+
+	getTags               = `SELECT DISTINCT tag_name FROM all_tags WHERE user_id = $1;`
+	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
+	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
+	deleteTagFromAllNotes = "UPDATE notes SET tags = array_remove(tags, $1) WHERE owner_id = $2;"
 )
 
 type NotePostgres struct {
@@ -292,6 +289,54 @@ func (repo *NotePostgres) DeleteTag(ctx context.Context, tagName string, noteId 
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("deleteTag")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) RememberTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, rememberTag, tagName, userID)
+	repo.metr.ObserveResponseTime("rememberTag", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("rememberTag")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) ForgetTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, forgetTag, tagName, userID)
+	repo.metr.ObserveResponseTime("forgetTag", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("forgetTag")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, deleteTagFromAllNotes, tagName, userID)
+	repo.metr.ObserveResponseTime("deleteTagFromAllNotes", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("deleteTagFromAllNotes")
 		return err
 	}
 

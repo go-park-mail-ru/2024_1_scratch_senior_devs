@@ -14,6 +14,8 @@ service Note {
      rpc DeleteTag(TagRequest) returns (GetNoteResponse) {}
      rpc GetTags(GetTagsRequest) returns (GetTagsResponse) {}
      rpc CheckPermissions(CheckPermissionsRequest) returns (CheckPermissionsResponse) {}
+     rpc RememberTag(AllTagRequest) returns (EmptyResponse) {}
+     rpc ForgetTag(AllTagRequest) returns (EmptyResponse) {}
 }
 
 message GetTagsRequest {
@@ -29,6 +31,13 @@ message TagRequest {
      string NoteId = 2;
      string UserId = 3;
 }
+
+message AllTagRequest {
+     string TagName = 1;
+     string UserId = 2;
+}
+
+message EmptyResponse {}
 
 message AddCollaboratorRequest {
      string NoteId = 1;

@@ -87,6 +87,30 @@ func (h *GrpcNoteHandler) DeleteTag(ctx context.Context, in *generatedNote.TagRe
 	return &generatedNote.GetNoteResponse{Note: getNote(result)}, nil
 }
 
+func (h *GrpcNoteHandler) RememberTag(ctx context.Context, in *generatedNote.AllTagRequest) (*generatedNote.EmptyResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := h.uc.RememberTag(ctx, in.TagName, uuid.FromStringOrNil(in.UserId)); err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.EmptyResponse{}, nil
+}
+
+func (h *GrpcNoteHandler) ForgetTag(ctx context.Context, in *generatedNote.AllTagRequest) (*generatedNote.EmptyResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := h.uc.ForgetTag(ctx, in.TagName, uuid.FromStringOrNil(in.UserId)); err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.EmptyResponse{}, nil
+}
+
 func (h *GrpcNoteHandler) AddCollaborator(ctx context.Context, in *generatedNote.AddCollaboratorRequest) (*generatedNote.AddCollaboratorResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

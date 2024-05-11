@@ -176,6 +176,26 @@ func (mr *MockNoteClientMockRecorder) DeleteTag(ctx, in interface{}, opts ...int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteClient)(nil).DeleteTag), varargs...)
 }
 
+// ForgetTag mocks base method.
+func (m *MockNoteClient) ForgetTag(ctx context.Context, in *gen.AllTagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ForgetTag", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ForgetTag indicates an expected call of ForgetTag.
+func (mr *MockNoteClientMockRecorder) ForgetTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetTag", reflect.TypeOf((*MockNoteClient)(nil).ForgetTag), varargs...)
+}
+
 // GetAllNotes mocks base method.
 func (m *MockNoteClient) GetAllNotes(ctx context.Context, in *gen.GetAllRequest, opts ...grpc.CallOption) (*gen.GetAllResponse, error) {
 	m.ctrl.T.Helper()
@@ -234,6 +254,26 @@ func (mr *MockNoteClientMockRecorder) GetTags(ctx, in interface{}, opts ...inter
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteClient)(nil).GetTags), varargs...)
+}
+
+// RememberTag mocks base method.
+func (m *MockNoteClient) RememberTag(ctx context.Context, in *gen.AllTagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RememberTag", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RememberTag indicates an expected call of RememberTag.
+func (mr *MockNoteClientMockRecorder) RememberTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteClient)(nil).RememberTag), varargs...)
 }
 
 // UpdateNote mocks base method.
@@ -384,6 +424,21 @@ func (mr *MockNoteServerMockRecorder) DeleteTag(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteServer)(nil).DeleteTag), arg0, arg1)
 }
 
+// ForgetTag mocks base method.
+func (m *MockNoteServer) ForgetTag(arg0 context.Context, arg1 *gen.AllTagRequest) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForgetTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ForgetTag indicates an expected call of ForgetTag.
+func (mr *MockNoteServerMockRecorder) ForgetTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetTag", reflect.TypeOf((*MockNoteServer)(nil).ForgetTag), arg0, arg1)
+}
+
 // GetAllNotes mocks base method.
 func (m *MockNoteServer) GetAllNotes(arg0 context.Context, arg1 *gen.GetAllRequest) (*gen.GetAllResponse, error) {
 	m.ctrl.T.Helper()
@@ -427,6 +482,21 @@ func (m *MockNoteServer) GetTags(arg0 context.Context, arg1 *gen.GetTagsRequest)
 func (mr *MockNoteServerMockRecorder) GetTags(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteServer)(nil).GetTags), arg0, arg1)
+}
+
+// RememberTag mocks base method.
+func (m *MockNoteServer) RememberTag(arg0 context.Context, arg1 *gen.AllTagRequest) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RememberTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RememberTag indicates an expected call of RememberTag.
+func (mr *MockNoteServerMockRecorder) RememberTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteServer)(nil).RememberTag), arg0, arg1)
 }
 
 // UpdateNote mocks base method.

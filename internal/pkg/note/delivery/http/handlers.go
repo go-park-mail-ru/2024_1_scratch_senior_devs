@@ -145,8 +145,8 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := make([]models.Note, len(protoData.Notes))
-	for i, note := range protoData.Notes {
-		data[i], err = getNote(note)
+	for i, protoNote := range protoData.Notes {
+		data[i], err = getNote(protoNote)
 		if err != nil {
 			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -686,7 +686,7 @@ func (h *NoteHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	note, err := h.client.DeleteTag(r.Context(), &gen.TagRequest{
+	responseNote, err := h.client.DeleteTag(r.Context(), &gen.TagRequest{
 		TagName: tagName.TagName,
 		NoteId:  noteIdString,
 		UserId:  jwtPayload.Id.String(),
@@ -697,7 +697,7 @@ func (h *NoteHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultNote, err := getNote(note.Note)
+	resultNote, err := getNote(responseNote.Note)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -711,6 +711,68 @@ func (h *NoteHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) RememberTag(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var tagName models.TagRequest
+	if err := responses.GetRequestData(r, &tagName); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	_, err := h.client.RememberTag(r.Context(), &gen.AllTagRequest{
+		TagName: tagName.TagName,
+		UserId:  jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *NoteHandler) ForgetTag(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var tagName models.TagRequest
+	if err := responses.GetRequestData(r, &tagName); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	_, err := h.client.ForgetTag(r.Context(), &gen.AllTagRequest{
+		TagName: tagName.TagName,
+		UserId:  jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *NoteHandler) GetTags(w http.ResponseWriter, r *http.Request) {

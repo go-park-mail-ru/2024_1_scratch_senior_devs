@@ -1,6 +1,6 @@
 cover:
 	go test -json ./... -coverprofile coverprofile_.tmp -coverpkg=./... ; \
-    grep -v -e 'mock.go' -e 'docs.go' -e '_easyjson.go' -e 'gen_notes.go' -e '.pb.go' coverprofile_.tmp > coverprofile.tmp ; \
+    grep -v -e 'mock.go' -e 'docs.go' -e '_easyjson.go' -e 'gen_notes.go' -e '.pb.go' -e 'gen.go' coverprofile_.tmp > coverprofile.tmp ; \
     rm coverprofile_.tmp ; \
     go tool cover -html coverprofile.tmp -o ../heatmap.html; \
     go tool cover -func coverprofile.tmp

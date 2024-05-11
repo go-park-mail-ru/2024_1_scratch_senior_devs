@@ -33,6 +33,8 @@ type NoteClient interface {
 	DeleteTag(ctx context.Context, in *TagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	GetTags(ctx context.Context, in *GetTagsRequest, opts ...grpc.CallOption) (*GetTagsResponse, error)
 	CheckPermissions(ctx context.Context, in *CheckPermissionsRequest, opts ...grpc.CallOption) (*CheckPermissionsResponse, error)
+	RememberTag(ctx context.Context, in *AllTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	ForgetTag(ctx context.Context, in *AllTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 }
 
 type noteClient struct {
@@ -142,6 +144,24 @@ func (c *noteClient) CheckPermissions(ctx context.Context, in *CheckPermissionsR
 	return out, nil
 }
 
+func (c *noteClient) RememberTag(ctx context.Context, in *AllTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/note.Note/RememberTag", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *noteClient) ForgetTag(ctx context.Context, in *AllTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, "/note.Note/ForgetTag", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NoteServer is the server API for Note service.
 // All implementations must embed UnimplementedNoteServer
 // for forward compatibility
@@ -157,6 +177,8 @@ type NoteServer interface {
 	DeleteTag(context.Context, *TagRequest) (*GetNoteResponse, error)
 	GetTags(context.Context, *GetTagsRequest) (*GetTagsResponse, error)
 	CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error)
+	RememberTag(context.Context, *AllTagRequest) (*EmptyResponse, error)
+	ForgetTag(context.Context, *AllTagRequest) (*EmptyResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -196,6 +218,12 @@ func (UnimplementedNoteServer) GetTags(context.Context, *GetTagsRequest) (*GetTa
 }
 func (UnimplementedNoteServer) CheckPermissions(context.Context, *CheckPermissionsRequest) (*CheckPermissionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckPermissions not implemented")
+}
+func (UnimplementedNoteServer) RememberTag(context.Context, *AllTagRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RememberTag not implemented")
+}
+func (UnimplementedNoteServer) ForgetTag(context.Context, *AllTagRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ForgetTag not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -408,6 +436,42 @@ func _Note_CheckPermissions_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Note_RememberTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AllTagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).RememberTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/note.Note/RememberTag",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).RememberTag(ctx, req.(*AllTagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Note_ForgetTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AllTagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).ForgetTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/note.Note/ForgetTag",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).ForgetTag(ctx, req.(*AllTagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Note_ServiceDesc is the grpc.ServiceDesc for Note service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -458,6 +522,14 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckPermissions",
 			Handler:    _Note_CheckPermissions_Handler,
+		},
+		{
+			MethodName: "RememberTag",
+			Handler:    _Note_RememberTag_Handler,
+		},
+		{
+			MethodName: "ForgetTag",
+			Handler:    _Note_ForgetTag_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

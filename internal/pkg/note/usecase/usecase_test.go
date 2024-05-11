@@ -753,7 +753,7 @@ func TestNoteUsecase_AddTag(t *testing.T) {
 					Tags:    []string{"tag2"},
 				}, nil).Times(1)
 				searchRepo.EXPECT().AddTag(ctx, "tag1", noteId).Return(nil)
-
+				baseRepo.EXPECT().RememberTag(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			args: args{
 				ctx:     context.Background(),

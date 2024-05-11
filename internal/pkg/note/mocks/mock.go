@@ -140,6 +140,20 @@ func (mr *MockNoteUsecaseMockRecorder) DeleteTag(ctx, tagName, noteId, userId in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteUsecase)(nil).DeleteTag), ctx, tagName, noteId, userId)
 }
 
+// ForgetTag mocks base method.
+func (m *MockNoteUsecase) ForgetTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForgetTag", ctx, tagName, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ForgetTag indicates an expected call of ForgetTag.
+func (mr *MockNoteUsecaseMockRecorder) ForgetTag(ctx, tagName, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetTag", reflect.TypeOf((*MockNoteUsecase)(nil).ForgetTag), ctx, tagName, userID)
+}
+
 // GetAllNotes mocks base method.
 func (m *MockNoteUsecase) GetAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string, arg5 []string) ([]models.Note, error) {
 	m.ctrl.T.Helper()
@@ -183,6 +197,20 @@ func (m *MockNoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]stri
 func (mr *MockNoteUsecaseMockRecorder) GetTags(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteUsecase)(nil).GetTags), ctx, userID)
+}
+
+// RememberTag mocks base method.
+func (m *MockNoteUsecase) RememberTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RememberTag", ctx, tagName, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RememberTag indicates an expected call of RememberTag.
+func (mr *MockNoteUsecaseMockRecorder) RememberTag(ctx, tagName, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteUsecase)(nil).RememberTag), ctx, tagName, userID)
 }
 
 // UpdateNote mocks base method.
@@ -307,6 +335,34 @@ func (mr *MockNoteBaseRepoMockRecorder) DeleteTag(ctx, tagName, noteId interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).DeleteTag), ctx, tagName, noteId)
 }
 
+// DeleteTagFromAllNotes mocks base method.
+func (m *MockNoteBaseRepo) DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTagFromAllNotes", ctx, tagName, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTagFromAllNotes indicates an expected call of DeleteTagFromAllNotes.
+func (mr *MockNoteBaseRepoMockRecorder) DeleteTagFromAllNotes(ctx, tagName, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTagFromAllNotes", reflect.TypeOf((*MockNoteBaseRepo)(nil).DeleteTagFromAllNotes), ctx, tagName, userID)
+}
+
+// ForgetTag mocks base method.
+func (m *MockNoteBaseRepo) ForgetTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForgetTag", ctx, tagName, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ForgetTag indicates an expected call of ForgetTag.
+func (mr *MockNoteBaseRepoMockRecorder) ForgetTag(ctx, tagName, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).ForgetTag), ctx, tagName, userID)
+}
+
 // GetTags mocks base method.
 func (m *MockNoteBaseRepo) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -365,6 +421,20 @@ func (m *MockNoteBaseRepo) ReadNote(arg0 context.Context, arg1 uuid.UUID) (model
 func (mr *MockNoteBaseRepoMockRecorder) ReadNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadNote), arg0, arg1)
+}
+
+// RememberTag mocks base method.
+func (m *MockNoteBaseRepo) RememberTag(ctx context.Context, tagName string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RememberTag", ctx, tagName, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RememberTag indicates an expected call of RememberTag.
+func (mr *MockNoteBaseRepoMockRecorder) RememberTag(ctx, tagName, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).RememberTag), ctx, tagName, userID)
 }
 
 // RemoveSubNote mocks base method.

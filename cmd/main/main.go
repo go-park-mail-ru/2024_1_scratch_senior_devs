@@ -208,7 +208,13 @@ func main() {
 		attach.Handle("/{id}/delete", http.HandlerFunc(AttachDelivery.DeleteAttach)).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
-	r.PathPrefix("/tags").Handler(JwtMiddleware(http.HandlerFunc(NoteDelivery.GetTags))).Methods(http.MethodGet, http.MethodOptions)
+	tags := r.PathPrefix("/tags").Subrouter()
+	tags.Use(JwtMiddleware, CsrfMiddleware)
+	{
+		tags.Handle("", http.HandlerFunc(NoteDelivery.GetTags)).Methods(http.MethodGet, http.MethodOptions)
+		tags.Handle("/remember", http.HandlerFunc(NoteDelivery.RememberTag)).Methods(http.MethodPost, http.MethodOptions)
+		tags.Handle("/forget", http.HandlerFunc(NoteDelivery.ForgetTag)).Methods(http.MethodDelete, http.MethodOptions)
+	}
 
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 
