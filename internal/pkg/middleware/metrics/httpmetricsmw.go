@@ -3,7 +3,6 @@ package metricsmw
 import (
 	"bufio"
 	"errors"
-	"log/slog"
 	"net"
 	"net/http"
 	"strconv"
@@ -34,7 +33,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
 }
-func CreateHttpMetricsMiddleware(metr *metrics.HttpMetrics, logger *slog.Logger) mux.MiddlewareFunc {
+func CreateHttpMetricsMiddleware(metr *metrics.HttpMetrics) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()

@@ -11,6 +11,7 @@ service Auth {
 	rpc UpdateProfileAvatar(UpdateProfileAvatarRequest) returns (User) {}
 	rpc GenerateAndUpdateSecret(SecretRequest) returns (GenerateAndUpdateSecretResponse) {}
 	rpc DeleteSecret(SecretRequest) returns (EmptyMessage) {}
+  rpc CheckLoginAttempts(CheckLoginAttemptsRequest) returns (EmptyMessage) {}
 }
 
 message UserFormData {
@@ -76,6 +77,10 @@ message SecretRequest {
 
 message GenerateAndUpdateSecretResponse {
   bytes Secret = 1;
+}
+
+message CheckLoginAttemptsRequest {
+  string IpAddress = 1;
 }
 
 message EmptyMessage {}

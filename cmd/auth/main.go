@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 	"io"
 	"log/slog"
 	"net"
@@ -12,20 +11,25 @@ import (
 	"os/signal"
 	"syscall"
 
-	grpcAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc"
-	generatedAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
-	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
-	authUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/usecase"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
-	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
+
+	grpcAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc"
+	generatedAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
+
+	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
+	authUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/usecase"
+
+	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"google.golang.org/grpc"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 )
 
 func init() {
@@ -58,42 +62,60 @@ func run() (err error) {
 	}
 	defer db.Close()
 
+	redisOpts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		logger.Error("error connecting to redis: " + err.Error())
+		return
+	}
+	redisDB := redis.NewClient(redisOpts)
+
 	tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.AuthIP)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("fail to load TLS credentials" + err.Error())
 		return
 	}
 
 	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "auth")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error("can`t create metrics (auth postgres): " + err.Error())
 	}
 
-	AuthRepo := authRepo.CreateAuthRepo(db, &postgresMetrics)
-	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, cfg.AuthUsecase, cfg.Validation)
-	AuthDelivery := grpcAuth.NewGrpcAuthHandler(AuthUsecase)
+	redisMetrics, err := metrics.NewDatabaseMetrics("redis", "main")
+	if err != nil {
+		logger.Error("can`t create metrics (main redis): " + err.Error())
+	}
 
 	grpcMetrics, err := metrics.NewGrpcMetrics("auth")
 	if err != nil {
-		logger.Error("cant create metrics")
+		logger.Error("can`t create metrics (auth grpc): " + err.Error())
 	}
-	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
-	logMw := log.NewGrpcLogMw(logger)
+
+	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker, &redisMetrics)
+	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
+
+	AuthRepo := authRepo.CreateAuthRepo(db, &postgresMetrics)
+	AuthUsecase := authUsecase.CreateAuthUsecase(AuthRepo, cfg.AuthUsecase, cfg.Validation)
+	AuthDelivery := grpcAuth.NewGrpcAuthHandler(AuthUsecase, BlockerUsecase)
+
+	MetricsMiddleware := metricsmw.NewGrpcMw(grpcMetrics)
+	LogMiddleware := log.NewGrpcLogMw(logger)
+
 	gRPCServer := grpc.NewServer(
 		grpc.Creds(tlsCredentials),
-		grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor),
+		grpc.ChainUnaryInterceptor(MetricsMiddleware.ServerMetricsInterceptor, LogMiddleware.ServerLogsInterceptor),
 	)
 	generatedAuth.RegisterAuthServer(gRPCServer, AuthDelivery)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 	http.Handle("/", r)
-	httpSrv := http.Server{Handler: r, Addr: fmt.Sprintf(":%d", 7071)}
+	httpSrv := http.Server{Handler: r, Addr: fmt.Sprintf(":%s", cfg.Grpc.AuthMetricsPort)}
 	go func() {
 		if err := httpSrv.ListenAndServe(); err != nil {
 			logger.Error("fail httpSrv.ListenAndServe")
 		}
 	}()
+
 	go func() {
 		listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Grpc.AuthPort))
 		if err != nil {

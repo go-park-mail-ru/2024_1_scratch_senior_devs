@@ -30,16 +30,14 @@ const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
 
 type AuthHandler struct {
 	client        gen.AuthClient
-	blockerUC     auth.BlockerUsecase
 	noteClient    noteGen.NoteClient
 	cfg           config.AuthHandlerConfig
 	cfgValidation config.ValidationConfig
 }
 
-func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, noteClient noteGen.NoteClient, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
+func CreateAuthHandler(client gen.AuthClient, noteClient noteGen.NoteClient, cfg config.AuthHandlerConfig, cfgValidation config.ValidationConfig) *AuthHandler {
 	return &AuthHandler{
 		client:        client,
-		blockerUC:     blockerUC,
 		noteClient:    noteClient,
 		cfg:           cfg,
 		cfgValidation: cfgValidation,
@@ -47,25 +45,7 @@ func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, not
 }
 
 func makeHelloNoteData(username string) string {
-	return fmt.Sprintf(`
-	{
-		"title": "YouNote❤️",
-		"content": [
-		    {
-			   "pluginName": "textBlock",
-			   "content": "Привет, %s!"
-		    },
-		    {
-			   "pluginName": "div",
-			   "children": [
-				  {
-					 "pluginName": "br"
-				  }
-			   ]
-		    }
-		]
-	}
-	`, username)
+	return fmt.Sprintf(`{"title":"YouNote❤️","content":[{"pluginName":"textBlock","content":"Привет, %s!"},{"pluginName":"div","children":[{"pluginName":"br"}]}]}`, username)
 }
 
 func getUser(user *gen.User) (models.User, error) {
@@ -218,7 +198,10 @@ func (h *AuthHandler) LogOut(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
-	if err := h.blockerUC.CheckLoginAttempts(r.Context(), r.Header.Get("X-Real-IP")); err != nil {
+	_, err := h.client.CheckLoginAttempts(r.Context(), &gen.CheckLoginAttemptsRequest{
+		IpAddress: r.Header.Get("X-Real-IP"),
+	})
+	if err != nil {
 		log.LogHandlerError(logger, http.StatusTooManyRequests, err.Error())
 		w.WriteHeader(http.StatusTooManyRequests)
 		return

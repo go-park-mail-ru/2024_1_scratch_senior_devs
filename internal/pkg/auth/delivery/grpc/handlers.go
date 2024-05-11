@@ -27,12 +27,14 @@ func getUser(user models.User) *generatedAuth.User {
 
 type GrpcAuthHandler struct {
 	generatedAuth.AuthServer
-	uc auth.AuthUsecase
+	uc        auth.AuthUsecase
+	blockerUC auth.BlockerUsecase
 }
 
-func NewGrpcAuthHandler(uc auth.AuthUsecase) *GrpcAuthHandler {
+func NewGrpcAuthHandler(uc auth.AuthUsecase, blockerUC auth.BlockerUsecase) *GrpcAuthHandler {
 	return &GrpcAuthHandler{
-		uc: uc,
+		uc:        uc,
+		blockerUC: blockerUC,
 	}
 }
 
@@ -162,6 +164,18 @@ func (h *GrpcAuthHandler) DeleteSecret(ctx context.Context, in *generatedAuth.Se
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	if err := h.uc.DeleteSecret(ctx, in.Username); err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedAuth.EmptyMessage{}, nil
+}
+
+func (h *GrpcAuthHandler) CheckLoginAttempts(ctx context.Context, in *generatedAuth.CheckLoginAttemptsRequest) (*generatedAuth.EmptyMessage, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := h.blockerUC.CheckLoginAttempts(ctx, in.IpAddress); err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}

@@ -12,7 +12,6 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 	mock_auth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen/mocks"
-	mock_uc "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/mocks"
 	gen_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen/mocks"
 
@@ -25,31 +24,9 @@ import (
 
 func TestMakeHelloNoteData(t *testing.T) {
 	username := "testuser"
-	expected := `
-	{
-		"title": "YouNote❤️",
-		"content": [
-		    {
-			   "pluginName": "textBlock",
-			   "content": "Привет, testuser!"
-		    },
-		    {
-			   "pluginName": "div",
-			   "children": [
-				  {
-					 "pluginName": "br"
-				  }
-			   ]
-		    }
-		]
-	}
-	`
+	expected := `{"title":"YouNote❤️","content":[{"pluginName":"textBlock","content":"Привет, testuser!"},{"pluginName":"div","children":[{"pluginName":"br"}]}]}`
 
-	t.Run("Test_MakeHelloNoteData", func(t *testing.T) {
-		result := makeHelloNoteData(username)
-
-		assert.Equal(t, expected, result)
-	})
+	assert.Equal(t, expected, makeHelloNoteData(username))
 }
 
 func TestAuthHandler_SignUp(t *testing.T) {
@@ -124,7 +101,6 @@ func TestAuthHandler_SignUp(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 
 			defer ctrl.Finish()
@@ -155,7 +131,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 			handler.SignUp(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -227,13 +203,11 @@ func TestAuthHandler_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 			defer ctrl.Finish()
 
 			if tt.name != "AuthHandler_SignIn_Fail_1" {
 				mockClient.EXPECT().SignIn(gomock.Any(), &gen.UserFormData{
-
 					Username: tt.username,
 					Password: tt.password,
 				}).Return(&gen.SignInResponse{
@@ -249,12 +223,12 @@ func TestAuthHandler_SignIn(t *testing.T) {
 				}, tt.usecaseErr)
 			}
 
-			mockBlocker.EXPECT().CheckLoginAttempts(gomock.Any(), gomock.Any()).Return(nil)
+			mockClient.EXPECT().CheckLoginAttempts(gomock.Any(), gomock.Any()).Return(&gen.EmptyMessage{}, nil).Times(1)
 
 			req := httptest.NewRequest("POST", "http://example.com/api/handler", bytes.NewBufferString(tt.requestBody))
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 			handler.SignIn(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -302,14 +276,13 @@ func TestAuthHandler_LogOut(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 			defer ctrl.Finish()
 
 			req := httptest.NewRequest("DELETE", "http://example.com/api/handler", nil)
 			w := httptest.NewRecorder()
 
-			handler := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 			handler.LogOut(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -370,7 +343,6 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 			defer ctrl.Finish()
 
@@ -383,7 +355,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 			handler.CheckUser(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -451,7 +423,6 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 			defer ctrl.Finish()
 
@@ -477,7 +448,7 @@ func TestAuthHandler_GetProfile(t *testing.T) {
 			}
 			req = req.WithContext(ctx)
 
-			handler := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			handler := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 			handler.GetProfile(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
@@ -522,11 +493,11 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 		wantStatus int
 		name       string
 		payload    string
-		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase)
+		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthClient)
 	}{
 		{
 			name: "Test_Update_Unauthorized",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 			},
 			wantStatus: http.StatusUnauthorized,
 		},
@@ -538,7 +509,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 			},
 			name:    "Test_BadRequest",
 			payload: "",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 			},
 			wantStatus: http.StatusBadRequest,
 		},
@@ -556,7 +527,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 				    "new": "12345678b"
 				}
 			 }`,
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 				uc.EXPECT().UpdateProfile(ctx, &gen.UpdateProfileRequest{
 					Payload: &gen.ProfileUpdatePayload{
 						Description: "slkakjckld",
@@ -591,7 +562,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 				    "new": "12345678b"
 				}
 			 }`,
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 				uc.EXPECT().UpdateProfile(ctx, &gen.UpdateProfileRequest{
 					UserId: userID.String(),
 					Payload: &gen.ProfileUpdatePayload{
@@ -611,7 +582,6 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 			defer ctrl.Finish()
 			req := httptest.NewRequest("POST", "http://example.com/api/handler/", bytes.NewBufferString(tt.payload))
@@ -622,9 +592,9 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 				req = req.WithContext(context.Background())
 			}
 
-			tt.ucMocker(req.Context(), mockClient, mockBlocker)
+			tt.ucMocker(req.Context(), mockClient)
 
-			h := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			h := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 
 			h.UpdateProfile(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)
@@ -668,12 +638,12 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 	tests := []struct {
 		wantStatus int
 		name       string
-		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase)
+		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthClient)
 		args       args
 	}{
 		{
 			name: "Test_Success",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 				uc.EXPECT().DeleteSecret(ctx, &gen.SecretRequest{
 					Username: username,
 				}).Return(&gen.EmptyMessage{}, nil)
@@ -686,7 +656,7 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 		},
 		{
 			name: "Test_BadRequest",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 				uc.EXPECT().DeleteSecret(ctx, &gen.SecretRequest{
 					Username: username,
 				}).Return(&gen.EmptyMessage{}, errors.New("error"))
@@ -699,7 +669,7 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 		},
 		{
 			name: "Test_Unauthorized",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 
 			},
 			args: args{
@@ -714,7 +684,6 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 			defer ctrl.Finish()
 			req := httptest.NewRequest("GET", "http://example.com/api/handler/", bytes.NewBufferString(""))
@@ -725,9 +694,9 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 				req = req.WithContext(context.Background())
 			}
 
-			tt.ucMocker(req.Context(), mockClient, mockBlocker)
+			tt.ucMocker(req.Context(), mockClient)
 
-			h := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			h := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 
 			h.DisableSecondFactor(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)
@@ -770,12 +739,12 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 	tests := []struct {
 		wantStatus int
 		name       string
-		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase)
+		ucMocker   func(ctx context.Context, uc *mock_auth.MockAuthClient)
 		args       args
 	}{
 		{
 			name: "Test_Success",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 				uc.EXPECT().GenerateAndUpdateSecret(ctx, &gen.SecretRequest{
 					Username: username,
 				}).Return(&gen.GenerateAndUpdateSecretResponse{Secret: []byte{}}, nil)
@@ -788,7 +757,7 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 		},
 		{
 			name: "Test_BadRequest",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 				uc.EXPECT().GenerateAndUpdateSecret(ctx, &gen.SecretRequest{
 					Username: username,
 				}).Return(&gen.GenerateAndUpdateSecretResponse{}, errors.New(""))
@@ -801,7 +770,7 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 		},
 		{
 			name: "Test_Unauthorized",
-			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient, blockerUc *mock_uc.MockBlockerUsecase) {
+			ucMocker: func(ctx context.Context, uc *mock_auth.MockAuthClient) {
 
 			},
 			args: args{
@@ -815,7 +784,6 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockClient := mock_auth.NewMockAuthClient(ctrl)
-			mockBlocker := mock_uc.NewMockBlockerUsecase(ctrl)
 			mockNote := mock_note.NewMockNoteClient(ctrl)
 			defer ctrl.Finish()
 			req := httptest.NewRequest("GET", "http://example.com/api/handler/", bytes.NewBufferString(""))
@@ -826,9 +794,9 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 				req = req.WithContext(context.Background())
 			}
 
-			tt.ucMocker(req.Context(), mockClient, mockBlocker)
+			tt.ucMocker(req.Context(), mockClient)
 
-			h := CreateAuthHandler(mockClient, mockBlocker, mockNote, testConfig.AuthHandler, testConfig.Validation)
+			h := CreateAuthHandler(mockClient, mockNote, testConfig.AuthHandler, testConfig.Validation)
 
 			h.GetQRCode(w, req)
 			assert.Equal(t, tt.wantStatus, w.Code)

@@ -13,6 +13,7 @@ type RequestIdKey string
 type LoggerKey string
 
 type Config struct {
+	Main        MainConfig        `yaml:"main"`
 	AuthHandler AuthHandlerConfig `yaml:"auth_handler"`
 	AuthUsecase AuthUsecaseConfig `yaml:"auth_usecase"`
 	Blocker     BlockerConfig     `yaml:"blocker"`
@@ -22,6 +23,15 @@ type Config struct {
 	Grpc        GrpcConfig        `yaml:"grpc"`
 	Hub         HubConfig         `yaml:"hub"`
 	Constraints ConstraintsConfig `yaml:"constraints"`
+}
+
+type MainConfig struct {
+	Port              string        `yaml:"port"`
+	ReadTimeout       time.Duration `yaml:"read_timeout"`
+	WriteTimeout      time.Duration `yaml:"write_timeout"`
+	ReadHeaderTimeout time.Duration `yaml:"read_header_timeout"`
+	IdleTimeout       time.Duration `yaml:"idle_timeout"`
+	ShutdownTimeout   time.Duration `yaml:"shutdown_timeout"`
 }
 
 type AuthHandlerConfig struct {
@@ -71,10 +81,12 @@ type ElasticConfig struct {
 }
 
 type GrpcConfig struct {
-	AuthPort string `yaml:"auth_port"`
-	AuthIP   string `yaml:"auth_ip"`
-	NotePort string `yaml:"note_port"`
-	NoteIP   string `yaml:"note_ip"`
+	AuthPort        string `yaml:"auth_port"`
+	AuthIP          string `yaml:"auth_ip"`
+	AuthMetricsPort string `yaml:"auth_metrics_port"`
+	NotePort        string `yaml:"note_port"`
+	NoteIP          string `yaml:"note_ip"`
+	NoteMetricsPort string `yaml:"note_metrics_port"`
 }
 
 type HubConfig struct {

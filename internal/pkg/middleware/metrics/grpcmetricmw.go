@@ -10,10 +10,10 @@ import (
 )
 
 type GrpcMiddleware struct {
-	metrics metrics.GrpcMetrics
+	metrics *metrics.GrpcMetrics
 }
 
-func NewGrpcMw(metrics metrics.GrpcMetrics) *GrpcMiddleware {
+func NewGrpcMw(metrics *metrics.GrpcMetrics) *GrpcMiddleware {
 	return &GrpcMiddleware{
 		metrics: metrics,
 	}

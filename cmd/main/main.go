@@ -3,41 +3,38 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
-	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
+
+	_ "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 
 	grpcAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 	grpcNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
-	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
-	authUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/usecase"
-	_ "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/docs"
 
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
@@ -75,16 +72,9 @@ func main() {
 	}
 	defer db.Close()
 
-	redisOpts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
-	if err != nil {
-		logger.Error("error connecting to redis: " + err.Error())
-		return
-	}
-	redisDB := redis.NewClient(redisOpts)
-
 	tlsCredentials, err := loadtls.LoadTLSClientCredentials()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("fail to load TLS credentials" + err.Error())
 	}
 
 	authConn, err := grpc.Dial(
@@ -107,37 +97,23 @@ func main() {
 	}
 	defer noteConn.Close()
 
-	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
-	JwtWebsocketMiddleware := protection.CreateJwtWebsocketMiddleware(cfg.AuthHandler.Jwt)
-	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 	Metrics, err := metrics.NewHttpMetrics("main")
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (main http): " + err.Error())
 	}
-	MetricsMiddleware := metricsmw.CreateHttpMetricsMiddleware(Metrics, logger)
-
-	logMW := log.CreateLogMiddleware(logger)
 
 	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "main")
 	if err != nil {
-		logger.Error(err.Error())
-	}
-
-	redisMetrics, err := metrics.NewDatabaseMetrics("redis", "main")
-	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (main postgres): " + err.Error())
 	}
 
 	websocketMetrics, err := metrics.NewWebsocketMetrics()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (websockets): " + err.Error())
 	}
 
-	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker, &redisMetrics)
-	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
-
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db, &postgresMetrics)
-	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub, &websocketMetrics)
+	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub, websocketMetrics)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, &postgresMetrics)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
@@ -146,16 +122,24 @@ func main() {
 	AuthClient := grpcAuth.NewAuthClient(authConn)
 	NoteClient := grpcNote.NewNoteClient(noteConn)
 
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteClient, cfg.AuthHandler, cfg.Validation)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, NoteClient, cfg.AuthHandler, cfg.Validation)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient, AuthClient, NoteHub)
+
+	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
+	JwtWebsocketMiddleware := protection.CreateJwtWebsocketMiddleware(cfg.AuthHandler.Jwt)
+	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
+	MetricsMiddleware := metricsmw.CreateHttpMetricsMiddleware(Metrics)
+	LogMiddleware := log.CreateLogMiddleware(logger)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.Error("query to path: " + r.URL.String())
 		w.WriteHeader(http.StatusNotFound)
 	})
+
 	r.Use(
-		logMW,
+		LogMiddleware,
 		MetricsMiddleware,
 		protection.CorsMiddleware,
 		recover.RecoverMiddleware,
@@ -228,11 +212,11 @@ func main() {
 
 	server := http.Server{
 		Handler:           path.PathMiddleware(r),
-		Addr:              ":8080",
-		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		ReadHeaderTimeout: 10 * time.Second,
-		IdleTimeout:       30 * time.Second,
+		Addr:              fmt.Sprintf(":%s", cfg.Main.Port),
+		ReadTimeout:       cfg.Main.ReadTimeout,
+		WriteTimeout:      cfg.Main.WriteTimeout,
+		ReadHeaderTimeout: cfg.Main.ReadHeaderTimeout,
+		IdleTimeout:       cfg.Main.IdleTimeout,
 	}
 
 	go func() {
@@ -245,7 +229,7 @@ func main() {
 	sig := <-signalCh
 	logger.Info("Received signal: " + sig.String())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Main.ShutdownTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {

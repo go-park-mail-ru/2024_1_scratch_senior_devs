@@ -6,7 +6,7 @@ type WebsocketMetrics struct {
 	Connections prometheus.Counter
 }
 
-func NewWebsocketMetrics() (WebsocketMetrics, error) {
+func NewWebsocketMetrics() (*WebsocketMetrics, error) {
 	metr := WebsocketMetrics{}
 
 	metr.Connections = prometheus.NewCounter(
@@ -15,10 +15,10 @@ func NewWebsocketMetrics() (WebsocketMetrics, error) {
 		},
 	)
 	if err := prometheus.Register(metr.Connections); err != nil {
-		return WebsocketMetrics{}, err
+		return &WebsocketMetrics{}, err
 	}
 
-	return metr, nil
+	return &metr, nil
 }
 
 func (m *WebsocketMetrics) IncreaseConnections() {
