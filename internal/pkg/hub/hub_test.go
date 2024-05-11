@@ -55,7 +55,7 @@ func TestHub_StartCache(t *testing.T) {
 			NoteId:      noteID,
 			Username:    "test",
 			Created:     time.Now().UTC(),
-			MessageInfo: []byte("{}"),
+			MessageInfo: "{}",
 			Type:        "updated",
 		}, hubConfig.CacheTtl)
 
@@ -86,7 +86,7 @@ func TestHub_WriteToCache(t *testing.T) {
 			NoteId:      noteID,
 			Username:    "test",
 			Created:     time.Now().UTC(),
-			MessageInfo: []byte("{}"),
+			MessageInfo: "{}",
 			Type:        "updated",
 		})
 

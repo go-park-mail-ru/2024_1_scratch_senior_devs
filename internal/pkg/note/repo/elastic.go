@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/olivere/elastic/v7"
 
@@ -92,19 +91,19 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 
 	notes := make([]models.Note, 0)
 	for _, hit := range search.Hits.Hits {
-		note := models.ElasticNote{}
+		note := models.Note{}
 		if err := json.Unmarshal(hit.Source, &note); err != nil {
 			logger.Error(err.Error())
 			return []models.Note{}, err
 		}
-		notes = append(notes, elasticsearch.ConvertToUsualNote(note))
+		notes = append(notes, note)
 	}
 
 	logger.Info("success")
 	return notes, nil
 }
 
-func (repo *NoteElastic) CreateNote(ctx context.Context, note models.ElasticNote) error {
+func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	noteJSON, err := json.Marshal(note)
@@ -136,7 +135,7 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.ElasticNote
 	return nil
 }
 
-func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.ElasticNote) error {
+func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	noteJSON, err := json.Marshal(note)
@@ -166,7 +165,6 @@ func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.ElasticNote
 
 	logger.Info("success")
 	return nil
-
 }
 
 func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {

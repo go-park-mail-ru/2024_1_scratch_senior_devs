@@ -84,7 +84,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 						OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
 						UpdateTime:    time.Time{},
 						CreateTime:    time.Time{},
-						Data:          []byte("nil"),
+						Data:          "nil",
 						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 						Children:      []uuid.UUID{},
 						Tags:          []string{},
@@ -95,7 +95,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 						OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
 						UpdateTime:    time.Time{},
 						CreateTime:    time.Time{},
-						Data:          []byte("nil"),
+						Data:          "nil",
 						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 						Children:      []uuid.UUID{},
 						Tags:          []string{},
@@ -187,7 +187,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 					OwnerId:       uuid.FromStringOrNil(tt.expectedData.Note.OwnerId),
 					CreateTime:    time.Time{},
 					UpdateTime:    time.Time{},
-					Data:          []byte(tt.expectedData.Note.Data),
+					Data:          tt.expectedData.Note.Data,
 					Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 					Children:      []uuid.UUID{},
 					Tags:          []string{},
@@ -277,7 +277,7 @@ func TestNoteHandler_AddNote(t *testing.T) {
 				} else {
 					call.Return(models.Note{
 						Id:            id,
-						Data:          []byte(tt.requestBody.Data),
+						Data:          tt.requestBody.Data,
 						CreateTime:    currTime,
 						UpdateTime:    currTime,
 						OwnerId:       id,
@@ -666,7 +666,7 @@ func TestGrpcNoteHandler_CreateSubNote(t *testing.T) {
 			},
 			wantErr: false,
 			mocker: func(req *gen.CreateSubNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), []byte(req.NoteData), uuid.FromStringOrNil(req.ParentId)).Return(
+				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), req.NoteData, uuid.FromStringOrNil(req.ParentId)).Return(
 					models.Note{
 						Id:      childId,
 						OwnerId: userId,
@@ -686,7 +686,7 @@ func TestGrpcNoteHandler_CreateSubNote(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocker: func(req *gen.CreateSubNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), []byte(req.NoteData), uuid.FromStringOrNil(req.ParentId)).Return(
+				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), req.NoteData, uuid.FromStringOrNil(req.ParentId)).Return(
 					models.Note{}, errors.New("error"))
 			},
 		},
@@ -744,7 +744,7 @@ func TestGrpcNoteHandler_UpdateNote(t *testing.T) {
 			},
 			wantErr: false,
 			mocker: func(req *gen.UpdateNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), []byte(req.Data)).Return(
+				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), req.Data).Return(
 					models.Note{
 						Id:      noteId,
 						OwnerId: userId,
@@ -762,7 +762,7 @@ func TestGrpcNoteHandler_UpdateNote(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocker: func(req *gen.UpdateNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), []byte(req.Data)).Return(
+				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), req.Data).Return(
 					models.Note{}, errors.New("error"))
 			},
 		},

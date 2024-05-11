@@ -82,7 +82,7 @@ func (mr *MockNoteUsecaseMockRecorder) CheckPermissions(ctx, noteID, userID inte
 }
 
 // CreateNote mocks base method.
-func (m *MockNoteUsecase) CreateNote(arg0 context.Context, arg1 uuid.UUID, arg2 []byte) (models.Note, error) {
+func (m *MockNoteUsecase) CreateNote(arg0 context.Context, arg1 uuid.UUID, arg2 string) (models.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1, arg2)
 	ret0, _ := ret[0].(models.Note)
@@ -97,7 +97,7 @@ func (mr *MockNoteUsecaseMockRecorder) CreateNote(arg0, arg1, arg2 interface{}) 
 }
 
 // CreateSubNote mocks base method.
-func (m *MockNoteUsecase) CreateSubNote(arg0 context.Context, arg1 uuid.UUID, arg2 []byte, arg3 uuid.UUID) (models.Note, error) {
+func (m *MockNoteUsecase) CreateSubNote(arg0 context.Context, arg1 uuid.UUID, arg2 string, arg3 uuid.UUID) (models.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSubNote", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(models.Note)
@@ -214,7 +214,7 @@ func (mr *MockNoteUsecaseMockRecorder) RememberTag(ctx, tagName, userID interfac
 }
 
 // UpdateNote mocks base method.
-func (m *MockNoteUsecase) UpdateNote(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 []byte) (models.Note, error) {
+func (m *MockNoteUsecase) UpdateNote(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) (models.Note, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateNote", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(models.Note)
@@ -531,7 +531,7 @@ func (mr *MockNoteSearchRepoMockRecorder) AddTag(ctx, tagName, noteID interface{
 }
 
 // CreateNote mocks base method.
-func (m *MockNoteSearchRepo) CreateNote(arg0 context.Context, arg1 models.ElasticNote) error {
+func (m *MockNoteSearchRepo) CreateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNote", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -602,7 +602,7 @@ func (mr *MockNoteSearchRepoMockRecorder) SearchNotes(arg0, arg1, arg2, arg3, ar
 }
 
 // UpdateNote mocks base method.
-func (m *MockNoteSearchRepo) UpdateNote(arg0 context.Context, arg1 models.ElasticNote) error {
+func (m *MockNoteSearchRepo) UpdateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateNote", arg0, arg1)
 	ret0, _ := ret[0].(error)

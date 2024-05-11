@@ -37,7 +37,7 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 
 	return &generatedNote.NoteModel{
 		Id:            note.Id.String(),
-		Data:          string(note.Data),
+		Data:          note.Data,
 		CreateTime:    note.CreateTime.String(),
 		UpdateTime:    note.UpdateTime.String(),
 		OwnerId:       note.OwnerId.String(),
@@ -162,7 +162,7 @@ func (h *GrpcNoteHandler) GetNote(ctx context.Context, in *generatedNote.GetNote
 func (h *GrpcNoteHandler) AddNote(ctx context.Context, in *generatedNote.AddNoteRequest) (*generatedNote.AddNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	result, err := h.uc.CreateNote(ctx, uuid.FromStringOrNil(in.UserId), []byte(in.Data))
+	result, err := h.uc.CreateNote(ctx, uuid.FromStringOrNil(in.UserId), in.Data)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, errors.New("not found")
@@ -177,7 +177,7 @@ func (h *GrpcNoteHandler) AddNote(ctx context.Context, in *generatedNote.AddNote
 func (h *GrpcNoteHandler) UpdateNote(ctx context.Context, in *generatedNote.UpdateNoteRequest) (*generatedNote.UpdateNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	result, err := h.uc.UpdateNote(ctx, uuid.FromStringOrNil(in.Id), uuid.FromStringOrNil(in.UserId), []byte(in.Data))
+	result, err := h.uc.UpdateNote(ctx, uuid.FromStringOrNil(in.Id), uuid.FromStringOrNil(in.UserId), in.Data)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, errors.New("not found")
@@ -205,7 +205,7 @@ func (h *GrpcNoteHandler) DeleteNote(ctx context.Context, in *generatedNote.Dele
 func (h *GrpcNoteHandler) CreateSubNote(ctx context.Context, in *generatedNote.CreateSubNoteRequest) (*generatedNote.CreateSubNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	response, err := h.uc.CreateSubNote(ctx, uuid.FromStringOrNil(in.UserId), []byte(in.NoteData), uuid.FromStringOrNil(in.ParentId))
+	response, err := h.uc.CreateSubNote(ctx, uuid.FromStringOrNil(in.UserId), in.NoteData, uuid.FromStringOrNil(in.ParentId))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err

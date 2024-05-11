@@ -25,7 +25,7 @@ import (
 
 func TestMakeHelloNoteData(t *testing.T) {
 	username := "testuser"
-	expected := []byte(`
+	expected := `
 	{
 		"title": "YouNote❤️",
 		"content": [
@@ -43,7 +43,7 @@ func TestMakeHelloNoteData(t *testing.T) {
 		    }
 		]
 	}
-	`)
+	`
 
 	t.Run("Test_MakeHelloNoteData", func(t *testing.T) {
 		result := makeHelloNoteData(username)

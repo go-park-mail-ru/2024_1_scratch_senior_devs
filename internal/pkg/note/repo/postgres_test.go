@@ -53,7 +53,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), []byte{}, time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.userId)
 
@@ -103,7 +103,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), []byte{}, time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.Id)
 
@@ -129,7 +129,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Success",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, []byte{}, currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
+					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
 				).Return(nil, nil)
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
@@ -139,7 +139,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Fail",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, []byte{}, currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
+					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
 				).Return(nil, errors.New("err"))
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
@@ -159,7 +159,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			repo := CreateNotePostgres(mockPool, mockMetrics)
 			err := repo.CreateNote(context.Background(), models.Note{
 				Id:            Id,
-				Data:          []byte{},
+				Data:          "",
 				CreateTime:    currTime,
 				UpdateTime:    currTime,
 				OwnerId:       userId,
@@ -188,7 +188,7 @@ func TestNoteRepo_UpdateNote(t *testing.T) {
 			name: "UpdateNote_Success",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), updateNote,
-					[]byte{}, currTime, Id,
+					"", currTime, Id,
 				).Return(nil, nil)
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
@@ -198,7 +198,7 @@ func TestNoteRepo_UpdateNote(t *testing.T) {
 			name: "UpdateNote_Fail",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), updateNote,
-					[]byte{}, currTime, Id,
+					"", currTime, Id,
 				).Return(nil, pgx.ErrNoRows)
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
@@ -218,7 +218,7 @@ func TestNoteRepo_UpdateNote(t *testing.T) {
 			repo := CreateNotePostgres(mockPool, mockMetrics)
 			err := repo.UpdateNote(context.Background(), models.Note{
 				Id:            Id,
-				Data:          []byte{},
+				Data:          "",
 				CreateTime:    currTime,
 				UpdateTime:    currTime,
 				OwnerId:       userId,

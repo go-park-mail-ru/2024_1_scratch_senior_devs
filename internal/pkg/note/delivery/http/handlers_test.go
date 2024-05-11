@@ -113,16 +113,16 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, w.Code)
 			if tt.name == successTestName {
 				expectedResult := make([]models.Note, len(tt.expectedData))
-				for i, note := range tt.expectedData {
-					crTime, _ := time.Parse("2006-01-02 15:04:05 -0700 UTC", note.CreateTime)
-					upTime, _ := time.Parse("2006-01-02 15:04:05 -0700 UTC", note.UpdateTime)
+				for i, expectedNote := range tt.expectedData {
+					crTime, _ := time.Parse("2006-01-02 15:04:05 -0700 UTC", expectedNote.CreateTime)
+					upTime, _ := time.Parse("2006-01-02 15:04:05 -0700 UTC", expectedNote.UpdateTime)
 					expectedResult[i] = models.Note{
-						Id:            uuid.FromStringOrNil(note.Id),
-						Data:          []byte(note.Data),
+						Id:            uuid.FromStringOrNil(expectedNote.Id),
+						Data:          expectedNote.Data,
 						CreateTime:    crTime,
 						UpdateTime:    upTime,
-						Parent:        uuid.FromStringOrNil(note.OwnerId),
-						OwnerId:       uuid.FromStringOrNil(note.OwnerId),
+						Parent:        uuid.FromStringOrNil(expectedNote.OwnerId),
+						OwnerId:       uuid.FromStringOrNil(expectedNote.OwnerId),
 						Children:      []uuid.UUID{},
 						Tags:          []string{},
 						Collaborators: []uuid.UUID{},
@@ -159,7 +159,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 				OwnerId:       uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 				UpdateTime:    time.Time{},
 				CreateTime:    time.Time{},
-				Data:          []byte(""),
+				Data:          "",
 				Children:      []uuid.UUID{},
 				Tags:          []string{},
 				Collaborators: []uuid.UUID{},
@@ -506,7 +506,7 @@ func TestNoteHandler_AddTag(t *testing.T) {
 				OwnerId:       userId,
 				UpdateTime:    time.Time{},
 				CreateTime:    time.Time{},
-				Data:          []byte(""),
+				Data:          "",
 				Children:      []uuid.UUID{},
 				Tags:          []string{"tag"},
 				Collaborators: []uuid.UUID{},
@@ -661,7 +661,7 @@ func TestNoteHandler_DeleteTag(t *testing.T) {
 				OwnerId:       userId,
 				UpdateTime:    time.Time{},
 				CreateTime:    time.Time{},
-				Data:          []byte(""),
+				Data:          "",
 				Children:      []uuid.UUID{},
 				Tags:          []string{},
 				Collaborators: []uuid.UUID{},
@@ -791,7 +791,7 @@ func TestNoteHandler_CreateSubNote(t *testing.T) {
 				UpdateTime:    time.Time{},
 				CreateTime:    time.Time{},
 				Parent:        noteId,
-				Data:          []byte(""),
+				Data:          "",
 				Children:      []uuid.UUID{},
 				Tags:          []string{},
 				Collaborators: []uuid.UUID{},
@@ -957,7 +957,7 @@ func TestNoteHandler_UpdateNote(t *testing.T) {
 				UpdateTime:    time.Time{},
 				CreateTime:    time.Time{},
 				Parent:        uuid.UUID{},
-				Data:          []byte("new"),
+				Data:          "new",
 				Children:      []uuid.UUID{},
 				Tags:          []string{},
 				Collaborators: []uuid.UUID{},

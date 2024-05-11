@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"log/slog"
@@ -9,8 +8,6 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 
@@ -78,7 +75,7 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 	return resultNote, nil
 }
 
-func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteData []byte) (models.Note, error) {
+func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteData string) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	newNote := models.Note{
@@ -101,7 +98,7 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-		if err := uc.searchRepo.CreateNote(ctx, elasticsearch.ConvertToElasticNote(newNote)); err != nil {
+		if err := uc.searchRepo.CreateNote(ctx, newNote); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -111,7 +108,7 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 	return newNote, nil
 }
 
-func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID, noteData []byte) (models.Note, error) {
+func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID, noteData string) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
@@ -125,7 +122,7 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 		return models.Note{}, errors.New("not found")
 	}
 
-	if bytes.Equal(updatedNote.Data, noteData) {
+	if updatedNote.Data == noteData {
 		logger.Info("note data not modified")
 		return updatedNote, nil
 	}
@@ -141,7 +138,7 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-		if err := uc.searchRepo.UpdateNote(ctx, elasticsearch.ConvertToElasticNote(updatedNote)); err != nil {
+		if err := uc.searchRepo.UpdateNote(ctx, updatedNote); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -207,7 +204,7 @@ func (uc *NoteUsecase) getDepth(ctx context.Context, parentParentID uuid.UUID, c
 	return uc.getDepth(ctx, parent.Parent, currentDepth+1)
 }
 
-func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, noteData []byte, parentID uuid.UUID) (models.Note, error) {
+func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, noteData string, parentID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	newNote := models.Note{

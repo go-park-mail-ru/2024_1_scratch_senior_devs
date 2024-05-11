@@ -9,7 +9,7 @@ import (
 type Message struct {
 	NoteId      uuid.UUID `json:"note_id"`
 	Created     time.Time `json:"created"`
-	MessageInfo []byte    `json:"message_info"`
+	MessageInfo string    `json:"message_info"`
 	Type        string    `json:"type" default:"updated"`
 }
 
@@ -17,7 +17,7 @@ type CacheMessage struct {
 	NoteId      uuid.UUID `json:"note_id"`
 	Username    string    `json:"username"`
 	Created     time.Time `json:"created"`
-	MessageInfo []byte    `json:"message_info"`
+	MessageInfo string    `json:"message_info"`
 	Type        string    `json:"type" default:"updated"`
 }
 

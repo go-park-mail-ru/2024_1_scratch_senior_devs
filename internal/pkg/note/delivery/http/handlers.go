@@ -84,7 +84,7 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 	return models.Note{
 		Id:            uuid.FromStringOrNil(note.Id),
 		OwnerId:       uuid.FromStringOrNil(note.OwnerId),
-		Data:          []byte(note.Data),
+		Data:          note.Data,
 		CreateTime:    createTime,
 		UpdateTime:    updateTime,
 		Parent:        uuid.FromStringOrNil(note.Parent),

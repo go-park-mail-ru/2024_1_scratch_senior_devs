@@ -46,8 +46,8 @@ func CreateAuthHandler(client gen.AuthClient, blockerUC auth.BlockerUsecase, not
 	}
 }
 
-func makeHelloNoteData(username string) []byte {
-	return []byte(fmt.Sprintf(`
+func makeHelloNoteData(username string) string {
+	return fmt.Sprintf(`
 	{
 		"title": "YouNote❤️",
 		"content": [
@@ -65,7 +65,7 @@ func makeHelloNoteData(username string) []byte {
 		    }
 		]
 	}
-	`, username))
+	`, username)
 }
 
 func getUser(user *gen.User) (models.User, error) {

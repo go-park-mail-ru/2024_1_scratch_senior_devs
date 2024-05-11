@@ -39,7 +39,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 				repo.EXPECT().DeleteAttach(ctx, attachId).Return(nil).Times(1)
 				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
 					Id:         data.noteID,
-					Data:       []byte{},
+					Data:       "",
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					OwnerId:    data.userID,
@@ -64,7 +64,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 				repo.EXPECT().DeleteAttach(ctx, attachId).Return(errors.New("delete error")).Times(1)
 				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
 					Id:         data.noteID,
-					Data:       []byte{},
+					Data:       "",
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					OwnerId:    data.userID,
@@ -119,7 +119,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, data args) {
 				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any()).Return(models.Note{
 					Id:         data.noteID,
-					Data:       []byte{},
+					Data:       "",
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					OwnerId:    uuid.NewV4(),
@@ -176,7 +176,7 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo) {
 				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
 					Id:         noteId,
-					Data:       []byte{},
+					Data:       "",
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					OwnerId:    userId,
@@ -235,7 +235,7 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo) {
 				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any()).Return(models.Note{
 					Id:         noteId,
-					Data:       []byte{},
+					Data:       "",
 					CreateTime: time.Time{},
 					UpdateTime: time.Time{},
 					OwnerId:    uuid.NewV4(),

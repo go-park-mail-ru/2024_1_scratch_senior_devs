@@ -9,22 +9,6 @@ import (
 
 type Note struct {
 	Id            uuid.UUID   `json:"id"`
-	Data          []byte      `json:"data,omitempty"`
-	CreateTime    time.Time   `json:"create_time"`
-	UpdateTime    time.Time   `json:"update_time"`
-	OwnerId       uuid.UUID   `json:"owner_id"`
-	Parent        uuid.UUID   `json:"parent"`
-	Children      []uuid.UUID `json:"children"`
-	Tags          []string    `json:"tags"`
-	Collaborators []uuid.UUID `json:"collaborators"`
-}
-
-func Sanitize(noteData []byte) []byte {
-	return []byte(html.EscapeString(string(noteData)))
-}
-
-type ElasticNote struct {
-	Id            uuid.UUID   `json:"id"`
 	Data          string      `json:"data,omitempty"`
 	CreateTime    time.Time   `json:"create_time"`
 	UpdateTime    time.Time   `json:"update_time"`
@@ -33,6 +17,10 @@ type ElasticNote struct {
 	Children      []uuid.UUID `json:"children"`
 	Tags          []string    `json:"tags"`
 	Collaborators []uuid.UUID `json:"collaborators"`
+}
+
+func (note *Note) Sanitize() {
+	note.Data = html.EscapeString(note.Data)
 }
 
 type NoteUpdate struct {
@@ -56,13 +44,15 @@ type NoteDataForSwagger struct {
 }
 
 type NoteForSwagger struct {
-	Id         uuid.UUID          `json:"id"`
-	Data       NoteDataForSwagger `json:"data,omitempty"`
-	CreateTime time.Time          `json:"create_time"`
-	UpdateTime time.Time          `json:"update_time,omitempty"`
-	OwnerId    uuid.UUID          `json:"owner_id"`
-	Parent     uuid.UUID          `json:"parent"`
-	Children   []uuid.UUID        `json:"children"`
+	Id            uuid.UUID          `json:"id"`
+	Data          NoteDataForSwagger `json:"data,omitempty"`
+	CreateTime    time.Time          `json:"create_time"`
+	UpdateTime    time.Time          `json:"update_time,omitempty"`
+	OwnerId       uuid.UUID          `json:"owner_id"`
+	Parent        uuid.UUID          `json:"parent"`
+	Children      []uuid.UUID        `json:"children"`
+	Tags          []string           `json:"tags"`
+	Collaborators []uuid.UUID        `json:"collaborators"`
 }
 
 type UpsertNoteRequestForSwagger struct {

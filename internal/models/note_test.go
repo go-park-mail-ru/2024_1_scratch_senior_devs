@@ -7,26 +7,27 @@ import (
 
 func TestSanitizeNote(t *testing.T) {
 	tests := []struct {
-		input  []byte
-		output []byte
+		input  string
+		output string
 	}{
 		{
-			input:  []byte("<script>alert('XSS attack')</script>"),
-			output: []byte("&lt;script&gt;alert(&#39;XSS attack&#39;)&lt;/script&gt;"),
+			input:  "<script>alert('XSS attack')</script>",
+			output: "&lt;script&gt;alert(&#39;XSS attack&#39;)&lt;/script&gt;",
 		},
 		{
-			input:  []byte("Hello, World!"),
-			output: []byte("Hello, World!"),
+			input:  "Hello, World!",
+			output: "Hello, World!",
 		},
 		{
-			input:  []byte("<h1>Hello</h1>"),
-			output: []byte("&lt;h1&gt;Hello&lt;/h1&gt;"),
+			input:  "<h1>Hello</h1>",
+			output: "&lt;h1&gt;Hello&lt;/h1&gt;",
 		},
 	}
 
 	for _, tt := range tests {
-		result := Sanitize(tt.input)
+		note := Note{Data: tt.input}
+		note.Sanitize()
 
-		assert.Equal(t, tt.output, result)
+		assert.Equal(t, tt.output, note.Data)
 	}
 }

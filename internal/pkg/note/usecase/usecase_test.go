@@ -50,7 +50,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 						OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
-						Data:       nil,
+						Data:       "",
 						Parent:     uuid.UUID{},
 						Children:   []uuid.UUID{},
 					},
@@ -59,7 +59,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 						OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 						UpdateTime: time.Time{},
 						CreateTime: time.Time{},
-						Data:       nil,
+						Data:       "",
 						Parent:     uuid.UUID{},
 						Children:   []uuid.UUID{},
 					},
@@ -79,7 +79,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"), //потом задать из args
 					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
-					Data:       nil,
+					Data:       "",
 					Parent:     uuid.UUID{},
 					Children:   []uuid.UUID{},
 				},
@@ -88,7 +88,7 @@ func TestNoteUsecase_GetAllNotes(t *testing.T) {
 					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
-					Data:       nil,
+					Data:       "",
 					Parent:     uuid.UUID{},
 					Children:   []uuid.UUID{},
 				},
@@ -171,7 +171,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 					UpdateTime: time.Time{},
 					CreateTime: time.Time{},
-					Data:       nil,
+					Data:       "",
 					Parent:     uuid.UUID{},
 					Children:   []uuid.UUID{},
 				}
@@ -188,7 +188,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 				OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 				UpdateTime: time.Time{},
 				CreateTime: time.Time{},
-				Data:       nil,
+				Data:       "",
 				Parent:     uuid.UUID{},
 				Children:   []uuid.UUID{},
 			},
@@ -252,7 +252,7 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 	type args struct {
 		ctx      context.Context
 		userId   uuid.UUID
-		noteData []byte
+		noteData string
 	}
 	tests := []struct {
 		name       string
@@ -270,7 +270,7 @@ func TestNoteUsecase_CreateNote(t *testing.T) {
 			args: args{
 				ctx:      context.Background(),
 				userId:   uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
-				noteData: []byte("{\"title\":\"title\"}"),
+				noteData: "{\"title\":\"title\"}",
 			},
 			wantErr: false,
 			want:    models.Note{},
@@ -318,7 +318,7 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 	type args struct {
 		ctx      context.Context
 		userId   uuid.UUID
-		noteData []byte
+		noteData string
 	}
 	tests := []struct {
 		name       string
@@ -337,7 +337,7 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 			args: args{
 				ctx:      context.Background(),
 				userId:   uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
-				noteData: []byte("{\"title\":\"title\"}"),
+				noteData: "{\"title\":\"title\"}",
 			},
 			wantErr: false,
 			want:    models.Note{},
@@ -1185,7 +1185,7 @@ func TestNoteUsecase_CreateSubNote(t *testing.T) {
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
-			_, err := uc.CreateSubNote(context.Background(), tt.userId, []byte{}, tt.parentId)
+			_, err := uc.CreateSubNote(context.Background(), tt.userId, "", tt.parentId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NoteUsecase.CreateSubnote error = %v, wantErr %v", err, tt.wantErr)
 				return

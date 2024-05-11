@@ -22,11 +22,11 @@ const (
 type NoteUsecase interface {
 	GetAllNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
 	GetNote(context.Context, uuid.UUID, uuid.UUID) (models.Note, error)
-	CreateNote(context.Context, uuid.UUID, []byte) (models.Note, error)
-	UpdateNote(context.Context, uuid.UUID, uuid.UUID, []byte) (models.Note, error)
+	CreateNote(context.Context, uuid.UUID, string) (models.Note, error)
+	UpdateNote(context.Context, uuid.UUID, uuid.UUID, string) (models.Note, error)
 	DeleteNote(context.Context, uuid.UUID, uuid.UUID) error
 
-	CreateSubNote(context.Context, uuid.UUID, []byte, uuid.UUID) (models.Note, error)
+	CreateSubNote(context.Context, uuid.UUID, string, uuid.UUID) (models.Note, error)
 
 	AddCollaborator(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error
 
@@ -65,8 +65,8 @@ type NoteBaseRepo interface {
 
 type NoteSearchRepo interface {
 	SearchNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
-	CreateNote(context.Context, models.ElasticNote) error
-	UpdateNote(context.Context, models.ElasticNote) error
+	CreateNote(context.Context, models.Note) error
+	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
 
 	AddSubNote(context.Context, uuid.UUID, uuid.UUID) error
