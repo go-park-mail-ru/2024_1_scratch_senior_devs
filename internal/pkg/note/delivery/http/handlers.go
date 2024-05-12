@@ -3,6 +3,9 @@ package http
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/exportpdf"
+	"io"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -803,5 +806,41 @@ func (h *NoteHandler) GetTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) ExportToPDF(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, "can`t read request body: "+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
+		return
+	}
+
+	resultPDF, noteTitle, err := exportpdf.GeneratePDF(string(payload))
+	if err != nil {
+		if err.Error() == "invalid input HTML" {
+			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if err.Error() == "internal error while parsing processed HTML" {
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		log.LogHandlerInfo(logger, http.StatusUnavailableForLegalReasons, err.Error())
+		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("Прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему!"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.pdf", noteTitle))
+	_, _ = w.Write(resultPDF)
+	w.WriteHeader(http.StatusOK)
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }

@@ -200,6 +200,8 @@ func main() {
 		tags.Handle("/forget", http.HandlerFunc(NoteDelivery.ForgetTag)).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
+	r.PathPrefix("/export_to_pdf").HandlerFunc(NoteDelivery.ExportToPDF).Methods(http.MethodPost, http.MethodOptions)
+
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 
 	http.Handle("/", r)

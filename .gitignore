@@ -38,3 +38,4 @@ elastic.conf
 *.csr
 *.ext
 cert/
+*.pdf

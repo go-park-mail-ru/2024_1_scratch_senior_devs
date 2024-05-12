@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -1211,4 +1212,56 @@ func TestNoteHandler_AddCollaborator(t *testing.T) {
 
 		})
 	}
+}
+
+func TestExportToPDF(t *testing.T) {
+	html := `
+		<div class="note-editor-content">
+			<div class="note-title" contenteditable="true" data-placeholder="">YouNote❤️</div>
+			<div class="note-body">
+				<div contenteditable="true">
+					<div data-cursordayakrut="0">Привет, dayakrut!</div>
+					<div><br /></div>
+				</div>
+			</div>
+		</div>
+	`
+
+	t.Run("TestExportToPDF_Success", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		mockClient := mock_grpc.NewMockNoteClient(ctrl)
+		mockAuthClient := mock_auth.NewMockAuthClient(ctrl)
+		mockHub := mock_hub.NewMockHubInterface(ctrl)
+		defer ctrl.Finish()
+
+		handler := CreateNotesHandler(mockClient, mockAuthClient, mockHub)
+
+		req, err := http.NewRequest("POST", "/export_to_pdf", bytes.NewBufferString(html))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		ctx := context.WithValue(context.Background(), config.PayloadContextKey, models.JwtPayload{
+			Id:       uuid.NewV4(),
+			Username: "username",
+		})
+		req = req.WithContext(ctx)
+
+		rr := httptest.NewRecorder()
+		http.HandlerFunc(handler.ExportToPDF).ServeHTTP(rr, req)
+
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+		}
+
+		contentType := rr.Header().Get("Content-Type")
+		if contentType != "application/pdf" {
+			t.Errorf("handler returned wrong content type: got %v want %v", contentType, "application/pdf")
+		}
+
+		err = os.WriteFile("exported.pdf", rr.Body.Bytes(), 0644)
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
 }
