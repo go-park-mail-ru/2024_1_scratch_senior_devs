@@ -33,7 +33,7 @@ jobs:
         with:
           go-version: '1.21'
       - name: Run test with cover
-        run:
+        run: |
           sudo apt-get install libwebp-dev
           sudo apt-get install -y wkhtmltopdf
       - name: Build
