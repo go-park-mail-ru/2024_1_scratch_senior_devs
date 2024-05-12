@@ -5,7 +5,6 @@ RUN apk add build-base
 RUN apk add libwebp libwebp-tools
 
 COPY ./wkhtmltopdf /usr/local/bin/
-RUN rm ./wkhtmltopdf
 
 COPY . /github.com/go-park-mail-ru/2024_1_scratch_senior_devs/
 WORKDIR /github.com/go-park-mail-ru/2024_1_scratch_senior_devs/
