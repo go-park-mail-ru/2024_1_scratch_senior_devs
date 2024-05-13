@@ -9,8 +9,8 @@ import (
 	reflect "reflect"
 
 	models "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	hub "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 	gomock "github.com/golang/mock/gomock"
-	websocket "github.com/gorilla/websocket"
 	uuid "github.com/satori/uuid"
 )
 
@@ -38,7 +38,7 @@ func (m *MockHubInterface) EXPECT() *MockHubInterfaceMockRecorder {
 }
 
 // AddClient mocks base method.
-func (m *MockHubInterface) AddClient(arg0 context.Context, arg1 uuid.UUID, arg2 *websocket.Conn) {
+func (m *MockHubInterface) AddClient(arg0 context.Context, arg1 uuid.UUID, arg2 *hub.CustomClient) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "AddClient", arg0, arg1, arg2)
 }

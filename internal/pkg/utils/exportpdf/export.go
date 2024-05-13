@@ -39,6 +39,7 @@ func GeneratePDF(basicHTML string) ([]byte, string, error) {
 	}
 	defer file.Close()
 
+	wkhtmltopdf.SetPath("/bin/wkhtmltopdf")
 	generator, err := wkhtmltopdf.NewPDFGenerator()
 	if err != nil {
 		return nil, "", errors.New("5: " + err.Error())

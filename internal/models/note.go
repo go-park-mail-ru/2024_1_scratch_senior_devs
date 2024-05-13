@@ -28,7 +28,8 @@ type NoteUpdate struct {
 }
 
 type UpsertNoteRequest struct {
-	Data interface{} `json:"data"`
+	Data     interface{} `json:"data"`
+	SocketID uuid.UUID   `json:"socket_id,omitempty"`
 }
 
 type AddCollaboratorRequest struct {

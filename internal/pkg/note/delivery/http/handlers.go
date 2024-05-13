@@ -350,10 +350,12 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.hub.WriteToCache(r.Context(), models.CacheMessage{
+		Type:        "updated",
 		NoteId:      resultNote.Id,
 		Username:    jwtPayload.Username,
 		Created:     time.Now().UTC(),
 		MessageInfo: resultNote.Data,
+		SocketID:    payload.SocketID,
 	})
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
@@ -529,7 +531,7 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 
 	logger.Info("connection upgraded: ", slog.Any("noteID", noteID))
 
-	h.hub.AddClient(r.Context(), noteID, connection)
+	h.hub.AddClient(r.Context(), noteID, hub.NewCustomClient(connection))
 
 	logger.Info("client disconnected: ", slog.Any("noteID", noteID))
 }

@@ -18,6 +18,8 @@ import (
 	"github.com/satori/uuid"
 )
 
+const ErrHubWrite = "can`t write hub`s message: "
+
 type Hub struct {
 	connect       sync.Map
 	currentOffset time.Time
@@ -51,13 +53,33 @@ func (h *Hub) WriteToCache(ctx context.Context, message models.CacheMessage) {
 	logger.Info("cache - new message")
 }
 
-func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *websocket.Conn) {
+type CustomClient struct {
+	*websocket.Conn
+	SocketID uuid.UUID
+}
+
+func NewCustomClient(connection *websocket.Conn) *CustomClient {
+	return &CustomClient{
+		Conn:     connection,
+		SocketID: uuid.UUID{},
+	}
+}
+
+func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *CustomClient) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	client.SocketID = uuid.NewV4()
 	h.connect.Store(client, noteID)
 	h.metr.IncreaseConnections()
 
 	go func() {
+		if err := client.WriteJSON(models.SocketIDMessage{
+			Type:     "info",
+			SocketID: client.SocketID,
+		}); err != nil {
+			logger.Error(ErrHubWrite + err.Error())
+		}
+
 		for {
 			messageType, reader, err := client.NextReader()
 			if err != nil {
@@ -86,7 +108,7 @@ func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *websocket
 
 					if noteId == message.NoteId {
 						if err := connect.WriteJSON(message); err != nil {
-							logger.Error("can`t write hub`s message: " + err.Error())
+							logger.Error(ErrHubWrite + err.Error())
 						}
 					}
 
@@ -126,7 +148,7 @@ func (h *Hub) Run(ctx context.Context) {
 						message.Type = "updated"
 
 						if err := connect.WriteJSON(message); err != nil {
-							logger.Error("can`t write hub`s message: " + err.Error())
+							logger.Error(ErrHubWrite + err.Error())
 						}
 					}
 				} else {

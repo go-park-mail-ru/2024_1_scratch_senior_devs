@@ -24,7 +24,7 @@ func getNoteTitle(basicHTML string) string {
 }
 
 func wrap(basicHTML string) string {
-	return fmt.Sprintf(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>%s</title></head><body>%s</body></html>`, getNoteTitle(basicHTML), basicHTML)
+	return fmt.Sprintf(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>%s</title><style>%s</style></head><body>%s</body></html>`, getNoteTitle(basicHTML), styles, basicHTML)
 }
 
 func processImg(document *goquery.Document) {

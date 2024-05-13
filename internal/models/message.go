@@ -14,11 +14,12 @@ type Message struct {
 }
 
 type CacheMessage struct {
+	Type        string    `json:"type" default:"updated"`
 	NoteId      uuid.UUID `json:"note_id"`
 	Username    string    `json:"username"`
 	Created     time.Time `json:"created"`
 	MessageInfo string    `json:"message_info"`
-	Type        string    `json:"type" default:"updated"`
+	SocketID    uuid.UUID `json:"socket_id"`
 }
 
 type JoinMessage struct {
@@ -27,4 +28,9 @@ type JoinMessage struct {
 	UserId    uuid.UUID `json:"user_id"`
 	Username  string    `json:"username,omitempty"`
 	ImagePath string    `json:"image_path,omitempty"`
+}
+
+type SocketIDMessage struct {
+	Type     string    `json:"type"`
+	SocketID uuid.UUID `json:"socket_id"`
 }
