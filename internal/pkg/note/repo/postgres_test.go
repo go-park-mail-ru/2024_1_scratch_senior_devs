@@ -3,9 +3,10 @@ package repo
 import (
 	"context"
 	"errors"
-	mock_metrics "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics/mocks"
 	"testing"
 	"time"
+
+	mock_metrics "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics/mocks"
 
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
@@ -30,7 +31,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header", "favorite"},
 			expectedErr: nil,
 		},
 		{
@@ -41,7 +42,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header", "favorite"},
 			expectedErr: pgx.ErrNoRows,
 		},
 	}
@@ -53,7 +54,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "").ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "", false).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.userId)
 
@@ -81,7 +82,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
 			Id:          uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header", "favorite"},
 			expectedErr: nil,
 		},
 		{
@@ -92,7 +93,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
 			Id:          uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header", "favorite"},
 			expectedErr: nil,
 		},
 	}
@@ -103,7 +104,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "").ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "", false).ToPgxRows()
 
 			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.Id)
 
