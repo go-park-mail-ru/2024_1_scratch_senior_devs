@@ -56,7 +56,7 @@ jobs:
       - name: Build containers
         uses: appleboy/ssh-action@master
         with:
-          timeout: 10m
+          timeout: 200m
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
