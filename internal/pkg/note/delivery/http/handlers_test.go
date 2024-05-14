@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -1312,6 +1313,10 @@ func TestExportToPDF(t *testing.T) {
 		req = req.WithContext(ctx)
 
 		rr := httptest.NewRecorder()
+
+		r := mux.NewRouter()
+		r.Use(protection.ReadAndCloseBody)
+		r.Handle("/export_to_pdf", http.HandlerFunc(handler.ExportToPDF)).Methods(http.MethodPost, http.MethodOptions)
 		http.HandlerFunc(handler.ExportToPDF).ServeHTTP(rr, req)
 
 		if status := rr.Code; status != http.StatusOK {

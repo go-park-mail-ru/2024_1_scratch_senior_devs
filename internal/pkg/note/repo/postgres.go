@@ -44,7 +44,7 @@ const (
 	deleteTag = "UPDATE notes SET tags = array_remove(tags, $1) WHERE id = $2;"
 
 	getTags               = `SELECT tag_name FROM all_tags WHERE user_id = $1;`
-	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
+	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) RAISE EXCEPTION 'Tag already exists';"
 	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
 	deleteTagFromAllNotes = "UPDATE notes SET tags = array_remove(tags, $1) WHERE owner_id = $2;"
 

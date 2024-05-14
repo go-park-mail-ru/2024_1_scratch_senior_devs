@@ -743,7 +743,7 @@ func (h *NoteHandler) RememberTag(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
-		w.WriteHeader(http.StatusBadRequest)
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("tag already exists"))
 		return
 	}
 
