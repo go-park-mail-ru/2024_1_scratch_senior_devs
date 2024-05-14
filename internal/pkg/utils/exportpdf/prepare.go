@@ -131,6 +131,7 @@ func processIframe(document *goquery.Document) {
 			a := fmt.Sprintf(`<a href="%s">%s</a>`, iframeSrc, iframeSrc)
 			s.BeforeHtml(a)
 		}
+		s.Remove()
 	})
 }
 
