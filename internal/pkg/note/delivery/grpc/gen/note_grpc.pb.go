@@ -33,6 +33,8 @@ const (
 	Note_RememberTag_FullMethodName      = "/note.Note/RememberTag"
 	Note_ForgetTag_FullMethodName        = "/note.Note/ForgetTag"
 	Note_UpdateTag_FullMethodName        = "/note.Note/UpdateTag"
+	Note_SetIcon_FullMethodName          = "/note.Note/SetIcon"
+	Note_SetHeader_FullMethodName        = "/note.Note/SetHeader"
 )
 
 // NoteClient is the client API for Note service.
@@ -53,6 +55,8 @@ type NoteClient interface {
 	RememberTag(ctx context.Context, in *AllTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	ForgetTag(ctx context.Context, in *AllTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	UpdateTag(ctx context.Context, in *UpdateTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	SetIcon(ctx context.Context, in *SetIconRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
+	SetHeader(ctx context.Context, in *SetHeaderRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 }
 
 type noteClient struct {
@@ -191,7 +195,7 @@ func (c *noteClient) UpdateTag(ctx context.Context, in *UpdateTagRequest, opts .
 
 func (c *noteClient) SetIcon(ctx context.Context, in *SetIconRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
 	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/SetIcon", in, out, opts...)
+	err := c.cc.Invoke(ctx, Note_SetIcon_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +204,7 @@ func (c *noteClient) SetIcon(ctx context.Context, in *SetIconRequest, opts ...gr
 
 func (c *noteClient) SetHeader(ctx context.Context, in *SetHeaderRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
 	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/SetHeader", in, out, opts...)
+	err := c.cc.Invoke(ctx, Note_SetHeader_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -225,6 +229,8 @@ type NoteServer interface {
 	RememberTag(context.Context, *AllTagRequest) (*EmptyResponse, error)
 	ForgetTag(context.Context, *AllTagRequest) (*EmptyResponse, error)
 	UpdateTag(context.Context, *UpdateTagRequest) (*EmptyResponse, error)
+	SetIcon(context.Context, *SetIconRequest) (*GetNoteResponse, error)
+	SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -273,6 +279,12 @@ func (UnimplementedNoteServer) ForgetTag(context.Context, *AllTagRequest) (*Empt
 }
 func (UnimplementedNoteServer) UpdateTag(context.Context, *UpdateTagRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateTag not implemented")
+}
+func (UnimplementedNoteServer) SetIcon(context.Context, *SetIconRequest) (*GetNoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetIcon not implemented")
+}
+func (UnimplementedNoteServer) SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetHeader not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -539,6 +551,42 @@ func _Note_UpdateTag_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Note_SetIcon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetIconRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).SetIcon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Note_SetIcon_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).SetIcon(ctx, req.(*SetIconRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Note_SetHeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetHeaderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).SetHeader(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Note_SetHeader_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).SetHeader(ctx, req.(*SetHeaderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Note_ServiceDesc is the grpc.ServiceDesc for Note service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -601,6 +649,14 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateTag",
 			Handler:    _Note_UpdateTag_Handler,
+		},
+		{
+			MethodName: "SetIcon",
+			Handler:    _Note_SetIcon_Handler,
+		},
+		{
+			MethodName: "SetHeader",
+			Handler:    _Note_SetHeader_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
