@@ -30,7 +30,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
 			expectedErr: nil,
 		},
 		{
@@ -41,7 +41,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
 			},
 			userId:      uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
 			expectedErr: pgx.ErrNoRows,
 		},
 	}
@@ -53,7 +53,7 @@ func TestNoteRepo_ReadAllNotes(t *testing.T) {
 			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.userId, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "").ToPgxRows()
 
 			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.userId)
 
@@ -81,7 +81,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
 			Id:          uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
 			expectedErr: nil,
 		},
 		{
@@ -92,7 +92,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
 			Id:          uuid.NewV4(),
-			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators"},
+			columns:     []string{"id", "data", "create_time", "update_time", "owner_id", "parent", "children", "tags", "collaborators", "icon", "header"},
 			expectedErr: nil,
 		},
 	}
@@ -103,7 +103,7 @@ func TestNoteRepo_ReadNote(t *testing.T) {
 			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
 			defer ctrl.Finish()
 
-			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}).ToPgxRows()
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow(uuid.NewV4(), "", time.Now(), time.Time{}, tt.Id, uuid.UUID{}, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "").ToPgxRows()
 
 			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.Id)
 
@@ -129,7 +129,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Success",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
+					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "",
 				).Return(nil, nil)
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
@@ -139,7 +139,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Fail",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{},
+					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "",
 				).Return(nil, errors.New("err"))
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()

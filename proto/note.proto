@@ -16,6 +16,20 @@ service Note {
      rpc CheckPermissions(CheckPermissionsRequest) returns (CheckPermissionsResponse) {}
      rpc RememberTag(AllTagRequest) returns (EmptyResponse) {}
      rpc ForgetTag(AllTagRequest) returns (EmptyResponse) {}
+     rpc SetIcon(SetIconRequest) returns (GetNoteResponse) {}
+     rpc SetHeader(SetHeaderRequest) returns (GetNoteResponse) {}
+}
+
+message SetIconRequest {
+     string NoteId = 1;
+     string Icon = 2;
+     string UserId = 3;
+}
+
+message SetHeaderRequest {
+     string NoteId = 1;
+     string Header = 2;
+     string UserId = 3;
 }
 
 message GetTagsRequest {
@@ -65,6 +79,8 @@ message NoteModel {
      repeated string Children = 7;
      repeated string Tags = 8;
      repeated string Collaborators = 9;
+     string Icon = 10;
+     string Header = 11;
 }
 
 message GetAllResponse {

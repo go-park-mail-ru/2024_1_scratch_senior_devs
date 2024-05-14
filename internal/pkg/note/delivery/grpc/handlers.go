@@ -45,6 +45,8 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 		Children:      children,
 		Tags:          tags,
 		Collaborators: collaborators,
+		Icon:          note.Icon,
+		Header:        note.Header,
 	}
 }
 
@@ -213,6 +215,36 @@ func (h *GrpcNoteHandler) CreateSubNote(ctx context.Context, in *generatedNote.C
 
 	logger.Info("success")
 	return &generatedNote.CreateSubNoteResponse{
+		Note: getNote(response),
+	}, nil
+}
+
+func (h *GrpcNoteHandler) SetIcon(ctx context.Context, in *generatedNote.SetIconRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.SetIcon(ctx, uuid.FromStringOrNil(in.NoteId), in.Icon, uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{
+		Note: getNote(response),
+	}, nil
+}
+
+func (h *GrpcNoteHandler) SetHeader(ctx context.Context, in *generatedNote.SetHeaderRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.SetHeader(ctx, uuid.FromStringOrNil(in.NoteId), in.Header, uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{
 		Note: getNote(response),
 	}, nil
 }

@@ -19,18 +19,20 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS notes (
-    id UUID PRIMARY KEY,
-    data JSON,
-    create_time TIMESTAMP
-        NOT NULL,
-    update_time TIMESTAMP
-        NOT NULL,
-    owner_id UUID REFERENCES users (id)
-        NOT NULL,
-    parent UUID DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
-    children UUID[],
-    tags TEXT[],
-    collaborators UUID[]
+    id              UUID        PRIMARY KEY,
+    data            JSON,
+    create_time     TIMESTAMP   NOT NULL,
+    update_time     TIMESTAMP   NOT NULL,
+    owner_id        UUID        NOT NULL
+                    REFERENCES users (id),
+    parent          UUID        DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
+    children        UUID[],
+    tags            TEXT[],
+    collaborators   UUID[],
+    icon            TEXT
+                    CONSTRAINT icon_length CHECK (char_length(icon) <= 255),
+    header          TEXT
+                    CONSTRAINT header_length CHECK (char_length(header) <= 255)
 );
 
 CREATE TABLE IF NOT EXISTS all_tags (

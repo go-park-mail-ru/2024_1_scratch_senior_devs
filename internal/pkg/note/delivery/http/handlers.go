@@ -94,6 +94,8 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 		Children:      children,
 		Tags:          tags,
 		Collaborators: collaborators,
+		Icon:          note.Icon,
+		Header:        note.Header,
 	}, nil
 }
 
@@ -778,6 +780,110 @@ func (h *NoteHandler) ForgetTag(w http.ResponseWriter, r *http.Request) {
 
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *NoteHandler) SetIcon(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	var iconRequest models.SetIconRequest
+	if err := responses.GetRequestData(r, &iconRequest); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	currentNote, err := h.client.SetIcon(r.Context(), &gen.SetIconRequest{
+		NoteId: noteIdString,
+		Icon:   iconRequest.Icon,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(currentNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) SetHeader(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	var headerRequest models.SetHeaderRequest
+	if err := responses.GetRequestData(r, &headerRequest); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	currentNote, err := h.client.SetHeader(r.Context(), &gen.SetHeaderRequest{
+		NoteId: noteIdString,
+		Header: headerRequest.Header,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(currentNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 
 func (h *NoteHandler) GetTags(w http.ResponseWriter, r *http.Request) {

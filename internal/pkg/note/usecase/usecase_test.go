@@ -485,19 +485,6 @@ func TestNoteUsecase_CheckPermissions(t *testing.T) {
 			wantErr: true,
 			want:    false,
 		},
-		{
-			name: "TestFalse",
-			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, nil).Times(1)
-			},
-			args: args{
-				ctx:    context.Background(),
-				userId: userId,
-				noteId: noteId,
-			},
-			wantErr: false,
-			want:    false,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

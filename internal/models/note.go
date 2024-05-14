@@ -17,6 +17,8 @@ type Note struct {
 	Children      []uuid.UUID `json:"children"`
 	Tags          []string    `json:"tags"`
 	Collaborators []uuid.UUID `json:"collaborators"`
+	Icon          string      `json:"icon"`
+	Header        string      `json:"header"`
 }
 
 func (note *Note) Sanitize() {
@@ -34,6 +36,14 @@ type UpsertNoteRequest struct {
 
 type AddCollaboratorRequest struct {
 	Username string `json:"username"`
+}
+
+type SetIconRequest struct {
+	Icon string `json:"icon"`
+}
+
+type SetHeaderRequest struct {
+	Header string `json:"header"`
 }
 
 // ================================================================
@@ -54,6 +64,8 @@ type NoteForSwagger struct {
 	Children      []uuid.UUID        `json:"children"`
 	Tags          []string           `json:"tags"`
 	Collaborators []uuid.UUID        `json:"collaborators"`
+	Icon          string             `json:"icon"`
+	Header        string             `json:"header"`
 }
 
 type UpsertNoteRequestForSwagger struct {

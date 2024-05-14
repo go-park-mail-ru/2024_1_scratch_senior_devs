@@ -16,20 +16,20 @@ import (
 
 const (
 	getAllNotes = `
-	SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators FROM notes
+	SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header FROM notes
 	WHERE parent = '00000000-0000-0000-0000-000000000000'::UUID
 	AND (
-	 owner_id = $1
-	 OR $1 = ANY(collaborators)
+		owner_id = $1
+		OR $1 = ANY(collaborators)
 	)
 	AND (
-	 cardinality($4::TEXT[]) = 0 OR $4::TEXT[] IS NULL OR array(select unnest($4::TEXT[]) except select unnest(tags)) = '{}'
+		cardinality($4::TEXT[]) = 0 OR $4::TEXT[] IS NULL OR array(select unnest($4::TEXT[]) except select unnest(tags)) = '{}'
 	)
 	ORDER BY update_time DESC
 	LIMIT $2 OFFSET $3;
 	`
-	getNote    = `SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators FROM notes WHERE id = $1;`
-	createNote = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[]);"
+	getNote    = `SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header FROM notes WHERE id = $1;`
+	createNote = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[], $10, $11);"
 	updateNote = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
 	deleteNote = "DELETE FROM notes CASCADE WHERE id = $1;"
 
@@ -47,6 +47,9 @@ const (
 	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
 	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
 	deleteTagFromAllNotes = "UPDATE notes SET tags = array_remove(tags, $1) WHERE owner_id = $2;"
+
+	setIcon   = "UPDATE notes SET icon = $1 WHERE id = $2;"
+	setHeader = "UPDATE notes SET header = $1 WHERE id = $2;"
 )
 
 type NotePostgres struct {
@@ -144,7 +147,19 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 
 	for query.Next() {
 		var note models.Note
-		if err := query.Scan(&note.Id, &note.Data, &note.CreateTime, &note.UpdateTime, &note.OwnerId, &note.Parent, &note.Children, &note.Tags, &note.Collaborators); err != nil {
+		if err := query.Scan(
+			&note.Id,
+			&note.Data,
+			&note.CreateTime,
+			&note.UpdateTime,
+			&note.OwnerId,
+			&note.Parent,
+			&note.Children,
+			&note.Tags,
+			&note.Collaborators,
+			&note.Icon,
+			&note.Header,
+		); err != nil {
 			logger.Error("scanning" + err.Error())
 			return result, fmt.Errorf("error occured while scanning notes: %w", err)
 		}
@@ -171,6 +186,8 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 		&resultNote.Children,
 		&resultNote.Tags,
 		&resultNote.Collaborators,
+		&resultNote.Icon,
+		&resultNote.Header,
 	)
 	repo.metr.ObserveResponseTime("getNote", time.Since(start).Seconds())
 	if err != nil {
@@ -187,7 +204,19 @@ func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) erro
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	start := time.Now()
-	_, err := repo.db.Exec(ctx, createNote, note.Id, note.Data, note.CreateTime, note.UpdateTime, note.OwnerId, note.Parent, note.Children, note.Tags, note.Collaborators)
+	_, err := repo.db.Exec(ctx, createNote,
+		note.Id,
+		note.Data,
+		note.CreateTime,
+		note.UpdateTime,
+		note.OwnerId,
+		note.Parent,
+		note.Children,
+		note.Tags,
+		note.Collaborators,
+		note.Icon,
+		note.Header,
+	)
 	repo.metr.ObserveResponseTime("createNote", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
@@ -337,6 +366,38 @@ func (repo *NotePostgres) DeleteTagFromAllNotes(ctx context.Context, tagName str
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("deleteTagFromAllNotes")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, setIcon, icon, noteID)
+	repo.metr.ObserveResponseTime("setIcon", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("setIcon")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) SetHeader(ctx context.Context, noteID uuid.UUID, header string) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, setHeader, header, noteID)
+	repo.metr.ObserveResponseTime("setHeader", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("setHeader")
 		return err
 	}
 

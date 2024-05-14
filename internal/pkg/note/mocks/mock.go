@@ -213,6 +213,36 @@ func (mr *MockNoteUsecaseMockRecorder) RememberTag(ctx, tagName, userID interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteUsecase)(nil).RememberTag), ctx, tagName, userID)
 }
 
+// SetHeader mocks base method.
+func (m *MockNoteUsecase) SetHeader(ctx context.Context, noteID uuid.UUID, header string, userID uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetHeader", ctx, noteID, header, userID)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetHeader indicates an expected call of SetHeader.
+func (mr *MockNoteUsecaseMockRecorder) SetHeader(ctx, noteID, header, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockNoteUsecase)(nil).SetHeader), ctx, noteID, header, userID)
+}
+
+// SetIcon mocks base method.
+func (m *MockNoteUsecase) SetIcon(ctx context.Context, noteID uuid.UUID, icon string, userID uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetIcon", ctx, noteID, icon, userID)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetIcon indicates an expected call of SetIcon.
+func (mr *MockNoteUsecaseMockRecorder) SetIcon(ctx, noteID, icon, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteUsecase)(nil).SetIcon), ctx, noteID, icon, userID)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteUsecase) UpdateNote(arg0 context.Context, arg1, arg2 uuid.UUID, arg3 string) (models.Note, error) {
 	m.ctrl.T.Helper()
@@ -451,6 +481,34 @@ func (mr *MockNoteBaseRepoMockRecorder) RemoveSubNote(arg0, arg1, arg2 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveSubNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).RemoveSubNote), arg0, arg1, arg2)
 }
 
+// SetHeader mocks base method.
+func (m *MockNoteBaseRepo) SetHeader(ctx context.Context, noteID uuid.UUID, header string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetHeader", ctx, noteID, header)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetHeader indicates an expected call of SetHeader.
+func (mr *MockNoteBaseRepoMockRecorder) SetHeader(ctx, noteID, header interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockNoteBaseRepo)(nil).SetHeader), ctx, noteID, header)
+}
+
+// SetIcon mocks base method.
+func (m *MockNoteBaseRepo) SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetIcon", ctx, noteID, icon)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetIcon indicates an expected call of SetIcon.
+func (mr *MockNoteBaseRepoMockRecorder) SetIcon(ctx, noteID, icon interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteBaseRepo)(nil).SetIcon), ctx, noteID, icon)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteBaseRepo) UpdateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
@@ -599,6 +657,34 @@ func (m *MockNoteSearchRepo) SearchNotes(arg0 context.Context, arg1 uuid.UUID, a
 func (mr *MockNoteSearchRepoMockRecorder) SearchNotes(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchNotes", reflect.TypeOf((*MockNoteSearchRepo)(nil).SearchNotes), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// SetHeader mocks base method.
+func (m *MockNoteSearchRepo) SetHeader(ctx context.Context, noteID uuid.UUID, header string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetHeader", ctx, noteID, header)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetHeader indicates an expected call of SetHeader.
+func (mr *MockNoteSearchRepoMockRecorder) SetHeader(ctx, noteID, header interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockNoteSearchRepo)(nil).SetHeader), ctx, noteID, header)
+}
+
+// SetIcon mocks base method.
+func (m *MockNoteSearchRepo) SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetIcon", ctx, noteID, icon)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetIcon indicates an expected call of SetIcon.
+func (mr *MockNoteSearchRepoMockRecorder) SetIcon(ctx, noteID, icon interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteSearchRepo)(nil).SetIcon), ctx, noteID, icon)
 }
 
 // UpdateNote mocks base method.

@@ -50,6 +50,12 @@
       },
       "tags": {
         "type": "keyword"
+      },
+      "icon": {
+        "type": "text"
+      },
+      "header": {
+        "type": "text"
       }
     }
   }

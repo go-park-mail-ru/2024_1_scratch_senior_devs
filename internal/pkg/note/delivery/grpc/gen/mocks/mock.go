@@ -276,6 +276,46 @@ func (mr *MockNoteClientMockRecorder) RememberTag(ctx, in interface{}, opts ...i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteClient)(nil).RememberTag), varargs...)
 }
 
+// SetHeader mocks base method.
+func (m *MockNoteClient) SetHeader(ctx context.Context, in *gen.SetHeaderRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetHeader", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetHeader indicates an expected call of SetHeader.
+func (mr *MockNoteClientMockRecorder) SetHeader(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockNoteClient)(nil).SetHeader), varargs...)
+}
+
+// SetIcon mocks base method.
+func (m *MockNoteClient) SetIcon(ctx context.Context, in *gen.SetIconRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetIcon", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetIcon indicates an expected call of SetIcon.
+func (mr *MockNoteClientMockRecorder) SetIcon(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteClient)(nil).SetIcon), varargs...)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteClient) UpdateNote(ctx context.Context, in *gen.UpdateNoteRequest, opts ...grpc.CallOption) (*gen.UpdateNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -497,6 +537,36 @@ func (m *MockNoteServer) RememberTag(arg0 context.Context, arg1 *gen.AllTagReque
 func (mr *MockNoteServerMockRecorder) RememberTag(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteServer)(nil).RememberTag), arg0, arg1)
+}
+
+// SetHeader mocks base method.
+func (m *MockNoteServer) SetHeader(arg0 context.Context, arg1 *gen.SetHeaderRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetHeader", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetHeader indicates an expected call of SetHeader.
+func (mr *MockNoteServerMockRecorder) SetHeader(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockNoteServer)(nil).SetHeader), arg0, arg1)
+}
+
+// SetIcon mocks base method.
+func (m *MockNoteServer) SetIcon(arg0 context.Context, arg1 *gen.SetIconRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetIcon", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetIcon indicates an expected call of SetIcon.
+func (mr *MockNoteServerMockRecorder) SetIcon(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteServer)(nil).SetIcon), arg0, arg1)
 }
 
 // UpdateNote mocks base method.

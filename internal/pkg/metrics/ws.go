@@ -3,14 +3,14 @@ package metrics
 import "github.com/prometheus/client_golang/prometheus"
 
 type WebsocketMetrics struct {
-	Connections prometheus.Counter
+	Connections prometheus.Gauge
 }
 
 func NewWebsocketMetrics() (*WebsocketMetrics, error) {
 	metr := WebsocketMetrics{}
 
-	metr.Connections = prometheus.NewCounter(
-		prometheus.CounterOpts{
+	metr.Connections = prometheus.NewGauge(
+		prometheus.GaugeOpts{
 			Name: "ws_users_total",
 		},
 	)
@@ -26,5 +26,5 @@ func (m *WebsocketMetrics) IncreaseConnections() {
 }
 
 func (m *WebsocketMetrics) DecreaseConnections() {
-	m.Connections.Desc()
+	m.Connections.Dec()
 }

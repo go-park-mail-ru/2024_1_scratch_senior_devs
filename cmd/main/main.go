@@ -175,6 +175,8 @@ func main() {
 		note.Handle("/{id}/subscribe_on_updates", JwtWebsocketMiddleware(http.HandlerFunc(NoteDelivery.SubscribeOnUpdates))).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}/add_tag", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddTag))).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/delete_tag", JwtMiddleware(http.HandlerFunc(NoteDelivery.DeleteTag))).Methods(http.MethodDelete, http.MethodOptions)
+		note.Handle("/{id}/set_icon", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetIcon))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/set_header", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetHeader))).Methods(http.MethodPost, http.MethodOptions)
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()

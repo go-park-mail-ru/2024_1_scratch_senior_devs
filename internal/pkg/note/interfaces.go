@@ -37,6 +37,9 @@ type NoteUsecase interface {
 	RememberTag(ctx context.Context, tagName string, userID uuid.UUID) error
 	ForgetTag(ctx context.Context, tagName string, userID uuid.UUID) error
 
+	SetIcon(ctx context.Context, noteID uuid.UUID, icon string, userID uuid.UUID) (models.Note, error)
+	SetHeader(ctx context.Context, noteID uuid.UUID, header string, userID uuid.UUID) (models.Note, error)
+
 	CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error)
 }
 
@@ -61,6 +64,9 @@ type NoteBaseRepo interface {
 	RememberTag(ctx context.Context, tagName string, userID uuid.UUID) error
 	ForgetTag(ctx context.Context, tagName string, userID uuid.UUID) error
 	DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error
+
+	SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error
+	SetHeader(ctx context.Context, noteID uuid.UUID, header string) error
 }
 
 type NoteSearchRepo interface {
@@ -76,4 +82,7 @@ type NoteSearchRepo interface {
 
 	AddTag(ctx context.Context, tagName string, noteID uuid.UUID) error
 	DeleteTag(ctx context.Context, tagName string, noteID uuid.UUID) error
+
+	SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error
+	SetHeader(ctx context.Context, noteID uuid.UUID, header string) error
 }
