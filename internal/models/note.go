@@ -19,6 +19,7 @@ type Note struct {
 	Collaborators []uuid.UUID `json:"collaborators"`
 	Icon          string      `json:"icon"`
 	Header        string      `json:"header"`
+	Favorite      bool        `json:"favorite"`
 }
 
 func (note *Note) Sanitize() {
@@ -46,6 +47,10 @@ type SetHeaderRequest struct {
 	Header string `json:"header"`
 }
 
+type ChangeFlagRequest struct {
+	Flag bool `json:"favorite"`
+}
+
 // ================================================================
 // only swagger examples
 
@@ -66,6 +71,7 @@ type NoteForSwagger struct {
 	Collaborators []uuid.UUID        `json:"collaborators"`
 	Icon          string             `json:"icon"`
 	Header        string             `json:"header"`
+	Favorite      bool               `json:"favorite"`
 }
 
 type UpsertNoteRequestForSwagger struct {

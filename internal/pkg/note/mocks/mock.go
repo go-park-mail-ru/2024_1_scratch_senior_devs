@@ -66,6 +66,21 @@ func (mr *MockNoteUsecaseMockRecorder) AddTag(ctx, tagName, noteId, userId inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteUsecase)(nil).AddTag), ctx, tagName, noteId, userId)
 }
 
+// ChangeFlag mocks base method.
+func (m *MockNoteUsecase) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool, userID uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeFlag", ctx, noteID, flag, userID)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChangeFlag indicates an expected call of ChangeFlag.
+func (mr *MockNoteUsecaseMockRecorder) ChangeFlag(ctx, noteID, flag, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteUsecase)(nil).ChangeFlag), ctx, noteID, flag, userID)
+}
+
 // CheckPermissions mocks base method.
 func (m *MockNoteUsecase) CheckPermissions(ctx context.Context, noteID, userID uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()
@@ -335,6 +350,20 @@ func (m *MockNoteBaseRepo) AddTag(ctx context.Context, tagName string, noteId uu
 func (mr *MockNoteBaseRepoMockRecorder) AddTag(ctx, tagName, noteId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddTag), ctx, tagName, noteId)
+}
+
+// ChangeFlag mocks base method.
+func (m *MockNoteBaseRepo) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeFlag", ctx, noteID, flag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeFlag indicates an expected call of ChangeFlag.
+func (mr *MockNoteBaseRepoMockRecorder) ChangeFlag(ctx, noteID, flag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteBaseRepo)(nil).ChangeFlag), ctx, noteID, flag)
 }
 
 // CreateNote mocks base method.

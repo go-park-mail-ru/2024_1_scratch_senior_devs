@@ -35,6 +35,7 @@ const (
 	Note_UpdateTag_FullMethodName        = "/note.Note/UpdateTag"
 	Note_SetIcon_FullMethodName          = "/note.Note/SetIcon"
 	Note_SetHeader_FullMethodName        = "/note.Note/SetHeader"
+	Note_ChangeFlag_FullMethodName       = "/note.Note/ChangeFlag"
 )
 
 // NoteClient is the client API for Note service.
@@ -57,6 +58,7 @@ type NoteClient interface {
 	UpdateTag(ctx context.Context, in *UpdateTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	SetIcon(ctx context.Context, in *SetIconRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	SetHeader(ctx context.Context, in *SetHeaderRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
+	ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 }
 
 type noteClient struct {
@@ -211,6 +213,15 @@ func (c *noteClient) SetHeader(ctx context.Context, in *SetHeaderRequest, opts .
 	return out, nil
 }
 
+func (c *noteClient) ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
+	out := new(EmptyResponse)
+	err := c.cc.Invoke(ctx, Note_ChangeFlag_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NoteServer is the server API for Note service.
 // All implementations must embed UnimplementedNoteServer
 // for forward compatibility
@@ -231,6 +242,7 @@ type NoteServer interface {
 	UpdateTag(context.Context, *UpdateTagRequest) (*EmptyResponse, error)
 	SetIcon(context.Context, *SetIconRequest) (*GetNoteResponse, error)
 	SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error)
+	ChangeFlag(context.Context, *ChangeFlagRequest) (*EmptyResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -285,6 +297,9 @@ func (UnimplementedNoteServer) SetIcon(context.Context, *SetIconRequest) (*GetNo
 }
 func (UnimplementedNoteServer) SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetHeader not implemented")
+}
+func (UnimplementedNoteServer) ChangeFlag(context.Context, *ChangeFlagRequest) (*EmptyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeFlag not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -587,6 +602,24 @@ func _Note_SetHeader_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Note_ChangeFlag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeFlagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).ChangeFlag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Note_ChangeFlag_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).ChangeFlag(ctx, req.(*ChangeFlagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Note_ServiceDesc is the grpc.ServiceDesc for Note service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -657,6 +690,10 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetHeader",
 			Handler:    _Note_SetHeader_Handler,
+		},
+		{
+			MethodName: "ChangeFlag",
+			Handler:    _Note_ChangeFlag_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

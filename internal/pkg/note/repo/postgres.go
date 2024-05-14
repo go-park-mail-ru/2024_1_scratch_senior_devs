@@ -18,7 +18,7 @@ import (
 
 const (
 	getAllNotes = `
-	SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header FROM notes
+	SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, favorite FROM notes
 	WHERE parent = '00000000-0000-0000-0000-000000000000'::UUID
 	AND (
 		owner_id = $1
@@ -27,10 +27,10 @@ const (
 	AND (
 		cardinality($4::TEXT[]) = 0 OR $4::TEXT[] IS NULL OR array(select unnest($4::TEXT[]) except select unnest(tags)) = '{}'
 	)
-	ORDER BY update_time DESC
+	ORDER BY favorite DESC, update_time DESC
 	LIMIT $2 OFFSET $3;
 	`
-	getNote    = `SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header FROM notes WHERE id = $1;`
+	getNote    = `SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, favorite FROM notes WHERE id = $1;`
 	createNote = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[], $10, $11);"
 	updateNote = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
 	deleteNote = "DELETE FROM notes CASCADE WHERE id = $1;"
@@ -53,6 +53,8 @@ const (
 
 	setIcon   = "UPDATE notes SET icon = $1 WHERE id = $2;"
 	setHeader = "UPDATE notes SET header = $1 WHERE id = $2;"
+
+	changeFlag = "UPDATE notes SET favorite = $1 WHERE id = $2;"
 )
 
 type NotePostgres struct {
@@ -162,6 +164,7 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 			&note.Collaborators,
 			&note.Icon,
 			&note.Header,
+			&note.Favorite,
 		); err != nil {
 			logger.Error("scanning" + err.Error())
 			return result, fmt.Errorf("error occured while scanning notes: %w", err)
@@ -191,6 +194,7 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID) (model
 		&resultNote.Collaborators,
 		&resultNote.Icon,
 		&resultNote.Header,
+		&resultNote.Favorite,
 	)
 	repo.metr.ObserveResponseTime("getNote", time.Since(start).Seconds())
 	if err != nil {
@@ -421,6 +425,23 @@ func (repo *NotePostgres) SetHeader(ctx context.Context, noteID uuid.UUID, heade
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("setHeader")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+
+}
+
+func (repo *NotePostgres) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, changeFlag, flag, noteID)
+	repo.metr.ObserveResponseTime("changeFlag", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("changeFlag")
 		return err
 	}
 

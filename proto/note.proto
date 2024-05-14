@@ -19,8 +19,15 @@ service Note {
      rpc UpdateTag(UpdateTagRequest) returns (EmptyResponse){}
      rpc SetIcon(SetIconRequest) returns (GetNoteResponse) {}
      rpc SetHeader(SetHeaderRequest) returns (GetNoteResponse) {}
+     rpc ChangeFlag(ChangeFlagRequest) returns (EmptyResponse) {}
 }
 
+message ChangeFlagRequest {
+     bool Flag = 1;
+     string NoteId = 2;
+     string UserId = 3;
+
+}
 message SetIconRequest {
      string NoteId = 1;
      string Icon = 2;
@@ -87,6 +94,7 @@ message NoteModel {
      repeated string Collaborators = 9;
      string Icon = 10;
      string Header = 11;
+     bool Favorite = 12;
 }
 
 message GetAllResponse {

@@ -96,6 +96,26 @@ func (mr *MockNoteClientMockRecorder) AddTag(ctx, in interface{}, opts ...interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteClient)(nil).AddTag), varargs...)
 }
 
+// ChangeFlag mocks base method.
+func (m *MockNoteClient) ChangeFlag(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ChangeFlag", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChangeFlag indicates an expected call of ChangeFlag.
+func (mr *MockNoteClientMockRecorder) ChangeFlag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteClient)(nil).ChangeFlag), varargs...)
+}
+
 // CheckPermissions mocks base method.
 func (m *MockNoteClient) CheckPermissions(ctx context.Context, in *gen.CheckPermissionsRequest, opts ...grpc.CallOption) (*gen.CheckPermissionsResponse, error) {
 	m.ctrl.T.Helper()
@@ -422,6 +442,21 @@ func (m *MockNoteServer) AddTag(arg0 context.Context, arg1 *gen.TagRequest) (*ge
 func (mr *MockNoteServerMockRecorder) AddTag(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteServer)(nil).AddTag), arg0, arg1)
+}
+
+// ChangeFlag mocks base method.
+func (m *MockNoteServer) ChangeFlag(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeFlag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChangeFlag indicates an expected call of ChangeFlag.
+func (mr *MockNoteServerMockRecorder) ChangeFlag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteServer)(nil).ChangeFlag), arg0, arg1)
 }
 
 // CheckPermissions mocks base method.

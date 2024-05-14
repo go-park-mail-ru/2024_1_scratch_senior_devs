@@ -32,7 +32,9 @@ CREATE TABLE IF NOT EXISTS notes (
     icon            TEXT
                     CONSTRAINT icon_length CHECK (char_length(icon) <= 255),
     header          TEXT
-                    CONSTRAINT header_length CHECK (char_length(header) <= 255)
+                    CONSTRAINT header_length CHECK (char_length(header) <= 255),
+    favorite        BOOLEAN DEFAULT ('false')
+                    NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS all_tags (
@@ -57,6 +59,7 @@ CREATE TABLE IF NOT EXISTS messages (
     created         TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     message_info    JSON
 );
+
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

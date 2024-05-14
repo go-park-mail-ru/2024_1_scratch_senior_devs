@@ -97,6 +97,7 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 		Collaborators: collaborators,
 		Icon:          note.Icon,
 		Header:        note.Header,
+		Favorite:      note.Favorite,
 	}, nil
 }
 
@@ -921,6 +922,46 @@ func (h *NoteHandler) SetHeader(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) ChangeFlag(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	var flagRequest models.ChangeFlagRequest
+	if err := responses.GetRequestData(r, &flagRequest); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	_, err = h.client.ChangeFlag(r.Context(), &gen.ChangeFlagRequest{
+		Flag:   flagRequest.Flag,
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 

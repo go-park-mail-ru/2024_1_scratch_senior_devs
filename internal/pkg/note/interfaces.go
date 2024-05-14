@@ -41,6 +41,8 @@ type NoteUsecase interface {
 	SetIcon(ctx context.Context, noteID uuid.UUID, icon string, userID uuid.UUID) (models.Note, error)
 	SetHeader(ctx context.Context, noteID uuid.UUID, header string, userID uuid.UUID) (models.Note, error)
 
+	ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool, userID uuid.UUID) (models.Note, error)
+
 	CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error)
 }
 
@@ -69,6 +71,8 @@ type NoteBaseRepo interface {
 
 	SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error
 	SetHeader(ctx context.Context, noteID uuid.UUID, header string) error
+
+	ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error
 }
 
 type NoteSearchRepo interface {
