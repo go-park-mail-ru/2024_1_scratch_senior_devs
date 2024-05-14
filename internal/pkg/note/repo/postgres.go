@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"log/slog"
@@ -44,7 +45,7 @@ const (
 	deleteTag = "UPDATE notes SET tags = array_remove(tags, $1) WHERE id = $2;"
 
 	getTags               = `SELECT tag_name FROM all_tags WHERE user_id = $1;`
-	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) RAISE EXCEPTION 'Tag already exists';"
+	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
 	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
 	deleteTagFromAllNotes = "UPDATE notes SET tags = array_remove(tags, $1) WHERE owner_id = $2;"
 
@@ -329,12 +330,17 @@ func (repo *NotePostgres) RememberTag(ctx context.Context, tagName string, userI
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	start := time.Now()
-	_, err := repo.db.Exec(ctx, rememberTag, tagName, userID)
+	result, err := repo.db.Exec(ctx, rememberTag, tagName, userID)
 	repo.metr.ObserveResponseTime("rememberTag", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("rememberTag")
 		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		logger.Error("tag already exists")
+		return errors.New("tag already exists")
 	}
 
 	logger.Info("success")
