@@ -258,6 +258,20 @@ func (mr *MockNoteUsecaseMockRecorder) UpdateNote(arg0, arg1, arg2, arg3 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteUsecase)(nil).UpdateNote), arg0, arg1, arg2, arg3)
 }
 
+// UpdateTag mocks base method.
+func (m *MockNoteUsecase) UpdateTag(ctx context.Context, oldTag, newTag string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTag", ctx, oldTag, newTag, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTag indicates an expected call of UpdateTag.
+func (mr *MockNoteUsecaseMockRecorder) UpdateTag(ctx, oldTag, newTag, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockNoteUsecase)(nil).UpdateTag), ctx, oldTag, newTag, userID)
+}
+
 // MockNoteBaseRepo is a mock of NoteBaseRepo interface.
 type MockNoteBaseRepo struct {
 	ctrl     *gomock.Controller
@@ -521,6 +535,20 @@ func (m *MockNoteBaseRepo) UpdateNote(arg0 context.Context, arg1 models.Note) er
 func (mr *MockNoteBaseRepoMockRecorder) UpdateNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).UpdateNote), arg0, arg1)
+}
+
+// UpdateTag mocks base method.
+func (m *MockNoteBaseRepo) UpdateTag(ctx context.Context, oldTag, newTag string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTag", ctx, oldTag, newTag, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTag indicates an expected call of UpdateTag.
+func (mr *MockNoteBaseRepoMockRecorder) UpdateTag(ctx, oldTag, newTag, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).UpdateTag), ctx, oldTag, newTag, userID)
 }
 
 // MockNoteSearchRepo is a mock of NoteSearchRepo interface.

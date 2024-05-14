@@ -336,6 +336,26 @@ func (mr *MockNoteClientMockRecorder) UpdateNote(ctx, in interface{}, opts ...in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteClient)(nil).UpdateNote), varargs...)
 }
 
+// UpdateTag mocks base method.
+func (m *MockNoteClient) UpdateTag(ctx context.Context, in *gen.UpdateTagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateTag", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTag indicates an expected call of UpdateTag.
+func (mr *MockNoteClientMockRecorder) UpdateTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockNoteClient)(nil).UpdateTag), varargs...)
+}
+
 // MockNoteServer is a mock of NoteServer interface.
 type MockNoteServer struct {
 	ctrl     *gomock.Controller
@@ -582,6 +602,21 @@ func (m *MockNoteServer) UpdateNote(arg0 context.Context, arg1 *gen.UpdateNoteRe
 func (mr *MockNoteServerMockRecorder) UpdateNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteServer)(nil).UpdateNote), arg0, arg1)
+}
+
+// UpdateTag mocks base method.
+func (m *MockNoteServer) UpdateTag(arg0 context.Context, arg1 *gen.UpdateTagRequest) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTag indicates an expected call of UpdateTag.
+func (mr *MockNoteServerMockRecorder) UpdateTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockNoteServer)(nil).UpdateTag), arg0, arg1)
 }
 
 // mustEmbedUnimplementedNoteServer mocks base method.

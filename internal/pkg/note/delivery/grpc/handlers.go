@@ -100,6 +100,17 @@ func (h *GrpcNoteHandler) RememberTag(ctx context.Context, in *generatedNote.All
 	logger.Info("success")
 	return &generatedNote.EmptyResponse{}, nil
 }
+func (h *GrpcNoteHandler) UpdateTag(ctx context.Context, in *generatedNote.UpdateTagRequest) (*generatedNote.EmptyResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := h.uc.UpdateTag(ctx, in.OldTag, in.NewTag, uuid.FromStringOrNil(in.UserId)); err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.EmptyResponse{}, nil
+}
 
 func (h *GrpcNoteHandler) ForgetTag(ctx context.Context, in *generatedNote.AllTagRequest) (*generatedNote.EmptyResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))

@@ -457,6 +457,17 @@ func (uc *NoteUsecase) ForgetTag(ctx context.Context, tagName string, userID uui
 	logger.Info("success")
 	return nil
 }
+func (uc *NoteUsecase) UpdateTag(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	if err := uc.baseRepo.UpdateTag(ctx, oldTag, newTag, userID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
 
 func (uc *NoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))

@@ -79,6 +79,7 @@ func main() {
 
 	authConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.AuthIP, cfg.Grpc.AuthPort),
+
 		grpc.WithTransportCredentials(tlsCredentials),
 	)
 	if err != nil {
@@ -200,6 +201,8 @@ func main() {
 		tags.Handle("", http.HandlerFunc(NoteDelivery.GetTags)).Methods(http.MethodGet, http.MethodOptions)
 		tags.Handle("/remember", http.HandlerFunc(NoteDelivery.RememberTag)).Methods(http.MethodPost, http.MethodOptions)
 		tags.Handle("/forget", http.HandlerFunc(NoteDelivery.ForgetTag)).Methods(http.MethodDelete, http.MethodOptions)
+		tags.Handle("/update", http.HandlerFunc(NoteDelivery.UpdateTag)).Methods(http.MethodPost, http.MethodOptions)
+
 	}
 
 	export := r.PathPrefix("/export_to_pdf").Subrouter()

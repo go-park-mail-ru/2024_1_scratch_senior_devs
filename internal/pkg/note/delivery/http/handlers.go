@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/exportpdf"
 	"io"
 	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/exportpdf"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 
@@ -781,6 +782,43 @@ func (h *NoteHandler) ForgetTag(w http.ResponseWriter, r *http.Request) {
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 	w.WriteHeader(http.StatusNoContent)
 }
+func (h *NoteHandler) UpdateTag(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var tagName models.UpdateTagRequest
+	if err := responses.GetRequestData(r, &tagName); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+	tagName.Sanitize()
+	if err := tagName.Validate(); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	_, err := h.client.UpdateTag(r.Context(), &gen.UpdateTagRequest{
+		OldTag: tagName.OldTag,
+		NewTag: tagName.NewTag,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+	w.WriteHeader(http.StatusNoContent)
+}
 
 func (h *NoteHandler) SetIcon(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
@@ -942,7 +980,7 @@ func (h *NoteHandler) ExportToPDF(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.LogHandlerInfo(logger, http.StatusUnavailableForLegalReasons, err.Error())
-		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("Прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему!"))
+		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему"))
 		return
 	}
 

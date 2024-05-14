@@ -16,6 +16,7 @@ service Note {
      rpc CheckPermissions(CheckPermissionsRequest) returns (CheckPermissionsResponse) {}
      rpc RememberTag(AllTagRequest) returns (EmptyResponse) {}
      rpc ForgetTag(AllTagRequest) returns (EmptyResponse) {}
+     rpc UpdateTag(UpdateTagRequest) returns (EmptyResponse){}
      rpc SetIcon(SetIconRequest) returns (GetNoteResponse) {}
      rpc SetHeader(SetHeaderRequest) returns (GetNoteResponse) {}
 }
@@ -32,6 +33,11 @@ message SetHeaderRequest {
      string UserId = 3;
 }
 
+message UpdateTagRequest {
+     string OldTag = 1;
+     string NewTag = 2;
+     string UserId = 3;
+}
 message GetTagsRequest {
      string UserId = 1;
 }

@@ -92,3 +92,18 @@ CREATE OR REPLACE TRIGGER trigger_insert_message
     FOR EACH ROW
 EXECUTE FUNCTION insert_message();
 
+CREATE OR REPLACE FUNCTION update_tags()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    AS $BODY$
+    BEGIN
+        UPDATE notes SET tags = array_replace(tags, OLD.tag_name, NEW.tag_name) WHERE owner_id=OLD.user_id;
+        RETURN OLD;
+    END;
+$BODY$;
+
+CREATE OR REPLACE TRIGGER trigger_update_tags
+   AFTER UPDATE
+    ON all_tags
+    FOR EACH ROW
+    EXECUTE FUNCTION  update_tags();

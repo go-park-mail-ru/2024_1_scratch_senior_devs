@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"log/slog"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/jackc/pgtype/pgxtype"
@@ -47,6 +48,7 @@ const (
 	getTags               = `SELECT tag_name FROM all_tags WHERE user_id = $1;`
 	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
 	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
+	updateTag             = "UPDATE all_tags SET tag_name=$1 WHERE user_id=$2 AND tag_name = $3;"
 	deleteTagFromAllNotes = "UPDATE notes SET tags = array_remove(tags, $1) WHERE owner_id = $2;"
 
 	setIcon   = "UPDATE notes SET icon = $1 WHERE id = $2;"
@@ -372,6 +374,21 @@ func (repo *NotePostgres) DeleteTagFromAllNotes(ctx context.Context, tagName str
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("deleteTagFromAllNotes")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+func (repo *NotePostgres) UpdateTag(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, updateTag, newTag, userID, oldTag)
+	repo.metr.ObserveResponseTime("updateTag", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("updateTag")
 		return err
 	}
 
