@@ -57,6 +57,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           timeout: 200m
+          command_timeout: 200m
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
