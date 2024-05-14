@@ -103,7 +103,7 @@ func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *CustomCli
 				}
 
 				h.connect.Range(func(key, value interface{}) bool {
-					connect := key.(*websocket.Conn)
+					connect := key.(*CustomClient)
 					noteId := value.(uuid.UUID)
 
 					if noteId == message.NoteId {
@@ -138,7 +138,7 @@ func (h *Hub) Run(ctx context.Context) {
 		select {
 		case <-t.C:
 			h.connect.Range(func(key, value interface{}) bool {
-				connect := key.(*websocket.Conn)
+				connect := key.(*CustomClient)
 				noteID := value.(uuid.UUID)
 
 				if h.cache.Has(noteID) {
