@@ -130,7 +130,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Success",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "",
+					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "", false,
 				).Return(nil, nil)
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 			},
@@ -140,7 +140,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 			name: "CreateNote_Fail",
 			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics) {
 				mockPool.EXPECT().Exec(gomock.Any(), createNote,
-					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "",
+					Id, "", currTime, currTime, userId, Id, []uuid.UUID{}, []string{}, []uuid.UUID{}, "", "", false,
 				).Return(nil, errors.New("err"))
 				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
 				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
@@ -168,6 +168,7 @@ func TestNoteRepo_CreateNote(t *testing.T) {
 				Children:      []uuid.UUID{},
 				Tags:          []string{},
 				Collaborators: []uuid.UUID{},
+				Favorite:      false,
 			})
 
 			assert.Equal(t, tt.err, err)

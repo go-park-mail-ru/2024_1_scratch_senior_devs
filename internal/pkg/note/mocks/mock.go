@@ -645,6 +645,20 @@ func (mr *MockNoteSearchRepoMockRecorder) AddTag(ctx, tagName, noteID interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteSearchRepo)(nil).AddTag), ctx, tagName, noteID)
 }
 
+// ChangeFlag mocks base method.
+func (m *MockNoteSearchRepo) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeFlag", ctx, noteID, flag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeFlag indicates an expected call of ChangeFlag.
+func (mr *MockNoteSearchRepoMockRecorder) ChangeFlag(ctx, noteID, flag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteSearchRepo)(nil).ChangeFlag), ctx, noteID, flag)
+}
+
 // CreateNote mocks base method.
 func (m *MockNoteSearchRepo) CreateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
@@ -685,6 +699,20 @@ func (m *MockNoteSearchRepo) DeleteTag(ctx context.Context, tagName string, note
 func (mr *MockNoteSearchRepoMockRecorder) DeleteTag(ctx, tagName, noteID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteSearchRepo)(nil).DeleteTag), ctx, tagName, noteID)
+}
+
+// DeleteTagFromAllNotes mocks base method.
+func (m *MockNoteSearchRepo) DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTagFromAllNotes", ctx, tagName, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTagFromAllNotes indicates an expected call of DeleteTagFromAllNotes.
+func (mr *MockNoteSearchRepoMockRecorder) DeleteTagFromAllNotes(ctx, tagName, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTagFromAllNotes", reflect.TypeOf((*MockNoteSearchRepo)(nil).DeleteTagFromAllNotes), ctx, tagName, userID)
 }
 
 // RemoveSubNote mocks base method.
@@ -756,4 +784,18 @@ func (m *MockNoteSearchRepo) UpdateNote(arg0 context.Context, arg1 models.Note) 
 func (mr *MockNoteSearchRepoMockRecorder) UpdateNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteSearchRepo)(nil).UpdateNote), arg0, arg1)
+}
+
+// UpdateTagOnAllNotes mocks base method.
+func (m *MockNoteSearchRepo) UpdateTagOnAllNotes(ctx context.Context, oldTag, newTag string, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTagOnAllNotes", ctx, oldTag, newTag, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTagOnAllNotes indicates an expected call of UpdateTagOnAllNotes.
+func (mr *MockNoteSearchRepoMockRecorder) UpdateTagOnAllNotes(ctx, oldTag, newTag, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTagOnAllNotes", reflect.TypeOf((*MockNoteSearchRepo)(nil).UpdateTagOnAllNotes), ctx, oldTag, newTag, userID)
 }

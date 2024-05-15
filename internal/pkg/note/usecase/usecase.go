@@ -88,6 +88,7 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 		Children:      []uuid.UUID{},
 		Tags:          []string{},
 		Collaborators: []uuid.UUID{},
+		Favorite:      false,
 	}
 
 	if err := uc.baseRepo.CreateNote(ctx, newNote); err != nil {
@@ -217,6 +218,7 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		Children:      []uuid.UUID{},
 		Tags:          []string{},
 		Collaborators: []uuid.UUID{},
+		Favorite:      false,
 	}
 
 	parent, err := uc.baseRepo.ReadNote(ctx, parentID)
@@ -454,6 +456,15 @@ func (uc *NoteUsecase) ForgetTag(ctx context.Context, tagName string, userID uui
 		return err
 	}
 
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.DeleteTagFromAllNotes(ctx, tagName, userID); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
+
 	logger.Info("success")
 	return nil
 }
@@ -464,6 +475,15 @@ func (uc *NoteUsecase) UpdateTag(ctx context.Context, oldTag string, newTag stri
 		logger.Error(err.Error())
 		return err
 	}
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.UpdateTagOnAllNotes(ctx, oldTag, newTag, userID); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
 
 	logger.Info("success")
 	return nil
@@ -567,14 +587,14 @@ func (uc *NoteUsecase) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bo
 	}
 	resultNote.Favorite = flag
 
-	// uc.wg.Add(1)
-	// go func() {
-	// 	defer uc.wg.Done()
-	// 	if err := uc.searchRepo.ChangeFlag(ctx, noteID, flag); err != nil {
-	// 		logger.Error(err.Error())
-	// 	}
-	// }()
-	// uc.wg.Wait()
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.ChangeFlag(ctx, noteID, flag); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
 
 	logger.Info("success")
 	return resultNote, nil

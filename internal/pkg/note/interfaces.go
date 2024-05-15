@@ -88,7 +88,11 @@ type NoteSearchRepo interface {
 
 	AddTag(ctx context.Context, tagName string, noteID uuid.UUID) error
 	DeleteTag(ctx context.Context, tagName string, noteID uuid.UUID) error
+	DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error
+	UpdateTagOnAllNotes(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error
 
 	SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error
 	SetHeader(ctx context.Context, noteID uuid.UUID, header string) error
+
+	ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error
 }

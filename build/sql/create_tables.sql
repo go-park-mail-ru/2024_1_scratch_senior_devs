@@ -106,7 +106,7 @@ CREATE OR REPLACE FUNCTION update_tags()
 $BODY$;
 
 CREATE OR REPLACE TRIGGER trigger_update_tags
-   AFTER UPDATE
+    AFTER UPDATE
     ON all_tags
     FOR EACH ROW
     EXECUTE FUNCTION  update_tags();

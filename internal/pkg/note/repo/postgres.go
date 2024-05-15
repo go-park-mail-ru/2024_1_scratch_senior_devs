@@ -31,7 +31,7 @@ const (
 	LIMIT $2 OFFSET $3;
 	`
 	getNote    = `SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, favorite FROM notes WHERE id = $1;`
-	createNote = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[], $10, $11);"
+	createNote = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, favorite) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[], $10, $11, $12);"
 	updateNote = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
 	deleteNote = "DELETE FROM notes CASCADE WHERE id = $1;"
 
@@ -48,7 +48,7 @@ const (
 	getTags               = `SELECT tag_name FROM all_tags WHERE user_id = $1;`
 	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
 	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
-	updateTag             = "UPDATE all_tags SET tag_name=$1 WHERE user_id=$2 AND tag_name = $3;"
+	updateTag             = "UPDATE all_tags SET tag_name = $1 WHERE user_id = $2 AND tag_name = $3;"
 	deleteTagFromAllNotes = "UPDATE notes SET tags = array_remove(tags, $1) WHERE owner_id = $2;"
 
 	setIcon   = "UPDATE notes SET icon = $1 WHERE id = $2;"
@@ -223,6 +223,7 @@ func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) erro
 		note.Collaborators,
 		note.Icon,
 		note.Header,
+		note.Favorite,
 	)
 	repo.metr.ObserveResponseTime("createNote", time.Since(start).Seconds())
 	if err != nil {

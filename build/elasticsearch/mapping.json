@@ -33,6 +33,9 @@
     },
     "header": {
       "type": "text"
+    },
+    "favorite": {
+      "type": "boolean"
     }
   }
 }
