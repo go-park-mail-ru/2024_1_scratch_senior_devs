@@ -321,11 +321,8 @@ func (repo *NoteElastic) DeleteTagFromAllNotes(ctx context.Context, tagName stri
 	for _, hit := range searchResult.Hits.Hits {
 		bulkRequest = bulkRequest.Add(elastic.NewBulkUpdateRequest().
 			Index(repo.cfg.ElasticIndexName).
-			Type("_doc").
 			Id(hit.Id).
-			Doc(map[string]interface{}{
-				"script": fmt.Sprintf("ctx._source.tags.remove('%s')", tagName),
-			}),
+			Script(elastic.NewScript(fmt.Sprintf("ctx._source.tags.remove('%s')", tagName))),
 		)
 	}
 
@@ -362,11 +359,8 @@ func (repo *NoteElastic) UpdateTagOnAllNotes(ctx context.Context, oldTag string,
 	for _, hit := range searchResult.Hits.Hits {
 		bulkRequest = bulkRequest.Add(elastic.NewBulkUpdateRequest().
 			Index(repo.cfg.ElasticIndexName).
-			Type("_doc").
 			Id(hit.Id).
-			Doc(map[string]interface{}{
-				"script": fmt.Sprintf("ctx._source.tags[ctx._source.tags.indexOf('%s')] = '%s'", oldTag, newTag),
-			}),
+			Script(elastic.NewScript(fmt.Sprintf("ctx._source.tags[ctx._source.tags.indexOf('%s')] = '%s'", oldTag, newTag))),
 		)
 	}
 
