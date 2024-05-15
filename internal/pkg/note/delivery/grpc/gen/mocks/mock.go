@@ -97,14 +97,14 @@ func (mr *MockNoteClientMockRecorder) AddTag(ctx, in interface{}, opts ...interf
 }
 
 // ChangeFlag mocks base method.
-func (m *MockNoteClient) ChangeFlag(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+func (m *MockNoteClient) ChangeFlag(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ChangeFlag", varargs...)
-	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -445,10 +445,10 @@ func (mr *MockNoteServerMockRecorder) AddTag(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // ChangeFlag mocks base method.
-func (m *MockNoteServer) ChangeFlag(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.EmptyResponse, error) {
+func (m *MockNoteServer) ChangeFlag(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.GetNoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeFlag", arg0, arg1)
-	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -58,7 +58,7 @@ type NoteClient interface {
 	UpdateTag(ctx context.Context, in *UpdateTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	SetIcon(ctx context.Context, in *SetIconRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	SetHeader(ctx context.Context, in *SetHeaderRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
+	ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 }
 
 type noteClient struct {
@@ -213,8 +213,8 @@ func (c *noteClient) SetHeader(ctx context.Context, in *SetHeaderRequest, opts .
 	return out, nil
 }
 
-func (c *noteClient) ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*EmptyResponse, error) {
-	out := new(EmptyResponse)
+func (c *noteClient) ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
+	out := new(GetNoteResponse)
 	err := c.cc.Invoke(ctx, Note_ChangeFlag_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -242,7 +242,7 @@ type NoteServer interface {
 	UpdateTag(context.Context, *UpdateTagRequest) (*EmptyResponse, error)
 	SetIcon(context.Context, *SetIconRequest) (*GetNoteResponse, error)
 	SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error)
-	ChangeFlag(context.Context, *ChangeFlagRequest) (*EmptyResponse, error)
+	ChangeFlag(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -298,7 +298,7 @@ func (UnimplementedNoteServer) SetIcon(context.Context, *SetIconRequest) (*GetNo
 func (UnimplementedNoteServer) SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetHeader not implemented")
 }
-func (UnimplementedNoteServer) ChangeFlag(context.Context, *ChangeFlagRequest) (*EmptyResponse, error) {
+func (UnimplementedNoteServer) ChangeFlag(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangeFlag not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}

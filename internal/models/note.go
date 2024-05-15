@@ -47,10 +47,6 @@ type SetHeaderRequest struct {
 	Header string `json:"header"`
 }
 
-type ChangeFlagRequest struct {
-	Flag bool `json:"favorite"`
-}
-
 // ================================================================
 // only swagger examples
 

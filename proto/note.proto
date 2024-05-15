@@ -19,7 +19,7 @@ service Note {
      rpc UpdateTag(UpdateTagRequest) returns (EmptyResponse){}
      rpc SetIcon(SetIconRequest) returns (GetNoteResponse) {}
      rpc SetHeader(SetHeaderRequest) returns (GetNoteResponse) {}
-     rpc ChangeFlag(ChangeFlagRequest) returns (EmptyResponse) {}
+     rpc ChangeFlag(ChangeFlagRequest) returns (GetNoteResponse) {}
 }
 
 message ChangeFlagRequest {

@@ -261,17 +261,20 @@ func (h *GrpcNoteHandler) SetHeader(ctx context.Context, in *generatedNote.SetHe
 	}, nil
 }
 
-func (h *GrpcNoteHandler) ChangeFlag(ctx context.Context, in *generatedNote.ChangeFlagRequest) (*generatedNote.EmptyResponse, error) {
+func (h *GrpcNoteHandler) ChangeFlag(ctx context.Context, in *generatedNote.ChangeFlagRequest) (*generatedNote.GetNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	_, err := h.uc.ChangeFlag(ctx, uuid.FromStringOrNil(in.NoteId), in.Flag, uuid.FromStringOrNil(in.UserId))
+	note, err := h.uc.ChangeFlag(ctx, uuid.FromStringOrNil(in.NoteId), in.Flag, uuid.FromStringOrNil(in.UserId))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}
+	protoNote := getNote(note)
 
 	logger.Info("success")
-	return &generatedNote.EmptyResponse{}, nil
+	return &generatedNote.GetNoteResponse{
+		Note: protoNote,
+	}, nil
 }
 
 func (h *GrpcNoteHandler) CheckPermissions(ctx context.Context, in *generatedNote.CheckPermissionsRequest) (*generatedNote.CheckPermissionsResponse, error) {

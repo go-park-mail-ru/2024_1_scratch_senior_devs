@@ -925,7 +925,7 @@ func (h *NoteHandler) SetHeader(w http.ResponseWriter, r *http.Request) {
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 
-func (h *NoteHandler) ChangeFlag(w http.ResponseWriter, r *http.Request) {
+func (h *NoteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
 	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
@@ -943,15 +943,8 @@ func (h *NoteHandler) ChangeFlag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var flagRequest models.ChangeFlagRequest
-	if err := responses.GetRequestData(r, &flagRequest); err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
-		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
-		return
-	}
-
-	_, err = h.client.ChangeFlag(r.Context(), &gen.ChangeFlagRequest{
-		Flag:   flagRequest.Flag,
+	protoNote, err := h.client.ChangeFlag(r.Context(), &gen.ChangeFlagRequest{
+		Flag:   true,
 		NoteId: noteIdString,
 		UserId: jwtPayload.Id.String(),
 	})
@@ -961,7 +954,64 @@ func (h *NoteHandler) ChangeFlag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	resultNote, err := getNote(protoNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) DeleteFavorite(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	protoNote, err := h.client.ChangeFlag(r.Context(), &gen.ChangeFlagRequest{
+		Flag:   false,
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(protoNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
 
