@@ -189,7 +189,9 @@ func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {
 func (repo *NoteElastic) AddSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("ctx._source.children.add(params.childID)").Lang("painless").Param("childID", childID.String())
+	script := elastic.NewScript("ctx._source.children.add(params.childID)").
+		Lang("painless").
+		Param("childID", childID.String())
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -211,7 +213,9 @@ func (repo *NoteElastic) AddSubNote(ctx context.Context, id uuid.UUID, childID u
 func (repo *NoteElastic) RemoveSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("ctx._source.children.removeIfContains(params.childID)").Lang("painless").Param("childID", childID.String())
+	script := elastic.NewScript("ctx._source.children.removeIfContains(params.childID)").
+		Lang("painless").
+		Param("childID", childID.String())
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -233,7 +237,9 @@ func (repo *NoteElastic) RemoveSubNote(ctx context.Context, id uuid.UUID, childI
 func (repo *NoteElastic) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("ctx._source.collaborators.add(params.collaboratorID)").Lang("painless").Param("collaboratorID", userID.String())
+	script := elastic.NewScript("ctx._source.collaborators.add(params.collaboratorID)").
+		Lang("painless").
+		Param("collaboratorID", userID.String())
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -260,7 +266,9 @@ func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid
 		return err
 	}
 
-	script := elastic.NewScript("ctx._source.tags.add(params.tagName)").Lang("painless").Param("tagName", tagName)
+	script := elastic.NewScript("ctx._source.tags.add(params.tagName)").
+		Lang("painless").
+		Param("tagName", tagName)
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -282,7 +290,9 @@ func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid
 func (repo *NoteElastic) DeleteTag(ctx context.Context, tagName string, noteID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("if (ctx._source.tags.contains(params.tagName)) { ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName)) }").Lang("painless").Param("tagName", tagName)
+	script := elastic.NewScript("if (ctx._source.tags.contains(params.tagName)) { ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName)) }").
+		Lang("painless").
+		Param("tagName", tagName)
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -304,6 +314,10 @@ func (repo *NoteElastic) DeleteTag(ctx context.Context, tagName string, noteID u
 func (repo *NoteElastic) DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	script := elastic.NewScript("ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName))").
+		Lang("painless").
+		Param("tagName", tagName)
+
 	query := elastic.NewBoolQuery().
 		Must(elastic.NewTermQuery("owner_id", userID)).
 		Must(elastic.NewTermQuery("tags", tagName))
@@ -322,7 +336,7 @@ func (repo *NoteElastic) DeleteTagFromAllNotes(ctx context.Context, tagName stri
 		bulkRequest = bulkRequest.Add(elastic.NewBulkUpdateRequest().
 			Index(repo.cfg.ElasticIndexName).
 			Id(hit.Id).
-			Script(elastic.NewScript(fmt.Sprintf("ctx._source.tags.remove('%s')", tagName))),
+			Script(script),
 		)
 	}
 
@@ -342,6 +356,13 @@ func (repo *NoteElastic) DeleteTagFromAllNotes(ctx context.Context, tagName stri
 func (repo *NoteElastic) UpdateTagOnAllNotes(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	script := elastic.NewScript("ctx._source.tags[ctx._source.tags.indexOf(params.oldTag)] = params.NewTag").
+		Lang("painless").
+		Params(map[string]interface{}{
+			"oldTag": oldTag,
+			"newTag": newTag,
+		})
+
 	query := elastic.NewBoolQuery().
 		Must(elastic.NewTermQuery("owner_id", userID)).
 		Must(elastic.NewTermQuery("tags", oldTag))
@@ -360,7 +381,7 @@ func (repo *NoteElastic) UpdateTagOnAllNotes(ctx context.Context, oldTag string,
 		bulkRequest = bulkRequest.Add(elastic.NewBulkUpdateRequest().
 			Index(repo.cfg.ElasticIndexName).
 			Id(hit.Id).
-			Script(elastic.NewScript(fmt.Sprintf("ctx._source.tags[ctx._source.tags.indexOf('%s')] = '%s'", oldTag, newTag))),
+			Script(script),
 		)
 	}
 
