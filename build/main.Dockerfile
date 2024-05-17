@@ -1,14 +1,24 @@
-FROM surnet/alpine-wkhtmltopdf:3.12-0.12.6-small as wkhtmltopdf
+FROM ubuntu:latest AS builder
 
-FROM golang:1.21.0-alpine AS builder
+ARG GO_VERSION=1.21.0
 
-RUN apk add --update vips-dev
-RUN apk add build-base
-RUN apk add bash
-RUN apk add libwebp libwebp-tools
-RUN apk add libstdc++ libx11 libxrender libxext libssl1.1 fontconfig freetype ttf-dejavu ttf-droid ttf-freefont ttf-liberation && apk add --no-cache --virtual .build-deps msttcorefonts-installer && update-ms-fonts && fc-cache -f && rm -rf /tmp/* && apk del .build-deps
+RUN apt-get update
+RUN apt-get install -y wget git gcc
 
-COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin/wkhtmltopdf
+RUN wget -P /tmp "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
+
+RUN tar -C /usr/local -xzf "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
+RUN rm "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+
+RUN apt-get install -y libvips-dev
+RUN apt-get install -y build-essential
+RUN apt-get install -y bash
+RUN apt-get install -y libwebp-dev
+RUN apt-get install -y wkhtmltopdf
 
 COPY . /github.com/go-park-mail-ru/2024_1_scratch_senior_devs/
 WORKDIR /github.com/go-park-mail-ru/2024_1_scratch_senior_devs/
