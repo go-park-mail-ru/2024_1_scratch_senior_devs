@@ -511,18 +511,18 @@ func (mr *MockNoteBaseRepoMockRecorder) ReadAllNotes(arg0, arg1, arg2, arg3, arg
 }
 
 // ReadNote mocks base method.
-func (m *MockNoteBaseRepo) ReadNote(arg0 context.Context, arg1 uuid.UUID) (models.Note, error) {
+func (m *MockNoteBaseRepo) ReadNote(arg0 context.Context, arg1, arg2 uuid.UUID) (models.Note, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadNote", arg0, arg1)
+	ret := m.ctrl.Call(m, "ReadNote", arg0, arg1, arg2)
 	ret0, _ := ret[0].(models.Note)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ReadNote indicates an expected call of ReadNote.
-func (mr *MockNoteBaseRepoMockRecorder) ReadNote(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockNoteBaseRepoMockRecorder) ReadNote(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadNote), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadNote), arg0, arg1, arg2)
 }
 
 // RememberTag mocks base method.

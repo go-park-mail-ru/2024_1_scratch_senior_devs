@@ -60,7 +60,7 @@ func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count 
 func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote, err := uc.baseRepo.ReadNote(ctx, noteId)
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteId, userId)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, errors.New("not found")
@@ -112,7 +112,7 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID, noteData string) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
+	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId, userId)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, errors.New("not found")
@@ -152,7 +152,7 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	deletedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
+	deletedNote, err := uc.baseRepo.ReadNote(ctx, noteId, ownerId)
 	if err != nil || deletedNote.OwnerId != ownerId {
 		logger.Error(err.Error())
 		return err
@@ -191,18 +191,18 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId
 	return nil
 }
 
-func (uc *NoteUsecase) getDepth(ctx context.Context, parentParentID uuid.UUID, currentDepth int) (int, error) {
+func (uc *NoteUsecase) getDepth(ctx context.Context, parentParentID uuid.UUID, currentDepth int, userId uuid.UUID) (int, error) {
 	emptyID := uuid.UUID{}
 	if parentParentID == emptyID {
 		return currentDepth, nil
 	}
 
-	parent, err := uc.baseRepo.ReadNote(ctx, parentParentID)
+	parent, err := uc.baseRepo.ReadNote(ctx, parentParentID, userId)
 	if err != nil {
 		return -1, err
 	}
 
-	return uc.getDepth(ctx, parent.Parent, currentDepth+1)
+	return uc.getDepth(ctx, parent.Parent, currentDepth+1, userId)
 }
 
 func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, noteData string, parentID uuid.UUID) (models.Note, error) {
@@ -221,7 +221,7 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		Favorite:      false,
 	}
 
-	parent, err := uc.baseRepo.ReadNote(ctx, parentID)
+	parent, err := uc.baseRepo.ReadNote(ctx, parentID, userId)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
@@ -237,7 +237,7 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		return models.Note{}, errors.New(note.ErrTooManySubnotes)
 	}
 
-	depth, err := uc.getDepth(ctx, parent.Parent, 1)
+	depth, err := uc.getDepth(ctx, parent.Parent, 1, userId)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
@@ -273,8 +273,8 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 	return newNote, nil
 }
 
-func (uc *NoteUsecase) addCollaboratorRecursive(ctx context.Context, noteID uuid.UUID, guestID uuid.UUID) error {
-	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+func (uc *NoteUsecase) addCollaboratorRecursive(ctx context.Context, noteID uuid.UUID, guestID uuid.UUID, userID uuid.UUID) error {
+	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func (uc *NoteUsecase) addCollaboratorRecursive(ctx context.Context, noteID uuid
 	}
 
 	for _, child := range currentNote.Children {
-		if err := uc.addCollaboratorRecursive(ctx, child, guestID); err != nil {
+		if err := uc.addCollaboratorRecursive(ctx, child, guestID, userID); err != nil {
 			return err
 		}
 	}
@@ -295,7 +295,7 @@ func (uc *NoteUsecase) addCollaboratorRecursive(ctx context.Context, noteID uuid
 func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, guestID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -328,7 +328,7 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 	}
 
 	for _, child := range currentNote.Children {
-		if err := uc.addCollaboratorRecursive(ctx, child, guestID); err != nil {
+		if err := uc.addCollaboratorRecursive(ctx, child, guestID, userID); err != nil {
 			logger.Error(err.Error())
 			return err
 		}
@@ -350,7 +350,7 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
+	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId, userId)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
@@ -394,7 +394,7 @@ func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.U
 func (uc *NoteUsecase) DeleteTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId)
+	updatedNote, err := uc.baseRepo.ReadNote(ctx, noteId, userId)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
@@ -505,7 +505,7 @@ func (uc *NoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string,
 func (uc *NoteUsecase) SetIcon(ctx context.Context, noteID uuid.UUID, icon string, userID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, errors.New("not found")
@@ -538,7 +538,7 @@ func (uc *NoteUsecase) SetIcon(ctx context.Context, noteID uuid.UUID, icon strin
 func (uc *NoteUsecase) SetHeader(ctx context.Context, noteID uuid.UUID, header string, userID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, errors.New("not found")
@@ -570,7 +570,7 @@ func (uc *NoteUsecase) SetHeader(ctx context.Context, noteID uuid.UUID, header s
 func (uc *NoteUsecase) AddFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, errors.New("not found")
@@ -580,7 +580,9 @@ func (uc *NoteUsecase) AddFav(ctx context.Context, noteID uuid.UUID, userID uuid
 		logger.Error("not owner and not collaborator")
 		return models.Note{}, errors.New("not owner and not collaborator")
 	}
-
+	if resultNote.Favorite {
+		return resultNote, nil
+	}
 	if err := uc.baseRepo.AddFav(ctx, noteID, userID); err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
@@ -602,7 +604,7 @@ func (uc *NoteUsecase) AddFav(ctx context.Context, noteID uuid.UUID, userID uuid
 func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, errors.New("not found")
@@ -617,7 +619,7 @@ func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}
-	resultNote.Favorite = true
+	resultNote.Favorite = false
 
 	uc.wg.Add(1)
 	go func() {
@@ -634,7 +636,7 @@ func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid
 func (uc *NoteUsecase) CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
 		return false, errors.New("not found")

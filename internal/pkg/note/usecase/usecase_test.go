@@ -158,14 +158,14 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 	}
 	tests := []struct {
 		name       string
-		repoMocker func(context context.Context, repo *mock_note.MockNoteBaseRepo, nId uuid.UUID)
+		repoMocker func(context context.Context, repo *mock_note.MockNoteBaseRepo, args args)
 		args       args
 		want       models.Note
 		wantErr    bool
 	}{
 		{
 			name: "TestSuccess",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, nId uuid.UUID) {
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, args args) {
 				mockResp := models.Note{ //мок ответа от уровня репозитория
 					Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
@@ -176,7 +176,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 					Children:   []uuid.UUID{},
 				}
 
-				repo.EXPECT().ReadNote(ctx, nId).Return(mockResp, nil).Times(1)
+				repo.EXPECT().ReadNote(ctx, args.noteId, args.userId).Return(mockResp, nil).Times(1)
 			},
 			args: args{
 				context.Background(),
@@ -197,12 +197,12 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 		},
 		{
 			name: "TestFail",
-			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, nId uuid.UUID) {
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, args args) {
 				mockResp := models.Note{ //мок ответа от уровня репозитория
 
 				}
 
-				repo.EXPECT().ReadNote(ctx, nId).Return(mockResp, errors.New("error")).Times(1)
+				repo.EXPECT().ReadNote(ctx, args.noteId, args.userId).Return(mockResp, errors.New("error")).Times(1)
 			},
 			args: args{
 				context.Background(),
@@ -222,7 +222,7 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
 			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
 
-			tt.repoMocker(context.Background(), repo, tt.args.noteId)
+			tt.repoMocker(context.Background(), repo, tt.args)
 
 			got, err := uc.GetNote(tt.args.ctx, tt.args.noteId, tt.args.userId)
 			if (err != nil) != tt.wantErr {
@@ -331,7 +331,7 @@ func TestNoteUsecase_UpdateNote(t *testing.T) {
 			name: "TestSuccess",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
 				baseRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
-				baseRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, gomock.Any(), gomock.Any()).Return(models.Note{}, nil).Times(1)
 				searchRepo.EXPECT().UpdateNote(ctx, gomock.Any()).Return(nil).Times(1)
 			},
 			args: args{
@@ -398,7 +398,7 @@ func TestNoteUsecase_DeleteNote(t *testing.T) {
 			name: "TestSuccess",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
 				baseRepo.EXPECT().DeleteNote(ctx, gomock.Any()).Return(nil).Times(1)
-				baseRepo.EXPECT().ReadNote(ctx, gomock.Any()).Return(models.Note{}, nil).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, gomock.Any(), gomock.Any()).Return(models.Note{}, nil).Times(1)
 				searchRepo.EXPECT().DeleteNote(ctx, gomock.Any()).Return(nil).Times(1)
 			},
 			args: args{
@@ -460,7 +460,7 @@ func TestNoteUsecase_CheckPermissions(t *testing.T) {
 		{
 			name: "TestSuccess",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: userId,
 				}, nil).Times(1)
 			},
@@ -475,7 +475,7 @@ func TestNoteUsecase_CheckPermissions(t *testing.T) {
 		{
 			name: "TestFail",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, errors.New("error")).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{}, errors.New("error")).Times(1)
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -610,7 +610,7 @@ func TestNoteUsecase_DeleteTag(t *testing.T) {
 			name: "Test_DeleteTag_Success",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
 				baseRepo.EXPECT().DeleteTag(ctx, "tag1", noteId).Return(nil).Times(1)
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: userId,
 					Id:      noteId,
 					Tags:    []string{"tag1", "tag2"},
@@ -635,7 +635,7 @@ func TestNoteUsecase_DeleteTag(t *testing.T) {
 			name: "Test_DeleteTag_FailOnDelete",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
 				baseRepo.EXPECT().DeleteTag(ctx, "tag1", noteId).Return(errors.New("error")).Times(1)
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: userId,
 					Id:      noteId,
 					Tags:    []string{"tag1", "tag2"},
@@ -654,7 +654,7 @@ func TestNoteUsecase_DeleteTag(t *testing.T) {
 		{
 			name: "Test_DeleteTag_FailOnRead",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, errors.New("error")).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{}, errors.New("error")).Times(1)
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -667,7 +667,7 @@ func TestNoteUsecase_DeleteTag(t *testing.T) {
 		{
 			name: "Test_DeleteTag_NotOwner",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: uuid.NewV4(),
 					Id:      noteId,
 				}, nil).Times(1)
@@ -734,7 +734,7 @@ func TestNoteUsecase_AddTag(t *testing.T) {
 			name: "Test_AddTag_Success",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
 				baseRepo.EXPECT().AddTag(ctx, "tag1", noteId).Return(nil).Times(1)
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: userId,
 					Id:      noteId,
 					Tags:    []string{"tag2"},
@@ -759,7 +759,7 @@ func TestNoteUsecase_AddTag(t *testing.T) {
 			name: "Test_AddTag_FailOnAdd",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
 				baseRepo.EXPECT().AddTag(ctx, "tag1", noteId).Return(errors.New("error")).Times(1)
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: userId,
 					Id:      noteId,
 					Tags:    []string{"tag2"},
@@ -778,7 +778,7 @@ func TestNoteUsecase_AddTag(t *testing.T) {
 		{
 			name: "Test_AddTag_FailTooMany",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: userId,
 					Id:      noteId,
 					Tags:    []string{"1", "2", "3", "4"},
@@ -797,7 +797,7 @@ func TestNoteUsecase_AddTag(t *testing.T) {
 		{
 			name: "Test_AddTag_FailOnRead",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, errors.New("error")).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{}, errors.New("error")).Times(1)
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -810,7 +810,7 @@ func TestNoteUsecase_AddTag(t *testing.T) {
 		{
 			name: "Test_AddTag_NotOwner",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					OwnerId: uuid.NewV4(),
 					Id:      noteId,
 				}, nil).Times(1)
@@ -859,6 +859,7 @@ func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
 
 	noteId := uuid.NewV4()
 	guestId := uuid.NewV4()
+
 	tests := []struct {
 		name       string
 		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
@@ -868,14 +869,14 @@ func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
 			name:    "Test_addCollaboratorReqursive_ReadError",
 			wantErr: true,
 			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId).Return(models.Note{}, errors.New("error"))
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.Note{}, errors.New("error"))
 			},
 		},
 		{
 			name:    "Test_addCollaboratorReqursive_AddError",
 			wantErr: true,
 			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.Note{
 					Id: noteId,
 				}, nil)
 				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(errors.New("error"))
@@ -886,7 +887,7 @@ func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
 			name:    "Test_addCollaboratorReqursive_NoChildren",
 			wantErr: false,
 			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.Note{
 					Id: noteId,
 				}, nil)
 				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(nil)
@@ -904,7 +905,7 @@ func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
-			err := uc.addCollaboratorRecursive(context.Background(), noteId, guestId)
+			err := uc.addCollaboratorRecursive(context.Background(), noteId, guestId, uuid.NewV4())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NoteUsecase.AddTag error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -939,7 +940,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 		{
 			name: "Test_AddCollaborator_FailOnRead",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, errors.New("error")).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{}, errors.New("error")).Times(1)
 
 			},
 
@@ -948,7 +949,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 		{
 			name: "Test_AddCollaborator_FailOnNotOwner",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, nil).Times(1)
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{}, nil).Times(1)
 
 			},
 
@@ -957,7 +958,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 		{
 			name: "Test_AddCollaborator_FailParentNotEmpty",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					Id:      noteId,
 					OwnerId: userId,
 					Parent:  uuid.NewV4(),
@@ -970,7 +971,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 		{
 			name: "Test_AddCollaborator_FailAlreadyCollaborator",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					Id:            noteId,
 					OwnerId:       userId,
 					Parent:        uuid.UUID{},
@@ -984,7 +985,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 		{
 			name: "Test_AddCollaborator_TooMany",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					Id:            noteId,
 					OwnerId:       userId,
 					Parent:        uuid.UUID{},
@@ -998,7 +999,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 		{
 			name: "Test_AddCollaborator_AddErr",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					Id:      noteId,
 					OwnerId: userId,
 					Parent:  uuid.UUID{},
@@ -1068,7 +1069,7 @@ func TestNoteUsecase_getDepth(t *testing.T) {
 			currDepth: 1,
 			wantErr:   true,
 			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(gomock.Any(), childId).Return(models.Note{}, errors.New("err"))
+				baseRepo.EXPECT().ReadNote(gomock.Any(), childId, gomock.Any()).Return(models.Note{}, errors.New("err"))
 			},
 		},
 	}
@@ -1082,7 +1083,7 @@ func TestNoteUsecase_getDepth(t *testing.T) {
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
-			_, err := uc.getDepth(context.Background(), tt.childId, tt.currDepth)
+			_, err := uc.getDepth(context.Background(), tt.childId, tt.currDepth, uuid.UUID{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NoteUsecase.getDepth error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1125,7 +1126,7 @@ func TestNoteUsecase_CreateSubNote(t *testing.T) {
 			currDepth: 1,
 			wantErr:   true,
 			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(gomock.Any(), parentId).Return(models.Note{}, errors.New("error"))
+				baseRepo.EXPECT().ReadNote(gomock.Any(), parentId, userId).Return(models.Note{}, errors.New("error"))
 			},
 		},
 		{
@@ -1136,7 +1137,7 @@ func TestNoteUsecase_CreateSubNote(t *testing.T) {
 			currDepth: 1,
 			wantErr:   true,
 			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(gomock.Any(), parentId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(gomock.Any(), parentId, userId).Return(models.Note{
 					Id:       parentId,
 					OwnerId:  userId,
 					Children: make([]uuid.UUID, 20),
@@ -1152,12 +1153,12 @@ func TestNoteUsecase_CreateSubNote(t *testing.T) {
 			currDepth: 1,
 			wantErr:   true,
 			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
-				baseRepo.EXPECT().ReadNote(gomock.Any(), parentId).Return(models.Note{
+				baseRepo.EXPECT().ReadNote(gomock.Any(), parentId, userId).Return(models.Note{
 					Id:      parentId,
 					OwnerId: userId,
 					Parent:  uuid.NewV4(),
 				}, nil)
-				baseRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any()).Return(models.Note{}, errors.New("error"))
+				baseRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any(), gomock.Any()).Return(models.Note{}, errors.New("error"))
 
 			},
 		},

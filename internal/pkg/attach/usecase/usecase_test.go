@@ -37,7 +37,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 			name: "TestDeleteAtatch_Success",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, data args) {
 				repo.EXPECT().DeleteAttach(ctx, attachId).Return(nil).Times(1)
-				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					Id:         data.noteID,
 					Data:       "",
 					CreateTime: time.Time{},
@@ -62,7 +62,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 			name: "TestDeleteAtatch_Fail_On_DeleteAttach",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, data args) {
 				repo.EXPECT().DeleteAttach(ctx, attachId).Return(errors.New("delete error")).Times(1)
-				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					Id:         data.noteID,
 					Data:       "",
 					CreateTime: time.Time{},
@@ -86,7 +86,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 		{
 			name: "TestDeleteAtatch_Fail_On_ReadNote",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, data args) {
-				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, errors.New("read note error")).Times(1)
+				noteRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{}, errors.New("read note error")).Times(1)
 				repo.EXPECT().GetAttach(ctx, attachId).Return(models.Attach{
 					Id:     data.attachID,
 					NoteId: data.noteID,
@@ -117,7 +117,7 @@ func TestAttachUsecase_DeleteAttach(t *testing.T) {
 		{
 			name: "TestDeleteAtatch_Fail_NotFound",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, data args) {
-				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any()).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any(), userId).Return(models.Note{
 					Id:         data.noteID,
 					Data:       "",
 					CreateTime: time.Time{},
@@ -174,7 +174,7 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 		{
 			name: "Test_GetAttach_Success",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo) {
-				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
 					Id:         noteId,
 					Data:       "",
 					CreateTime: time.Time{},
@@ -202,7 +202,7 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 		{
 			name: "Test_GetAttach_Fail_On_ReadNote",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo) {
-				noteRepo.EXPECT().ReadNote(ctx, noteId).Return(models.Note{}, errors.New("read note error")).Times(1)
+				noteRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{}, errors.New("read note error")).Times(1)
 				repo.EXPECT().GetAttach(ctx, attachId).Return(models.Attach{
 					Id:     attachId,
 					NoteId: noteId,
@@ -233,7 +233,7 @@ func TestAttachUsecase_GetAttach(t *testing.T) {
 		{
 			name: "Test_GetAttach_NotFound",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo) {
-				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any()).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(gomock.Any(), gomock.Any(), gomock.Any()).Return(models.Note{
 					Id:         noteId,
 					Data:       "",
 					CreateTime: time.Time{},
@@ -293,7 +293,7 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 			name: "Test_Success",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, args args) {
 				repo.EXPECT().AddAttach(ctx, gomock.Any()).Return(nil)
-				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID, args.userID).Return(models.Note{
 					Id:      args.noteID,
 					OwnerId: args.userID,
 				}, nil)
@@ -312,7 +312,7 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 			name: "Test_Fail_AddAttach",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, args args) {
 				repo.EXPECT().AddAttach(ctx, gomock.Any()).Return(errors.New("error cant add attach"))
-				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID, args.userID).Return(models.Note{
 					Id:      args.noteID,
 					OwnerId: args.userID,
 				}, nil)
@@ -330,7 +330,7 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 		{
 			name: "Test_Fail_ReadNote",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, args args) {
-				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID, args.userID).Return(models.Note{
 					Id:      args.noteID,
 					OwnerId: args.userID,
 				}, errors.New("error read note"))
@@ -348,7 +348,7 @@ func TestAttachUsecase_AddAttach(t *testing.T) {
 		{
 			name: "Test_Fail_NotOwner",
 			repoMocker: func(ctx context.Context, repo *mock_attach.MockAttachRepo, noteRepo *mock_note.MockNoteBaseRepo, args args) {
-				noteRepo.EXPECT().ReadNote(ctx, args.noteID).Return(models.Note{
+				noteRepo.EXPECT().ReadNote(ctx, args.noteID, args.userID).Return(models.Note{
 					Id:      args.noteID,
 					OwnerId: args.noteID,
 				}, errors.New("error read note"))
