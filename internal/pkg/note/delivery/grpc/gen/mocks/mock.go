@@ -56,6 +56,26 @@ func (mr *MockNoteClientMockRecorder) AddCollaborator(ctx, in interface{}, opts 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteClient)(nil).AddCollaborator), varargs...)
 }
 
+// AddFav mocks base method.
+func (m *MockNoteClient) AddFav(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddFav", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddFav indicates an expected call of AddFav.
+func (mr *MockNoteClientMockRecorder) AddFav(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFav", reflect.TypeOf((*MockNoteClient)(nil).AddFav), varargs...)
+}
+
 // AddNote mocks base method.
 func (m *MockNoteClient) AddNote(ctx context.Context, in *gen.AddNoteRequest, opts ...grpc.CallOption) (*gen.AddNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -96,26 +116,6 @@ func (mr *MockNoteClientMockRecorder) AddTag(ctx, in interface{}, opts ...interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteClient)(nil).AddTag), varargs...)
 }
 
-// ChangeFlag mocks base method.
-func (m *MockNoteClient) ChangeFlag(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{ctx, in}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "ChangeFlag", varargs...)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChangeFlag indicates an expected call of ChangeFlag.
-func (mr *MockNoteClientMockRecorder) ChangeFlag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteClient)(nil).ChangeFlag), varargs...)
-}
-
 // CheckPermissions mocks base method.
 func (m *MockNoteClient) CheckPermissions(ctx context.Context, in *gen.CheckPermissionsRequest, opts ...grpc.CallOption) (*gen.CheckPermissionsResponse, error) {
 	m.ctrl.T.Helper()
@@ -154,6 +154,26 @@ func (mr *MockNoteClientMockRecorder) CreateSubNote(ctx, in interface{}, opts ..
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubNote", reflect.TypeOf((*MockNoteClient)(nil).CreateSubNote), varargs...)
+}
+
+// DelFav mocks base method.
+func (m *MockNoteClient) DelFav(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DelFav", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DelFav indicates an expected call of DelFav.
+func (mr *MockNoteClientMockRecorder) DelFav(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelFav", reflect.TypeOf((*MockNoteClient)(nil).DelFav), varargs...)
 }
 
 // DeleteNote mocks base method.
@@ -414,6 +434,21 @@ func (mr *MockNoteServerMockRecorder) AddCollaborator(arg0, arg1 interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteServer)(nil).AddCollaborator), arg0, arg1)
 }
 
+// AddFav mocks base method.
+func (m *MockNoteServer) AddFav(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFav", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddFav indicates an expected call of AddFav.
+func (mr *MockNoteServerMockRecorder) AddFav(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFav", reflect.TypeOf((*MockNoteServer)(nil).AddFav), arg0, arg1)
+}
+
 // AddNote mocks base method.
 func (m *MockNoteServer) AddNote(arg0 context.Context, arg1 *gen.AddNoteRequest) (*gen.AddNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -444,21 +479,6 @@ func (mr *MockNoteServerMockRecorder) AddTag(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteServer)(nil).AddTag), arg0, arg1)
 }
 
-// ChangeFlag mocks base method.
-func (m *MockNoteServer) ChangeFlag(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.GetNoteResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangeFlag", arg0, arg1)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChangeFlag indicates an expected call of ChangeFlag.
-func (mr *MockNoteServerMockRecorder) ChangeFlag(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteServer)(nil).ChangeFlag), arg0, arg1)
-}
-
 // CheckPermissions mocks base method.
 func (m *MockNoteServer) CheckPermissions(arg0 context.Context, arg1 *gen.CheckPermissionsRequest) (*gen.CheckPermissionsResponse, error) {
 	m.ctrl.T.Helper()
@@ -487,6 +507,21 @@ func (m *MockNoteServer) CreateSubNote(arg0 context.Context, arg1 *gen.CreateSub
 func (mr *MockNoteServerMockRecorder) CreateSubNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubNote", reflect.TypeOf((*MockNoteServer)(nil).CreateSubNote), arg0, arg1)
+}
+
+// DelFav mocks base method.
+func (m *MockNoteServer) DelFav(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DelFav", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DelFav indicates an expected call of DelFav.
+func (mr *MockNoteServerMockRecorder) DelFav(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelFav", reflect.TypeOf((*MockNoteServer)(nil).DelFav), arg0, arg1)
 }
 
 // DeleteNote mocks base method.

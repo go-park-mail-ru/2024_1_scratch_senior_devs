@@ -33,8 +33,12 @@ CREATE TABLE IF NOT EXISTS notes (
                     CONSTRAINT icon_length CHECK (char_length(icon) <= 255),
     header          TEXT
                     CONSTRAINT header_length CHECK (char_length(header) <= 255),
-    favorite        BOOLEAN DEFAULT ('false')
-                    NOT NULL
+   
+);
+CREATE TABLE IF NOT EXISTS favorites (
+    note_id UUID REFERENCES notes (id),
+    user_id UUID REFERENCES users (id),
+    CONSTRAINT PRIMARY KEY(note_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS all_tags (

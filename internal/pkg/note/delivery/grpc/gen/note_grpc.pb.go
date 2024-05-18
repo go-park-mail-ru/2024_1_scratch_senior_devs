@@ -35,7 +35,8 @@ const (
 	Note_UpdateTag_FullMethodName        = "/note.Note/UpdateTag"
 	Note_SetIcon_FullMethodName          = "/note.Note/SetIcon"
 	Note_SetHeader_FullMethodName        = "/note.Note/SetHeader"
-	Note_ChangeFlag_FullMethodName       = "/note.Note/ChangeFlag"
+	Note_AddFav_FullMethodName           = "/note.Note/AddFav"
+	Note_DelFav_FullMethodName           = "/note.Note/DelFav"
 )
 
 // NoteClient is the client API for Note service.
@@ -58,7 +59,8 @@ type NoteClient interface {
 	UpdateTag(ctx context.Context, in *UpdateTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	SetIcon(ctx context.Context, in *SetIconRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	SetHeader(ctx context.Context, in *SetHeaderRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
+	AddFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
+	DelFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 }
 
 type noteClient struct {
@@ -213,9 +215,18 @@ func (c *noteClient) SetHeader(ctx context.Context, in *SetHeaderRequest, opts .
 	return out, nil
 }
 
-func (c *noteClient) ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
+func (c *noteClient) AddFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
 	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, Note_ChangeFlag_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Note_AddFav_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *noteClient) DelFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
+	out := new(GetNoteResponse)
+	err := c.cc.Invoke(ctx, Note_DelFav_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +253,8 @@ type NoteServer interface {
 	UpdateTag(context.Context, *UpdateTagRequest) (*EmptyResponse, error)
 	SetIcon(context.Context, *SetIconRequest) (*GetNoteResponse, error)
 	SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error)
-	ChangeFlag(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error)
+	AddFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error)
+	DelFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -298,8 +310,11 @@ func (UnimplementedNoteServer) SetIcon(context.Context, *SetIconRequest) (*GetNo
 func (UnimplementedNoteServer) SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetHeader not implemented")
 }
-func (UnimplementedNoteServer) ChangeFlag(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChangeFlag not implemented")
+func (UnimplementedNoteServer) AddFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddFav not implemented")
+}
+func (UnimplementedNoteServer) DelFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelFav not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -602,20 +617,38 @@ func _Note_SetHeader_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Note_ChangeFlag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Note_AddFav_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ChangeFlagRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NoteServer).ChangeFlag(ctx, in)
+		return srv.(NoteServer).AddFav(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Note_ChangeFlag_FullMethodName,
+		FullMethod: Note_AddFav_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoteServer).ChangeFlag(ctx, req.(*ChangeFlagRequest))
+		return srv.(NoteServer).AddFav(ctx, req.(*ChangeFlagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Note_DelFav_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeFlagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).DelFav(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Note_DelFav_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).DelFav(ctx, req.(*ChangeFlagRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -692,8 +725,12 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Note_SetHeader_Handler,
 		},
 		{
-			MethodName: "ChangeFlag",
-			Handler:    _Note_ChangeFlag_Handler,
+			MethodName: "AddFav",
+			Handler:    _Note_AddFav_Handler,
+		},
+		{
+			MethodName: "DelFav",
+			Handler:    _Note_DelFav_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

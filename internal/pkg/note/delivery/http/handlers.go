@@ -943,8 +943,8 @@ func (h *NoteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	protoNote, err := h.client.ChangeFlag(r.Context(), &gen.ChangeFlagRequest{
-		Flag:   true,
+	protoNote, err := h.client.AddFav(r.Context(), &gen.ChangeFlagRequest{
+
 		NoteId: noteIdString,
 		UserId: jwtPayload.Id.String(),
 	})
@@ -988,8 +988,7 @@ func (h *NoteHandler) DeleteFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	protoNote, err := h.client.ChangeFlag(r.Context(), &gen.ChangeFlagRequest{
-		Flag:   false,
+	protoNote, err := h.client.DelFav(r.Context(), &gen.ChangeFlagRequest{
 		NoteId: noteIdString,
 		UserId: jwtPayload.Id.String(),
 	})

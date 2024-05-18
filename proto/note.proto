@@ -19,11 +19,12 @@ service Note {
      rpc UpdateTag(UpdateTagRequest) returns (EmptyResponse){}
      rpc SetIcon(SetIconRequest) returns (GetNoteResponse) {}
      rpc SetHeader(SetHeaderRequest) returns (GetNoteResponse) {}
-     rpc ChangeFlag(ChangeFlagRequest) returns (GetNoteResponse) {}
+     rpc AddFav(ChangeFlagRequest) returns (GetNoteResponse) {}
+     rpc DelFav(ChangeFlagRequest) returns (GetNoteResponse) {}
+
 }
 
 message ChangeFlagRequest {
-     bool Flag = 1;
      string NoteId = 2;
      string UserId = 3;
 

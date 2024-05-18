@@ -261,10 +261,26 @@ func (h *GrpcNoteHandler) SetHeader(ctx context.Context, in *generatedNote.SetHe
 	}, nil
 }
 
-func (h *GrpcNoteHandler) ChangeFlag(ctx context.Context, in *generatedNote.ChangeFlagRequest) (*generatedNote.GetNoteResponse, error) {
+func (h *GrpcNoteHandler) AddFav(ctx context.Context, in *generatedNote.ChangeFlagRequest) (*generatedNote.GetNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	note, err := h.uc.ChangeFlag(ctx, uuid.FromStringOrNil(in.NoteId), in.Flag, uuid.FromStringOrNil(in.UserId))
+	note, err := h.uc.AddFav(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+	protoNote := getNote(note)
+
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{
+		Note: protoNote,
+	}, nil
+}
+
+func (h *GrpcNoteHandler) DelFav(ctx context.Context, in *generatedNote.ChangeFlagRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	note, err := h.uc.DelFav(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err

@@ -567,7 +567,7 @@ func (uc *NoteUsecase) SetHeader(ctx context.Context, noteID uuid.UUID, header s
 	logger.Info("success")
 	return resultNote, nil
 }
-func (uc *NoteUsecase) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool, userID uuid.UUID) (models.Note, error) {
+func (uc *NoteUsecase) AddFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
@@ -581,16 +581,16 @@ func (uc *NoteUsecase) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bo
 		return models.Note{}, errors.New("not owner and not collaborator")
 	}
 
-	if err := uc.baseRepo.ChangeFlag(ctx, noteID, flag); err != nil {
+	if err := uc.baseRepo.AddFav(ctx, noteID, userID); err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}
-	resultNote.Favorite = flag
+	resultNote.Favorite = true
 
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-		if err := uc.searchRepo.ChangeFlag(ctx, noteID, flag); err != nil {
+		if err := uc.searchRepo.ChangeFlag(ctx, noteID, true); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
@@ -599,7 +599,38 @@ func (uc *NoteUsecase) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bo
 	logger.Info("success")
 	return resultNote, nil
 }
+func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, errors.New("not found")
+	}
+
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return models.Note{}, errors.New("not owner and not collaborator")
+	}
+
+	if err := uc.baseRepo.DelFav(ctx, noteID, userID); err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+	resultNote.Favorite = true
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.ChangeFlag(ctx, noteID, true); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
+
+	logger.Info("success")
+	return resultNote, nil
+}
 func (uc *NoteUsecase) CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

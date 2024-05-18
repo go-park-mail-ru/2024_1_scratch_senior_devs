@@ -51,6 +51,21 @@ func (mr *MockNoteUsecaseMockRecorder) AddCollaborator(arg0, arg1, arg2, arg3 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteUsecase)(nil).AddCollaborator), arg0, arg1, arg2, arg3)
 }
 
+// AddFav mocks base method.
+func (m *MockNoteUsecase) AddFav(ctx context.Context, noteID, userID uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFav", ctx, noteID, userID)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddFav indicates an expected call of AddFav.
+func (mr *MockNoteUsecaseMockRecorder) AddFav(ctx, noteID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFav", reflect.TypeOf((*MockNoteUsecase)(nil).AddFav), ctx, noteID, userID)
+}
+
 // AddTag mocks base method.
 func (m *MockNoteUsecase) AddTag(ctx context.Context, tagName string, noteId, userId uuid.UUID) (models.Note, error) {
 	m.ctrl.T.Helper()
@@ -64,21 +79,6 @@ func (m *MockNoteUsecase) AddTag(ctx context.Context, tagName string, noteId, us
 func (mr *MockNoteUsecaseMockRecorder) AddTag(ctx, tagName, noteId, userId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteUsecase)(nil).AddTag), ctx, tagName, noteId, userId)
-}
-
-// ChangeFlag mocks base method.
-func (m *MockNoteUsecase) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool, userID uuid.UUID) (models.Note, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangeFlag", ctx, noteID, flag, userID)
-	ret0, _ := ret[0].(models.Note)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ChangeFlag indicates an expected call of ChangeFlag.
-func (mr *MockNoteUsecaseMockRecorder) ChangeFlag(ctx, noteID, flag, userID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteUsecase)(nil).ChangeFlag), ctx, noteID, flag, userID)
 }
 
 // CheckPermissions mocks base method.
@@ -124,6 +124,21 @@ func (m *MockNoteUsecase) CreateSubNote(arg0 context.Context, arg1 uuid.UUID, ar
 func (mr *MockNoteUsecaseMockRecorder) CreateSubNote(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubNote", reflect.TypeOf((*MockNoteUsecase)(nil).CreateSubNote), arg0, arg1, arg2, arg3)
+}
+
+// DelFav mocks base method.
+func (m *MockNoteUsecase) DelFav(ctx context.Context, noteID, userID uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DelFav", ctx, noteID, userID)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DelFav indicates an expected call of DelFav.
+func (mr *MockNoteUsecaseMockRecorder) DelFav(ctx, noteID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelFav", reflect.TypeOf((*MockNoteUsecase)(nil).DelFav), ctx, noteID, userID)
 }
 
 // DeleteNote mocks base method.
@@ -324,6 +339,20 @@ func (mr *MockNoteBaseRepoMockRecorder) AddCollaborator(arg0, arg1, arg2 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddCollaborator), arg0, arg1, arg2)
 }
 
+// AddFav mocks base method.
+func (m *MockNoteBaseRepo) AddFav(ctx context.Context, noteID, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFav", ctx, noteID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddFav indicates an expected call of AddFav.
+func (mr *MockNoteBaseRepoMockRecorder) AddFav(ctx, noteID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFav", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddFav), ctx, noteID, userID)
+}
+
 // AddSubNote mocks base method.
 func (m *MockNoteBaseRepo) AddSubNote(arg0 context.Context, arg1, arg2 uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -352,20 +381,6 @@ func (mr *MockNoteBaseRepoMockRecorder) AddTag(ctx, tagName, noteId interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).AddTag), ctx, tagName, noteId)
 }
 
-// ChangeFlag mocks base method.
-func (m *MockNoteBaseRepo) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangeFlag", ctx, noteID, flag)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChangeFlag indicates an expected call of ChangeFlag.
-func (mr *MockNoteBaseRepoMockRecorder) ChangeFlag(ctx, noteID, flag interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeFlag", reflect.TypeOf((*MockNoteBaseRepo)(nil).ChangeFlag), ctx, noteID, flag)
-}
-
 // CreateNote mocks base method.
 func (m *MockNoteBaseRepo) CreateNote(arg0 context.Context, arg1 models.Note) error {
 	m.ctrl.T.Helper()
@@ -378,6 +393,20 @@ func (m *MockNoteBaseRepo) CreateNote(arg0 context.Context, arg1 models.Note) er
 func (mr *MockNoteBaseRepoMockRecorder) CreateNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).CreateNote), arg0, arg1)
+}
+
+// DelFav mocks base method.
+func (m *MockNoteBaseRepo) DelFav(ctx context.Context, noteID, userID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DelFav", ctx, noteID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DelFav indicates an expected call of DelFav.
+func (mr *MockNoteBaseRepoMockRecorder) DelFav(ctx, noteID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelFav", reflect.TypeOf((*MockNoteBaseRepo)(nil).DelFav), ctx, noteID, userID)
 }
 
 // DeleteNote mocks base method.
