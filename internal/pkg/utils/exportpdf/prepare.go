@@ -9,7 +9,10 @@ import (
 	"unicode/utf8"
 )
 
-const maxFilenameLength = 50
+const (
+	maxFilenameLength = 50
+	emptyTitleReplace = "Без названия"
+)
 
 func getNoteTitle(basicHTML string) string {
 	title := ""
@@ -22,6 +25,10 @@ func getNoteTitle(basicHTML string) string {
 	document.Find(".note-title").Each(func(i int, s *goquery.Selection) {
 		title = s.Text()
 	})
+
+	if title == "" {
+		title = emptyTitleReplace
+	}
 
 	return title
 }

@@ -50,6 +50,8 @@ type NoteUsecase interface {
 
 	GetAttachList(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) ([]string, error)
 	GetSharedAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error)
+
+	CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error)
 }
 
 type NoteBaseRepo interface {

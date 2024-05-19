@@ -367,3 +367,18 @@ func (h *GrpcNoteHandler) GetSharedAttachList(ctx context.Context, in *generated
 		Paths: response,
 	}, nil
 }
+
+func (h *GrpcNoteHandler) CheckPermissions(ctx context.Context, in *generatedNote.CheckPermissionsRequest) (*generatedNote.CheckPermissionsResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.CheckPermissions(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.CheckPermissionsResponse{
+		Result: response,
+	}, nil
+}

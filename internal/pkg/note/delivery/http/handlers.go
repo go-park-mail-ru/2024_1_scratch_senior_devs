@@ -821,6 +821,7 @@ func (h *NoteHandler) ForgetTag(w http.ResponseWriter, r *http.Request) {
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
 	w.WriteHeader(http.StatusNoContent)
 }
+
 func (h *NoteHandler) UpdateTag(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 

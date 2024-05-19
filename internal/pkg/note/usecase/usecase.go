@@ -766,3 +766,21 @@ func (uc *NoteUsecase) GetSharedAttachList(ctx context.Context, noteID uuid.UUID
 	logger.Info("success")
 	return paths, nil
 }
+
+func (uc *NoteUsecase) CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return false, errors.New("not found")
+	}
+
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return false, errors.New("not owner and not collaborator")
+	}
+
+	logger.Info("success")
+	return true, nil
+}
