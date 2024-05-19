@@ -79,8 +79,8 @@ const (
 	addFav = "INSERT INTO favorites (note_id, user_id) VALUES ($1, $2);"
 	delFav = "DELETE FROM favorites WHERE note_id = $1 AND user_id=$2;"
 
-	setPublic  = "UPDATE notes SET public = true WHERE id = $1;"
-	setPrivate = "UPDATE notes SET public = false WHERE id = $1;"
+	setPublic  = "UPDATE notes SET is_public = true WHERE id = $1;"
+	setPrivate = "UPDATE notes SET is_public = false WHERE id = $1;"
 )
 
 type NotePostgres struct {

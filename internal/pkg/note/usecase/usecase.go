@@ -704,7 +704,7 @@ func (uc *NoteUsecase) SetPrivate(ctx context.Context, noteID uuid.UUID, userID 
 		logger.Error(err.Error())
 		return models.Note{}, err
 	}
-	resultNote.Public = true
+	resultNote.Public = false
 
 	uc.wg.Add(1)
 	go func() {
