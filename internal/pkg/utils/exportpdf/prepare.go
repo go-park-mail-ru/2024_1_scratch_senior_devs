@@ -4,9 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"path/filepath"
+	"github.com/satori/uuid"
 	"strings"
+	"unicode/utf8"
 )
+
+const maxFilenameLength = 50
 
 func getNoteTitle(basicHTML string) string {
 	title := ""
@@ -27,16 +30,21 @@ func wrap(basicHTML string) string {
 	return fmt.Sprintf(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>%s</title><style>%s</style></head><body>%s</body></html>`, getNoteTitle(basicHTML), stylesLight, basicHTML)
 }
 
-func processImg(document *goquery.Document) {
+func processImg(document *goquery.Document) map[uuid.UUID]int {
+	document.Find("img").Not("[data-imgid]").Remove()
+
+	pictureCount := 0
+	result := make(map[uuid.UUID]int, 0)
 	document.Find("img[data-imgid]").Each(func(i int, s *goquery.Selection) {
 		imgID, exists := s.Attr("data-imgid")
 		if exists {
-			newSrc := fmt.Sprintf("https://you-note.ru/attaches/%s.webp", imgID)
-			s.SetAttr("src", newSrc)
+			pictureCount++
+			result[uuid.FromStringOrNil(imgID)] = pictureCount
+			s.ReplaceWithHtml(fmt.Sprintf(`<div>---картинка %d---</div>`, pictureCount))
 		}
 	})
 
-	document.Find("img").Not("[data-imgid]").Remove()
+	return result
 }
 
 func processSubnote(document *goquery.Document) {
@@ -78,48 +86,17 @@ func processSubnote(document *goquery.Document) {
 
 func processFile(document *goquery.Document) {
 	document.Find("button[data-fileid]").Each(func(i int, s *goquery.Selection) {
-		attachID, exists := s.Attr("data-fileid")
+		attachName, exists := s.Attr("data-filename")
+		if utf8.RuneCountInString(attachName) > maxFilenameLength {
+			attachName = attachName[:maxFilenameLength]
+		}
+
 		if exists {
-			format := `<a href="https://you-note.ru/attaches/%s%s">`
-			s.Contents().Each(func(i int, contentSelection *goquery.Selection) {
-				inner, err := contentSelection.Html()
-				if err != nil {
-					return
-				}
-				format += inner
-			})
-			format += "</a>"
-
-			extension := ""
-			dataFilename, exists := s.Attr("data-filename")
-			if exists {
-				extension = filepath.Ext(dataFilename)
-			}
-
-			docA, err := goquery.NewDocumentFromReader(strings.NewReader(fmt.Sprintf(format, attachID, extension)))
-			if err != nil {
-				return
-			}
-			a := docA.Find("a")
-
-			a.Each(func(i int, contentSelection *goquery.Selection) {
-				className, exists := s.Attr("class")
-				if exists {
-					a.SetAttr("class", className)
-				}
-
-				contenteditable, exists := s.Attr("contenteditable")
-				if exists {
-					a.SetAttr("contenteditable", contenteditable)
-				}
-
-				dataFilename, exists := s.Attr("data-filename")
-				if exists {
-					a.SetAttr("data-filename", dataFilename)
-				}
+			s.Find(".file-name").Each(func(i int, selection *goquery.Selection) {
+				s.SetText(attachName)
 			})
 
-			s.ReplaceWithNodes(a.Get(0))
+			s.ReplaceWithSelection(s.Children())
 		}
 	})
 }
@@ -135,23 +112,23 @@ func processIframe(document *goquery.Document) {
 	})
 }
 
-func prepareHTML(basicHTML string) (string, error) {
+func prepareHTML(basicHTML string) (string, map[uuid.UUID]int, error) {
 	noteHTML := wrap(basicHTML)
 
 	document, err := goquery.NewDocumentFromReader(strings.NewReader(noteHTML))
 	if err != nil {
-		return noteHTML, errors.New("invalid input HTML")
+		return noteHTML, map[uuid.UUID]int{}, errors.New("invalid input HTML")
 	}
 
-	processImg(document)
+	picturesOrder := processImg(document)
 	processSubnote(document)
 	processFile(document)
 	processIframe(document)
 
 	newHTML, err := document.Html()
 	if err != nil {
-		return noteHTML, errors.New("internal error while parsing processed HTML")
+		return noteHTML, map[uuid.UUID]int{}, errors.New("internal error while parsing processed HTML")
 	}
 
-	return newHTML, nil
+	return newHTML, picturesOrder, nil
 }

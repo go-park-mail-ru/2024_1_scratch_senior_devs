@@ -4,12 +4,15 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"github.com/satori/uuid"
 	"io"
 	"os"
+	"path"
+	"strings"
 )
 
 // CreateYouNoteZip создает zip-архив, в котором находится PDF-файл заметки и файлы вложений
-func CreateYouNoteZip(zipFileName string, pdfTitle string, pdfBytes []byte, paths []string, username string) (*bytes.Buffer, error) {
+func CreateYouNoteZip(pdfTitle string, pdfBytes []byte, paths []string, username string, picturesOrder map[uuid.UUID]int) (*bytes.Buffer, error) {
 	zipBuffer := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(zipBuffer)
 	defer zipWriter.Close()
@@ -18,8 +21,8 @@ func CreateYouNoteZip(zipFileName string, pdfTitle string, pdfBytes []byte, path
 		return zipBuffer, err
 	}
 
-	for _, path := range paths {
-		if err := addFileToZipFromPath(zipWriter, path); err != nil {
+	for _, filepath := range paths {
+		if err := addFileToZipFromPath(zipWriter, filepath, picturesOrder); err != nil {
 			return zipBuffer, err
 		}
 	}
@@ -45,10 +48,10 @@ func addFileToZip(zipWriter *zip.Writer, filename string, content []byte) error 
 	return nil
 }
 
-func addFileToZipFromPath(zipWriter *zip.Writer, path string) error {
-	file, err := os.Open(path)
+func addFileToZipFromPath(zipWriter *zip.Writer, filename string, picturesOrder map[uuid.UUID]int) error {
+	file, err := os.Open(path.Join(os.Getenv("ATTACHES_BASE_PATH"), filename))
 	if err != nil {
-		return err
+		return nil // skip this attach if it wasn`t found
 	}
 	defer file.Close()
 
@@ -60,6 +63,13 @@ func addFileToZipFromPath(zipWriter *zip.Writer, path string) error {
 	header, err := zip.FileInfoHeader(info)
 	if err != nil {
 		return err
+	}
+
+	fileExt := path.Ext(filename)
+	fileID := uuid.FromStringOrNil(strings.TrimSuffix(filename, fileExt))
+	place, found := picturesOrder[fileID]
+	if found {
+		header.Name = fmt.Sprintf("картинка %d%s", place, fileExt)
 	}
 	header.Method = zip.Deflate
 

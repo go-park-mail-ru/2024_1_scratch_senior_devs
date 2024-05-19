@@ -6,6 +6,6 @@ import (
 )
 
 func TestGeneratePDF(t *testing.T) {
-	_, _, err := GeneratePDF(TestNoteHTMLInput)
+	_, _, _, err := GeneratePDF(TestNoteHTMLInput)
 	assert.Nil(t, err)
 }

@@ -1181,7 +1181,7 @@ func (h *NoteHandler) ExportToPDF(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultPDF, noteTitle, err := exportpdf.GeneratePDF(string(payload))
+	resultPDF, noteTitle, _, err := exportpdf.GeneratePDF(string(payload))
 	if err != nil {
 		if err.Error() == "invalid input HTML" {
 			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
@@ -1232,7 +1232,7 @@ func (h *NoteHandler) ExportToPDFWithAttaches(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	resultPDF, noteTitle, err := exportpdf.GeneratePDF(string(payload))
+	resultPDF, noteTitle, picturesOrder, err := exportpdf.GeneratePDF(string(payload))
 	if err != nil {
 		if err.Error() == "invalid input HTML" {
 			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
@@ -1256,7 +1256,7 @@ func (h *NoteHandler) ExportToPDFWithAttaches(w http.ResponseWriter, r *http.Req
 		UserId: jwtPayload.Id.String(),
 	})
 
-	YouNoteZip, err := zipper.CreateYouNoteZip(noteTitle+".zip", noteTitle+".pdf", resultPDF, result.Paths, jwtPayload.Username)
+	YouNoteZip, err := zipper.CreateYouNoteZip(noteTitle+".pdf", resultPDF, result.Paths, jwtPayload.Username, picturesOrder)
 	if err != nil {
 		log.LogHandlerInfo(logger, http.StatusInternalServerError, err.Error())
 		responses.WriteErrorMessage(w, http.StatusInternalServerError, errors.New("ха-ха, разработчик не смог создать zip-архив"))
