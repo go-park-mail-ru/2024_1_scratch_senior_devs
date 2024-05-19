@@ -116,8 +116,30 @@ func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, user
 		logger.Error(err.Error())
 		return models.Attach{}, err
 	}
-	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) && !resultNote.Public {
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
+		return models.Attach{}, errors.New("not found")
+	}
+
+	return attachData, nil
+}
+
+func (uc *AttachUsecase) GetSharedAttach(ctx context.Context, attachID uuid.UUID) (models.Attach, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	attachData, err := uc.repo.GetAttach(ctx, attachID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Attach{}, err
+	}
+
+	resultNote, err := uc.noteRepo.ReadPublicNote(ctx, attachData.NoteId)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Attach{}, err
+	}
+	if !resultNote.Public {
+		logger.Error("not public note")
 		return models.Attach{}, errors.New("not found")
 	}
 

@@ -6,6 +6,6 @@ import (
 )
 
 func TestPrepareHTML(t *testing.T) {
-	_, _, err := prepareHTML(TestNoteHTMLInput)
+	_, _, _, err := prepareHTML(TestNoteHTMLInput)
 	assert.Nil(t, err)
 }

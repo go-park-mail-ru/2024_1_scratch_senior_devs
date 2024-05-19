@@ -199,10 +199,14 @@ body {
     gap: 10px;
     text-decoration: none;
     position: relative;
-    cursor: pointer;
     transition: 0.2s ease;
     margin-right: 2px;
     border: 1px solid #2b3b55;
+	pointer-events: none;
+}
+
+.attach-container {
+	pointer-events: none;
 }
 
 .file-extension-label {
@@ -214,10 +218,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+	pointer-events: none;
 }
 
 .file-name {
     color: #f4f6f9;
+	pointer-events: none;
 }
 
 .close-attach-btn-container {

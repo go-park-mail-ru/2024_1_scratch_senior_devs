@@ -12,7 +12,7 @@ import (
 )
 
 // CreateYouNoteZip создает zip-архив, в котором находится PDF-файл заметки и файлы вложений
-func CreateYouNoteZip(pdfTitle string, pdfBytes []byte, paths []string, username string, picturesOrder map[uuid.UUID]int) (*bytes.Buffer, error) {
+func CreateYouNoteZip(pdfTitle string, pdfBytes []byte, paths []string, username string, picturesOrder map[uuid.UUID]int, filenames map[uuid.UUID]string) (*bytes.Buffer, error) {
 	zipBuffer := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(zipBuffer)
 	defer zipWriter.Close()
@@ -22,7 +22,7 @@ func CreateYouNoteZip(pdfTitle string, pdfBytes []byte, paths []string, username
 	}
 
 	for _, filepath := range paths {
-		if err := addFileToZipFromPath(zipWriter, filepath, picturesOrder); err != nil {
+		if err := addFileToZipFromPath(zipWriter, filepath, picturesOrder, filenames); err != nil {
 			return zipBuffer, err
 		}
 	}
@@ -48,7 +48,7 @@ func addFileToZip(zipWriter *zip.Writer, filename string, content []byte) error 
 	return nil
 }
 
-func addFileToZipFromPath(zipWriter *zip.Writer, filename string, picturesOrder map[uuid.UUID]int) error {
+func addFileToZipFromPath(zipWriter *zip.Writer, filename string, picturesOrder map[uuid.UUID]int, filenames map[uuid.UUID]string) error {
 	file, err := os.Open(path.Join(os.Getenv("ATTACHES_BASE_PATH"), filename))
 	if err != nil {
 		return nil // skip this attach if it wasn`t found
@@ -67,10 +67,17 @@ func addFileToZipFromPath(zipWriter *zip.Writer, filename string, picturesOrder 
 
 	fileExt := path.Ext(filename)
 	fileID := uuid.FromStringOrNil(strings.TrimSuffix(filename, fileExt))
+
 	place, found := picturesOrder[fileID]
 	if found {
 		header.Name = fmt.Sprintf("картинка %d%s", place, fileExt)
 	}
+
+	name, found := filenames[fileID]
+	if found {
+		header.Name = name
+	}
+
 	header.Method = zip.Deflate
 
 	writer, err := zipWriter.CreateHeader(header)
