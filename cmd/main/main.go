@@ -180,7 +180,13 @@ func main() {
 		note.Handle("/{id}/set_header", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetHeader))).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/add_fav", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddFavorite))).Methods(http.MethodPut, http.MethodOptions)
 		note.Handle("/{id}/del_fav", JwtMiddleware(http.HandlerFunc(NoteDelivery.DeleteFavorite))).Methods(http.MethodPut, http.MethodOptions)
+		note.Handle("/{id}/set_public", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPublic))).Methods(http.MethodPut, http.MethodOptions)
+		note.Handle("/{id}/set_private", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPrivate))).Methods(http.MethodPut, http.MethodOptions)
+	}
 
+	shared := r.PathPrefix("/shared").Subrouter()
+	{
+		shared.Handle("/{id}", http.HandlerFunc(NoteDelivery.GetPublicNote)).Methods(http.MethodGet, http.MethodOptions)
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
@@ -205,7 +211,6 @@ func main() {
 		tags.Handle("/remember", http.HandlerFunc(NoteDelivery.RememberTag)).Methods(http.MethodPost, http.MethodOptions)
 		tags.Handle("/forget", http.HandlerFunc(NoteDelivery.ForgetTag)).Methods(http.MethodDelete, http.MethodOptions)
 		tags.Handle("/update", http.HandlerFunc(NoteDelivery.UpdateTag)).Methods(http.MethodPost, http.MethodOptions)
-
 	}
 
 	export := r.PathPrefix("/export_to_pdf").Subrouter()

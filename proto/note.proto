@@ -5,6 +5,7 @@ option go_package = "./internal/pkg/note/delivery/grpc/gen/;gen";
 service Note {
      rpc GetAllNotes(GetAllRequest) returns (GetAllResponse) {}
      rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {}
+     rpc GetPublicNote(GetPublicNoteRequest) returns (GetNoteResponse) {}
      rpc AddNote(AddNoteRequest) returns (AddNoteResponse) {}
      rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {}
      rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {}
@@ -21,14 +22,20 @@ service Note {
      rpc SetHeader(SetHeaderRequest) returns (GetNoteResponse) {}
      rpc AddFav(ChangeFlagRequest) returns (GetNoteResponse) {}
      rpc DelFav(ChangeFlagRequest) returns (GetNoteResponse) {}
+     rpc SetPublic(AccessModeRequest) returns (GetNoteResponse) {}
+     rpc SetPrivate(AccessModeRequest) returns (GetNoteResponse) {}
+}
 
+message AccessModeRequest {
+     string NoteId = 1;
+     string UserId = 2;
 }
 
 message ChangeFlagRequest {
-     string NoteId = 2;
-     string UserId = 3;
-
+     string NoteId = 1;
+     string UserId = 2;
 }
+
 message SetIconRequest {
      string NoteId = 1;
      string Icon = 2;
@@ -46,6 +53,7 @@ message UpdateTagRequest {
      string NewTag = 2;
      string UserId = 3;
 }
+
 message GetTagsRequest {
      string UserId = 1;
 }
@@ -96,6 +104,7 @@ message NoteModel {
      string Icon = 10;
      string Header = 11;
      bool Favorite = 12;
+     bool Public = 13;
 }
 
 message GetAllResponse {
@@ -105,6 +114,10 @@ message GetAllResponse {
 message GetNoteRequest{
      string Id = 1;
      string UserId = 2;
+}
+
+message GetPublicNoteRequest {
+     string NoteId = 1;
 }
 
 message GetNoteResponse {

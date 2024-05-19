@@ -24,7 +24,6 @@ const _ = grpc.SupportPackageIsVersion7
 type NoteClient interface {
 	GetAllNotes(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
 	GetNote(ctx context.Context, in *GetNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	GetPublicNote(ctx context.Context, in *GetPublicNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	AddNote(ctx context.Context, in *AddNoteRequest, opts ...grpc.CallOption) (*AddNoteResponse, error)
 	UpdateNote(ctx context.Context, in *UpdateNoteRequest, opts ...grpc.CallOption) (*UpdateNoteResponse, error)
 	DeleteNote(ctx context.Context, in *DeleteNoteRequest, opts ...grpc.CallOption) (*DeleteNoteResponse, error)
@@ -39,10 +38,7 @@ type NoteClient interface {
 	UpdateTag(ctx context.Context, in *UpdateTagRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	SetIcon(ctx context.Context, in *SetIconRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	SetHeader(ctx context.Context, in *SetHeaderRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	AddFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	DelFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	SetPublic(ctx context.Context, in *AccessModeRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	SetPrivate(ctx context.Context, in *AccessModeRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
+	ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 }
 
 type noteClient struct {
@@ -65,15 +61,6 @@ func (c *noteClient) GetAllNotes(ctx context.Context, in *GetAllRequest, opts ..
 func (c *noteClient) GetNote(ctx context.Context, in *GetNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
 	out := new(GetNoteResponse)
 	err := c.cc.Invoke(ctx, "/note.Note/GetNote", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *noteClient) GetPublicNote(ctx context.Context, in *GetPublicNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
-	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/GetPublicNote", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -206,36 +193,9 @@ func (c *noteClient) SetHeader(ctx context.Context, in *SetHeaderRequest, opts .
 	return out, nil
 }
 
-func (c *noteClient) AddFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
+func (c *noteClient) ChangeFlag(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
 	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/AddFav", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *noteClient) DelFav(ctx context.Context, in *ChangeFlagRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
-	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/DelFav", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *noteClient) SetPublic(ctx context.Context, in *AccessModeRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
-	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/SetPublic", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *noteClient) SetPrivate(ctx context.Context, in *AccessModeRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
-	out := new(GetNoteResponse)
-	err := c.cc.Invoke(ctx, "/note.Note/SetPrivate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/note.Note/ChangeFlag", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +208,6 @@ func (c *noteClient) SetPrivate(ctx context.Context, in *AccessModeRequest, opts
 type NoteServer interface {
 	GetAllNotes(context.Context, *GetAllRequest) (*GetAllResponse, error)
 	GetNote(context.Context, *GetNoteRequest) (*GetNoteResponse, error)
-	GetPublicNote(context.Context, *GetPublicNoteRequest) (*GetNoteResponse, error)
 	AddNote(context.Context, *AddNoteRequest) (*AddNoteResponse, error)
 	UpdateNote(context.Context, *UpdateNoteRequest) (*UpdateNoteResponse, error)
 	DeleteNote(context.Context, *DeleteNoteRequest) (*DeleteNoteResponse, error)
@@ -263,10 +222,7 @@ type NoteServer interface {
 	UpdateTag(context.Context, *UpdateTagRequest) (*EmptyResponse, error)
 	SetIcon(context.Context, *SetIconRequest) (*GetNoteResponse, error)
 	SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error)
-	AddFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error)
-	DelFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error)
-	SetPublic(context.Context, *AccessModeRequest) (*GetNoteResponse, error)
-	SetPrivate(context.Context, *AccessModeRequest) (*GetNoteResponse, error)
+	ChangeFlag(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -279,9 +235,6 @@ func (UnimplementedNoteServer) GetAllNotes(context.Context, *GetAllRequest) (*Ge
 }
 func (UnimplementedNoteServer) GetNote(context.Context, *GetNoteRequest) (*GetNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNote not implemented")
-}
-func (UnimplementedNoteServer) GetPublicNote(context.Context, *GetPublicNoteRequest) (*GetNoteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPublicNote not implemented")
 }
 func (UnimplementedNoteServer) AddNote(context.Context, *AddNoteRequest) (*AddNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddNote not implemented")
@@ -325,17 +278,8 @@ func (UnimplementedNoteServer) SetIcon(context.Context, *SetIconRequest) (*GetNo
 func (UnimplementedNoteServer) SetHeader(context.Context, *SetHeaderRequest) (*GetNoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetHeader not implemented")
 }
-func (UnimplementedNoteServer) AddFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddFav not implemented")
-}
-func (UnimplementedNoteServer) DelFav(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelFav not implemented")
-}
-func (UnimplementedNoteServer) SetPublic(context.Context, *AccessModeRequest) (*GetNoteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetPublic not implemented")
-}
-func (UnimplementedNoteServer) SetPrivate(context.Context, *AccessModeRequest) (*GetNoteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetPrivate not implemented")
+func (UnimplementedNoteServer) ChangeFlag(context.Context, *ChangeFlagRequest) (*GetNoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeFlag not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -382,24 +326,6 @@ func _Note_GetNote_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NoteServer).GetNote(ctx, req.(*GetNoteRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Note_GetPublicNote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPublicNoteRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NoteServer).GetPublicNote(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/note.Note/GetPublicNote",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoteServer).GetPublicNote(ctx, req.(*GetPublicNoteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -656,74 +582,20 @@ func _Note_SetHeader_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Note_AddFav_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Note_ChangeFlag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ChangeFlagRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NoteServer).AddFav(ctx, in)
+		return srv.(NoteServer).ChangeFlag(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/note.Note/AddFav",
+		FullMethod: "/note.Note/ChangeFlag",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoteServer).AddFav(ctx, req.(*ChangeFlagRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Note_DelFav_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeFlagRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NoteServer).DelFav(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/note.Note/DelFav",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoteServer).DelFav(ctx, req.(*ChangeFlagRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Note_SetPublic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessModeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NoteServer).SetPublic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/note.Note/SetPublic",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoteServer).SetPublic(ctx, req.(*AccessModeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Note_SetPrivate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccessModeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NoteServer).SetPrivate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/note.Note/SetPrivate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoteServer).SetPrivate(ctx, req.(*AccessModeRequest))
+		return srv.(NoteServer).ChangeFlag(ctx, req.(*ChangeFlagRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -742,10 +614,6 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNote",
 			Handler:    _Note_GetNote_Handler,
-		},
-		{
-			MethodName: "GetPublicNote",
-			Handler:    _Note_GetPublicNote_Handler,
 		},
 		{
 			MethodName: "AddNote",
@@ -804,20 +672,8 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Note_SetHeader_Handler,
 		},
 		{
-			MethodName: "AddFav",
-			Handler:    _Note_AddFav_Handler,
-		},
-		{
-			MethodName: "DelFav",
-			Handler:    _Note_DelFav_Handler,
-		},
-		{
-			MethodName: "SetPublic",
-			Handler:    _Note_SetPublic_Handler,
-		},
-		{
-			MethodName: "SetPrivate",
-			Handler:    _Note_SetPrivate_Handler,
+			MethodName: "ChangeFlag",
+			Handler:    _Note_ChangeFlag_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

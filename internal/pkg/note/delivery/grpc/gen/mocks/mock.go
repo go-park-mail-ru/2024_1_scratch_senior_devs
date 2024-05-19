@@ -276,6 +276,26 @@ func (mr *MockNoteClientMockRecorder) GetNote(ctx, in interface{}, opts ...inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteClient)(nil).GetNote), varargs...)
 }
 
+// GetPublicNote mocks base method.
+func (m *MockNoteClient) GetPublicNote(ctx context.Context, in *gen.GetPublicNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetPublicNote", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPublicNote indicates an expected call of GetPublicNote.
+func (mr *MockNoteClientMockRecorder) GetPublicNote(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteClient)(nil).GetPublicNote), varargs...)
+}
+
 // GetTags mocks base method.
 func (m *MockNoteClient) GetTags(ctx context.Context, in *gen.GetTagsRequest, opts ...grpc.CallOption) (*gen.GetTagsResponse, error) {
 	m.ctrl.T.Helper()
@@ -354,6 +374,46 @@ func (mr *MockNoteClientMockRecorder) SetIcon(ctx, in interface{}, opts ...inter
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteClient)(nil).SetIcon), varargs...)
+}
+
+// SetPrivate mocks base method.
+func (m *MockNoteClient) SetPrivate(ctx context.Context, in *gen.AccessModeRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetPrivate", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPrivate indicates an expected call of SetPrivate.
+func (mr *MockNoteClientMockRecorder) SetPrivate(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivate", reflect.TypeOf((*MockNoteClient)(nil).SetPrivate), varargs...)
+}
+
+// SetPublic mocks base method.
+func (m *MockNoteClient) SetPublic(ctx context.Context, in *gen.AccessModeRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetPublic", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPublic indicates an expected call of SetPublic.
+func (mr *MockNoteClientMockRecorder) SetPublic(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPublic", reflect.TypeOf((*MockNoteClient)(nil).SetPublic), varargs...)
 }
 
 // UpdateNote mocks base method.
@@ -599,6 +659,21 @@ func (mr *MockNoteServerMockRecorder) GetNote(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteServer)(nil).GetNote), arg0, arg1)
 }
 
+// GetPublicNote mocks base method.
+func (m *MockNoteServer) GetPublicNote(arg0 context.Context, arg1 *gen.GetPublicNoteRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPublicNote", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPublicNote indicates an expected call of GetPublicNote.
+func (mr *MockNoteServerMockRecorder) GetPublicNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteServer)(nil).GetPublicNote), arg0, arg1)
+}
+
 // GetTags mocks base method.
 func (m *MockNoteServer) GetTags(arg0 context.Context, arg1 *gen.GetTagsRequest) (*gen.GetTagsResponse, error) {
 	m.ctrl.T.Helper()
@@ -657,6 +732,36 @@ func (m *MockNoteServer) SetIcon(arg0 context.Context, arg1 *gen.SetIconRequest)
 func (mr *MockNoteServerMockRecorder) SetIcon(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteServer)(nil).SetIcon), arg0, arg1)
+}
+
+// SetPrivate mocks base method.
+func (m *MockNoteServer) SetPrivate(arg0 context.Context, arg1 *gen.AccessModeRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPrivate", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPrivate indicates an expected call of SetPrivate.
+func (mr *MockNoteServerMockRecorder) SetPrivate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivate", reflect.TypeOf((*MockNoteServer)(nil).SetPrivate), arg0, arg1)
+}
+
+// SetPublic mocks base method.
+func (m *MockNoteServer) SetPublic(arg0 context.Context, arg1 *gen.AccessModeRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPublic", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPublic indicates an expected call of SetPublic.
+func (mr *MockNoteServerMockRecorder) SetPublic(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPublic", reflect.TypeOf((*MockNoteServer)(nil).SetPublic), arg0, arg1)
 }
 
 // UpdateNote mocks base method.

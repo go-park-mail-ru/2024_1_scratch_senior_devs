@@ -1544,6 +1544,8 @@ func easyjsonD2b7633eDecodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 			out.Header = string(in.String())
 		case "favorite":
 			out.Favorite = bool(in.Bool())
+		case "public":
+			out.Public = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1650,6 +1652,11 @@ func easyjsonD2b7633eEncodeGithubComGoParkMailRu20241ScratchSeniorDevsInternalMo
 		const prefix string = ",\"favorite\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Favorite))
+	}
+	{
+		const prefix string = ",\"public\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.Public))
 	}
 	out.RawByte('}')
 }

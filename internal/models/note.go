@@ -20,6 +20,7 @@ type Note struct {
 	Icon          string      `json:"icon"`
 	Header        string      `json:"header"`
 	Favorite      bool        `json:"favorite"`
+	Public        bool        `json:"public"`
 }
 
 func (note *Note) Sanitize() {

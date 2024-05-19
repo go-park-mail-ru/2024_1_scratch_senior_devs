@@ -18,11 +18,12 @@ import (
 
 const (
 	getAllNotes = `
-	SELECT  id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, 
+	SELECT  id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header,
 	CASE WHEN f.note_id IS NULL 
 				THEN 'false'::bool
 			  ELSE 'true'::bool
-		  END as favorite
+		  END as favorite,
+	    is_public
 	FROM notes n
 	LEFT JOIN favorites f 
 	ON n.id =f.note_id
@@ -40,20 +41,21 @@ const (
 		LIMIT $2 OFFSET $3;
 	`
 	getNote = `
-		
-			SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, 
-			CASE WHEN f.note_id IS NULL 
-						THEN 'false'::bool
-					ELSE 'true'::bool
-				END as favorite
-			FROM notes n
-			LEFT JOIN favorites f 
-			ON n.id =f.note_id
-			WHERE id = $1 AND (f.user_id = $2 OR f.user_id IS NULL);
-	` //`SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, favorite FROM notes WHERE id = $1;`
-	createNote = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[], $10, $11);"
-	updateNote = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
-	deleteNote = "DELETE FROM notes CASCADE WHERE id = $1;"
+		SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header,
+		CASE WHEN f.note_id IS NULL 
+					THEN 'false'::bool
+				ELSE 'true'::bool
+			END as favorite,
+		    is_public
+		FROM notes n
+		LEFT JOIN favorites f 
+		ON n.id = f.note_id
+		WHERE id = $1 AND (f.user_id = $2 OR f.user_id IS NULL);
+	`
+	getPublicNote = "SELECT id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, is_public FROM notes WHERE id = $1;"
+	createNote    = "INSERT INTO notes(id, data, create_time, update_time, owner_id, parent, children, tags, collaborators, icon, header, is_public) VALUES ($1, $2::json, $3, $4, $5, $6, $7::UUID[], $8::TEXT[], $9::UUID[], $10, $11, $12);"
+	updateNote    = "UPDATE notes SET data = $1, update_time = $2 WHERE id = $3; "
+	deleteNote    = "DELETE FROM notes CASCADE WHERE id = $1;"
 
 	addSubNote    = "UPDATE notes SET children = array_append(children, $1) WHERE id = $2;"
 	removeSubNote = "UPDATE notes SET children = array_remove(children, $1) WHERE id = $2;"
@@ -76,6 +78,9 @@ const (
 
 	addFav = "INSERT INTO favorites (note_id, user_id) VALUES ($1, $2);"
 	delFav = "DELETE FROM favorites WHERE note_id = $1 AND user_id=$2;"
+
+	setPublic  = "UPDATE notes SET public = true WHERE id = $1;"
+	setPrivate = "UPDATE notes SET public = false WHERE id = $1;"
 )
 
 type NotePostgres struct {
@@ -186,6 +191,7 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 			&note.Icon,
 			&note.Header,
 			&note.Favorite,
+			&note.Public,
 		); err != nil {
 			logger.Error("scanning" + err.Error())
 			return result, fmt.Errorf("error occured while scanning notes: %w", err)
@@ -216,6 +222,7 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID, userId
 		&resultNote.Icon,
 		&resultNote.Header,
 		&resultNote.Favorite,
+		&resultNote.Public,
 	)
 	repo.metr.ObserveResponseTime("getNote", time.Since(start).Seconds())
 	if err != nil {
@@ -223,6 +230,39 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID, userId
 		repo.metr.IncreaseErrors("getNote")
 		return models.Note{}, err
 	}
+
+	logger.Info("success")
+	return resultNote, nil
+}
+
+func (repo *NotePostgres) ReadPublicNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	resultNote := models.Note{}
+
+	start := time.Now()
+	err := repo.db.QueryRow(ctx, getPublicNote, noteId).Scan(
+		&resultNote.Id,
+		&resultNote.Data,
+		&resultNote.CreateTime,
+		&resultNote.UpdateTime,
+		&resultNote.OwnerId,
+		&resultNote.Parent,
+		&resultNote.Children,
+		&resultNote.Tags,
+		&resultNote.Collaborators,
+		&resultNote.Icon,
+		&resultNote.Header,
+		&resultNote.Public,
+	)
+	repo.metr.ObserveResponseTime("getNote", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getNote")
+		return models.Note{}, err
+	}
+
+	resultNote.Favorite = false
 
 	logger.Info("success")
 	return resultNote, nil
@@ -244,6 +284,7 @@ func (repo *NotePostgres) CreateNote(ctx context.Context, note models.Note) erro
 		note.Collaborators,
 		note.Icon,
 		note.Header,
+		note.Public,
 	)
 	repo.metr.ObserveResponseTime("createNote", time.Since(start).Seconds())
 	if err != nil {
@@ -478,6 +519,37 @@ func (repo *NotePostgres) DelFav(ctx context.Context, noteID uuid.UUID, userID u
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("delFav")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NotePostgres) SetPublic(ctx context.Context, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, setPublic, noteID)
+	repo.metr.ObserveResponseTime("setPublic", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("setPublic")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+func (repo *NotePostgres) SetPrivate(ctx context.Context, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, setPrivate, noteID)
+	repo.metr.ObserveResponseTime("setPrivate", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("setPrivate")
 		return err
 	}
 

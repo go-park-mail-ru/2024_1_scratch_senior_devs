@@ -22,6 +22,7 @@ const (
 type NoteUsecase interface {
 	GetAllNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
 	GetNote(context.Context, uuid.UUID, uuid.UUID) (models.Note, error)
+	GetPublicNote(ctx context.Context, noteId uuid.UUID) (models.Note, error)
 	CreateNote(context.Context, uuid.UUID, string) (models.Note, error)
 	UpdateNote(context.Context, uuid.UUID, uuid.UUID, string) (models.Note, error)
 	DeleteNote(context.Context, uuid.UUID, uuid.UUID) error
@@ -44,12 +45,16 @@ type NoteUsecase interface {
 	AddFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error)
 	DelFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error)
 
+	SetPublic(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error)
+	SetPrivate(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error)
+
 	CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error)
 }
 
 type NoteBaseRepo interface {
 	ReadAllNotes(context.Context, uuid.UUID, int64, int64, []string) ([]models.Note, error)
 	ReadNote(context.Context, uuid.UUID, uuid.UUID) (models.Note, error)
+	ReadPublicNote(context.Context, uuid.UUID) (models.Note, error)
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
@@ -75,6 +80,9 @@ type NoteBaseRepo interface {
 
 	AddFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error
 	DelFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error
+
+	SetPublic(ctx context.Context, noteID uuid.UUID) error
+	SetPrivate(ctx context.Context, noteID uuid.UUID) error
 }
 
 type NoteSearchRepo interface {
@@ -97,4 +105,7 @@ type NoteSearchRepo interface {
 	SetHeader(ctx context.Context, noteID uuid.UUID, header string) error
 
 	ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error
+
+	SetPublic(ctx context.Context, noteID uuid.UUID) error
+	SetPrivate(ctx context.Context, noteID uuid.UUID) error
 }

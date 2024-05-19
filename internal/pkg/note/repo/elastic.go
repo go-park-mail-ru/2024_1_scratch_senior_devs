@@ -457,3 +457,43 @@ func (repo *NoteElastic) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag 
 	logger.Info("success")
 	return nil
 }
+
+func (repo *NoteElastic) SetPublic(ctx context.Context, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Doc(map[string]interface{}{"public": true}).
+		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) SetPrivate(ctx context.Context, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Doc(map[string]interface{}{"public": false}).
+		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}

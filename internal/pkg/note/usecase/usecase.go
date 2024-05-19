@@ -75,6 +75,24 @@ func (uc *NoteUsecase) GetNote(ctx context.Context, noteId uuid.UUID, userId uui
 	return resultNote, nil
 }
 
+func (uc *NoteUsecase) GetPublicNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	resultNote, err := uc.baseRepo.ReadPublicNote(ctx, noteId)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, errors.New("not found")
+	}
+
+	if !resultNote.Public {
+		logger.Error("not public")
+		return models.Note{}, errors.New("not found")
+	}
+
+	logger.Info("success")
+	return resultNote, nil
+}
+
 func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteData string) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -601,6 +619,7 @@ func (uc *NoteUsecase) AddFav(ctx context.Context, noteID uuid.UUID, userID uuid
 	logger.Info("success")
 	return resultNote, nil
 }
+
 func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -633,6 +652,73 @@ func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid
 	logger.Info("success")
 	return resultNote, nil
 }
+
+func (uc *NoteUsecase) SetPublic(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, errors.New("not found")
+	}
+
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return models.Note{}, errors.New("not owner and not collaborator")
+	}
+
+	if err := uc.baseRepo.SetPublic(ctx, noteID); err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+	resultNote.Public = true
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.SetPublic(ctx, noteID); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
+
+	logger.Info("success")
+	return resultNote, nil
+}
+
+func (uc *NoteUsecase) SetPrivate(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, errors.New("not found")
+	}
+
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+		logger.Error("not owner and not collaborator")
+		return models.Note{}, errors.New("not owner and not collaborator")
+	}
+
+	if err := uc.baseRepo.SetPrivate(ctx, noteID); err != nil {
+		logger.Error(err.Error())
+		return models.Note{}, err
+	}
+	resultNote.Public = true
+
+	uc.wg.Add(1)
+	go func() {
+		defer uc.wg.Done()
+		if err := uc.searchRepo.SetPrivate(ctx, noteID); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	uc.wg.Wait()
+
+	logger.Info("success")
+	return resultNote, nil
+}
+
 func (uc *NoteUsecase) CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 

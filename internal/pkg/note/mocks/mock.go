@@ -214,6 +214,21 @@ func (mr *MockNoteUsecaseMockRecorder) GetNote(arg0, arg1, arg2 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteUsecase)(nil).GetNote), arg0, arg1, arg2)
 }
 
+// GetPublicNote mocks base method.
+func (m *MockNoteUsecase) GetPublicNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPublicNote", ctx, noteId)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPublicNote indicates an expected call of GetPublicNote.
+func (mr *MockNoteUsecaseMockRecorder) GetPublicNote(ctx, noteId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteUsecase)(nil).GetPublicNote), ctx, noteId)
+}
+
 // GetTags mocks base method.
 func (m *MockNoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -271,6 +286,36 @@ func (m *MockNoteUsecase) SetIcon(ctx context.Context, noteID uuid.UUID, icon st
 func (mr *MockNoteUsecaseMockRecorder) SetIcon(ctx, noteID, icon, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteUsecase)(nil).SetIcon), ctx, noteID, icon, userID)
+}
+
+// SetPrivate mocks base method.
+func (m *MockNoteUsecase) SetPrivate(ctx context.Context, noteID, userID uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPrivate", ctx, noteID, userID)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPrivate indicates an expected call of SetPrivate.
+func (mr *MockNoteUsecaseMockRecorder) SetPrivate(ctx, noteID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivate", reflect.TypeOf((*MockNoteUsecase)(nil).SetPrivate), ctx, noteID, userID)
+}
+
+// SetPublic mocks base method.
+func (m *MockNoteUsecase) SetPublic(ctx context.Context, noteID, userID uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPublic", ctx, noteID, userID)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPublic indicates an expected call of SetPublic.
+func (mr *MockNoteUsecaseMockRecorder) SetPublic(ctx, noteID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPublic", reflect.TypeOf((*MockNoteUsecase)(nil).SetPublic), ctx, noteID, userID)
 }
 
 // UpdateNote mocks base method.
@@ -525,6 +570,21 @@ func (mr *MockNoteBaseRepoMockRecorder) ReadNote(arg0, arg1, arg2 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadNote), arg0, arg1, arg2)
 }
 
+// ReadPublicNote mocks base method.
+func (m *MockNoteBaseRepo) ReadPublicNote(arg0 context.Context, arg1 uuid.UUID) (models.Note, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadPublicNote", arg0, arg1)
+	ret0, _ := ret[0].(models.Note)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadPublicNote indicates an expected call of ReadPublicNote.
+func (mr *MockNoteBaseRepoMockRecorder) ReadPublicNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadPublicNote", reflect.TypeOf((*MockNoteBaseRepo)(nil).ReadPublicNote), arg0, arg1)
+}
+
 // RememberTag mocks base method.
 func (m *MockNoteBaseRepo) RememberTag(ctx context.Context, tagName string, userID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -579,6 +639,34 @@ func (m *MockNoteBaseRepo) SetIcon(ctx context.Context, noteID uuid.UUID, icon s
 func (mr *MockNoteBaseRepoMockRecorder) SetIcon(ctx, noteID, icon interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteBaseRepo)(nil).SetIcon), ctx, noteID, icon)
+}
+
+// SetPrivate mocks base method.
+func (m *MockNoteBaseRepo) SetPrivate(ctx context.Context, noteID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPrivate", ctx, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetPrivate indicates an expected call of SetPrivate.
+func (mr *MockNoteBaseRepoMockRecorder) SetPrivate(ctx, noteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivate", reflect.TypeOf((*MockNoteBaseRepo)(nil).SetPrivate), ctx, noteID)
+}
+
+// SetPublic mocks base method.
+func (m *MockNoteBaseRepo) SetPublic(ctx context.Context, noteID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPublic", ctx, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetPublic indicates an expected call of SetPublic.
+func (mr *MockNoteBaseRepoMockRecorder) SetPublic(ctx, noteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPublic", reflect.TypeOf((*MockNoteBaseRepo)(nil).SetPublic), ctx, noteID)
 }
 
 // UpdateNote mocks base method.
@@ -799,6 +887,34 @@ func (m *MockNoteSearchRepo) SetIcon(ctx context.Context, noteID uuid.UUID, icon
 func (mr *MockNoteSearchRepoMockRecorder) SetIcon(ctx, noteID, icon interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteSearchRepo)(nil).SetIcon), ctx, noteID, icon)
+}
+
+// SetPrivate mocks base method.
+func (m *MockNoteSearchRepo) SetPrivate(ctx context.Context, noteID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPrivate", ctx, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetPrivate indicates an expected call of SetPrivate.
+func (mr *MockNoteSearchRepoMockRecorder) SetPrivate(ctx, noteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivate", reflect.TypeOf((*MockNoteSearchRepo)(nil).SetPrivate), ctx, noteID)
+}
+
+// SetPublic mocks base method.
+func (m *MockNoteSearchRepo) SetPublic(ctx context.Context, noteID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPublic", ctx, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetPublic indicates an expected call of SetPublic.
+func (mr *MockNoteSearchRepoMockRecorder) SetPublic(ctx, noteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPublic", reflect.TypeOf((*MockNoteSearchRepo)(nil).SetPublic), ctx, noteID)
 }
 
 // UpdateNote mocks base method.

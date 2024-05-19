@@ -48,6 +48,7 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 		Icon:          note.Icon,
 		Header:        note.Header,
 		Favorite:      note.Favorite,
+		Public:        note.Public,
 	}
 }
 
@@ -163,7 +164,21 @@ func (h *GrpcNoteHandler) GetNote(ctx context.Context, in *generatedNote.GetNote
 	result, err := h.uc.GetNote(ctx, uuid.FromStringOrNil(in.Id), uuid.FromStringOrNil(in.UserId))
 	if err != nil {
 		logger.Error(err.Error())
+		return nil, errors.New("not found")
+	}
 
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{
+		Note: getNote(result),
+	}, nil
+}
+
+func (h *GrpcNoteHandler) GetPublicNote(ctx context.Context, in *generatedNote.GetPublicNoteRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result, err := h.uc.GetPublicNote(ctx, uuid.FromStringOrNil(in.NoteId))
+	if err != nil {
+		logger.Error(err.Error())
 		return nil, errors.New("not found")
 	}
 
@@ -264,12 +279,12 @@ func (h *GrpcNoteHandler) SetHeader(ctx context.Context, in *generatedNote.SetHe
 func (h *GrpcNoteHandler) AddFav(ctx context.Context, in *generatedNote.ChangeFlagRequest) (*generatedNote.GetNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	note, err := h.uc.AddFav(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	result, err := h.uc.AddFav(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}
-	protoNote := getNote(note)
+	protoNote := getNote(result)
 
 	logger.Info("success")
 	return &generatedNote.GetNoteResponse{
@@ -280,16 +295,46 @@ func (h *GrpcNoteHandler) AddFav(ctx context.Context, in *generatedNote.ChangeFl
 func (h *GrpcNoteHandler) DelFav(ctx context.Context, in *generatedNote.ChangeFlagRequest) (*generatedNote.GetNoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	note, err := h.uc.DelFav(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	result, err := h.uc.DelFav(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}
-	protoNote := getNote(note)
+	protoNote := getNote(result)
 
 	logger.Info("success")
 	return &generatedNote.GetNoteResponse{
 		Note: protoNote,
+	}, nil
+}
+
+func (h *GrpcNoteHandler) SetPublic(ctx context.Context, in *generatedNote.AccessModeRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.SetPublic(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{
+		Note: getNote(response),
+	}, nil
+}
+
+func (h *GrpcNoteHandler) SetPrivate(ctx context.Context, in *generatedNote.AccessModeRequest) (*generatedNote.GetNoteResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.SetPrivate(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetNoteResponse{
+		Note: getNote(response),
 	}, nil
 }
 
