@@ -116,7 +116,7 @@ func (uc *AttachUsecase) GetAttach(ctx context.Context, attachID uuid.UUID, user
 		logger.Error(err.Error())
 		return models.Attach{}, err
 	}
-	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
+	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) && !resultNote.Public {
 		logger.Error("not owner and not collaborator")
 		return models.Attach{}, errors.New("not found")
 	}

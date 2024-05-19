@@ -36,6 +36,9 @@
     },
     "favorite": {
       "type": "boolean"
+    },
+    "public": {
+      "type": "boolean"
     }
   }
 }
