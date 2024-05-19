@@ -81,21 +81,6 @@ func (mr *MockNoteUsecaseMockRecorder) AddTag(ctx, tagName, noteId, userId inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockNoteUsecase)(nil).AddTag), ctx, tagName, noteId, userId)
 }
 
-// CheckPermissions mocks base method.
-func (m *MockNoteUsecase) CheckPermissions(ctx context.Context, noteID, userID uuid.UUID) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckPermissions", ctx, noteID, userID)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckPermissions indicates an expected call of CheckPermissions.
-func (mr *MockNoteUsecaseMockRecorder) CheckPermissions(ctx, noteID, userID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPermissions", reflect.TypeOf((*MockNoteUsecase)(nil).CheckPermissions), ctx, noteID, userID)
-}
-
 // CreateNote mocks base method.
 func (m *MockNoteUsecase) CreateNote(arg0 context.Context, arg1 uuid.UUID, arg2 string) (models.Note, error) {
 	m.ctrl.T.Helper()
@@ -197,6 +182,21 @@ func (m *MockNoteUsecase) GetAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2
 func (mr *MockNoteUsecaseMockRecorder) GetAllNotes(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllNotes", reflect.TypeOf((*MockNoteUsecase)(nil).GetAllNotes), arg0, arg1, arg2, arg3, arg4, arg5)
+}
+
+// GetAttachList mocks base method.
+func (m *MockNoteUsecase) GetAttachList(ctx context.Context, noteID, userID uuid.UUID) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAttachList", ctx, noteID, userID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAttachList indicates an expected call of GetAttachList.
+func (mr *MockNoteUsecaseMockRecorder) GetAttachList(ctx, noteID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachList", reflect.TypeOf((*MockNoteUsecase)(nil).GetAttachList), ctx, noteID, userID)
 }
 
 // GetNote mocks base method.
@@ -508,6 +508,21 @@ func (m *MockNoteBaseRepo) ForgetTag(ctx context.Context, tagName string, userID
 func (mr *MockNoteBaseRepoMockRecorder) ForgetTag(ctx, tagName, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetTag", reflect.TypeOf((*MockNoteBaseRepo)(nil).ForgetTag), ctx, tagName, userID)
+}
+
+// GetAttachList mocks base method.
+func (m *MockNoteBaseRepo) GetAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAttachList", ctx, noteID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAttachList indicates an expected call of GetAttachList.
+func (mr *MockNoteBaseRepoMockRecorder) GetAttachList(ctx, noteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachList", reflect.TypeOf((*MockNoteBaseRepo)(nil).GetAttachList), ctx, noteID)
 }
 
 // GetTags mocks base method.

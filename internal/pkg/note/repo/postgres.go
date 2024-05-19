@@ -81,6 +81,8 @@ const (
 
 	setPublic  = "UPDATE notes SET is_public = true WHERE id = $1;"
 	setPrivate = "UPDATE notes SET is_public = false WHERE id = $1;"
+
+	getAttachList = "SELECT path FROM attaches WHERE note_id = $1;"
 )
 
 type NotePostgres struct {
@@ -555,4 +557,31 @@ func (repo *NotePostgres) SetPrivate(ctx context.Context, noteID uuid.UUID) erro
 
 	logger.Info("success")
 	return nil
+}
+
+func (repo *NotePostgres) GetAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	result := make([]string, 0)
+
+	start := time.Now()
+	query, err := repo.db.Query(ctx, getAttachList, noteID)
+	repo.metr.ObserveResponseTime("getAttachList", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getAttachList")
+		return result, err
+	}
+
+	for query.Next() {
+		var path string
+		if err := query.Scan(&path); err != nil {
+			logger.Error("scanning" + err.Error())
+			return result, fmt.Errorf("error occured while scanning attach paths: %w", err)
+		}
+		result = append(result, path)
+	}
+
+	logger.Info("success")
+	return result, nil
 }

@@ -48,7 +48,7 @@ type NoteUsecase interface {
 	SetPublic(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error)
 	SetPrivate(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error)
 
-	CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error)
+	GetAttachList(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) ([]string, error)
 }
 
 type NoteBaseRepo interface {
@@ -83,6 +83,8 @@ type NoteBaseRepo interface {
 
 	SetPublic(ctx context.Context, noteID uuid.UUID) error
 	SetPrivate(ctx context.Context, noteID uuid.UUID) error
+
+	GetAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error)
 }
 
 type NoteSearchRepo interface {

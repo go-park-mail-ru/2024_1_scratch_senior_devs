@@ -338,17 +338,17 @@ func (h *GrpcNoteHandler) SetPrivate(ctx context.Context, in *generatedNote.Acce
 	}, nil
 }
 
-func (h *GrpcNoteHandler) CheckPermissions(ctx context.Context, in *generatedNote.CheckPermissionsRequest) (*generatedNote.CheckPermissionsResponse, error) {
+func (h *GrpcNoteHandler) GetAttachList(ctx context.Context, in *generatedNote.GetAttachListRequest) (*generatedNote.GetAttachListResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	response, err := h.uc.CheckPermissions(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
+	response, err := h.uc.GetAttachList(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}
 
 	logger.Info("success")
-	return &generatedNote.CheckPermissionsResponse{
-		Result: response,
+	return &generatedNote.GetAttachListResponse{
+		Paths: response,
 	}, nil
 }

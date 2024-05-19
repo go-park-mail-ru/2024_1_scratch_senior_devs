@@ -182,6 +182,7 @@ func main() {
 		note.Handle("/{id}/del_fav", JwtMiddleware(http.HandlerFunc(NoteDelivery.DeleteFavorite))).Methods(http.MethodPut, http.MethodOptions)
 		note.Handle("/{id}/set_public", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPublic))).Methods(http.MethodPut, http.MethodOptions)
 		note.Handle("/{id}/set_private", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPrivate))).Methods(http.MethodPut, http.MethodOptions)
+		note.Handle("/{id}/make_zip", JwtMiddleware(http.HandlerFunc(NoteDelivery.ExportToPDFWithAttaches))).Methods(http.MethodPost, http.MethodOptions)
 	}
 
 	shared := r.PathPrefix("/shared").Subrouter()

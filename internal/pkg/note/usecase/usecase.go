@@ -719,20 +719,26 @@ func (uc *NoteUsecase) SetPrivate(ctx context.Context, noteID uuid.UUID, userID 
 	return resultNote, nil
 }
 
-func (uc *NoteUsecase) CheckPermissions(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (bool, error) {
+func (uc *NoteUsecase) GetAttachList(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) ([]string, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	resultNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
-		return false, errors.New("not found")
+		return []string{}, errors.New("not found")
 	}
 
 	if resultNote.OwnerId != userID && !slices.Contains(resultNote.Collaborators, userID) {
 		logger.Error("not owner and not collaborator")
-		return false, errors.New("not owner and not collaborator")
+		return []string{}, errors.New("not owner and not collaborator")
+	}
+
+	paths, err := uc.baseRepo.GetAttachList(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return []string{}, err
 	}
 
 	logger.Info("success")
-	return true, nil
+	return paths, nil
 }

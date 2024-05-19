@@ -24,6 +24,16 @@ service Note {
      rpc DelFav(ChangeFlagRequest) returns (GetNoteResponse) {}
      rpc SetPublic(AccessModeRequest) returns (GetNoteResponse) {}
      rpc SetPrivate(AccessModeRequest) returns (GetNoteResponse) {}
+     rpc GetAttachList(GetAttachListRequest) returns (GetAttachListResponse) {}
+}
+
+message GetAttachListRequest {
+     string NoteId = 1;
+     string UserId = 2;
+}
+
+message GetAttachListResponse {
+     repeated string Paths = 1;
 }
 
 message AccessModeRequest {

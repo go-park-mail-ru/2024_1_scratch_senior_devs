@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/zipper"
 	"io"
 	"log/slog"
 	"net/http"
@@ -1202,6 +1203,69 @@ func (h *NoteHandler) ExportToPDF(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.pdf", noteTitle))
 	_, _ = w.Write(resultPDF)
+	w.WriteHeader(http.StatusOK)
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) ExportToPDFWithAttaches(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, "can`t read request body: "+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
+		return
+	}
+
+	resultPDF, noteTitle, err := exportpdf.GeneratePDF(string(payload))
+	if err != nil {
+		if err.Error() == "invalid input HTML" {
+			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if err.Error() == "internal error while parsing processed HTML" {
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		log.LogHandlerInfo(logger, http.StatusUnavailableForLegalReasons, err.Error())
+		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему"))
+		return
+	}
+
+	result, err := h.client.GetAttachList(r.Context(), &gen.GetAttachListRequest{
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+
+	YouNoteZip, err := zipper.CreateYouNoteZip(noteTitle+".zip", noteTitle+".pdf", resultPDF, result.Paths, jwtPayload.Username)
+	if err != nil {
+		log.LogHandlerInfo(logger, http.StatusInternalServerError, err.Error())
+		responses.WriteErrorMessage(w, http.StatusInternalServerError, errors.New("ха-ха, разработчик не смог создать zip-архив"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip", noteTitle))
+	_, _ = w.Write(YouNoteZip.Bytes())
 	w.WriteHeader(http.StatusOK)
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }
