@@ -25,6 +25,11 @@ service Note {
      rpc SetPublic(AccessModeRequest) returns (GetNoteResponse) {}
      rpc SetPrivate(AccessModeRequest) returns (GetNoteResponse) {}
      rpc GetAttachList(GetAttachListRequest) returns (GetAttachListResponse) {}
+     rpc GetSharedAttachList(GetSharedAttachListRequest) returns (GetAttachListResponse) {}
+}
+
+message GetSharedAttachListRequest {
+     string NoteId = 1;
 }
 
 message GetAttachListRequest {

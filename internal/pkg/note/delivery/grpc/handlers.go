@@ -352,3 +352,18 @@ func (h *GrpcNoteHandler) GetAttachList(ctx context.Context, in *generatedNote.G
 		Paths: response,
 	}, nil
 }
+
+func (h *GrpcNoteHandler) GetSharedAttachList(ctx context.Context, in *generatedNote.GetSharedAttachListRequest) (*generatedNote.GetAttachListResponse, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	response, err := h.uc.GetSharedAttachList(ctx, uuid.FromStringOrNil(in.NoteId))
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	logger.Info("success")
+	return &generatedNote.GetAttachListResponse{
+		Paths: response,
+	}, nil
+}

@@ -742,3 +742,27 @@ func (uc *NoteUsecase) GetAttachList(ctx context.Context, noteID uuid.UUID, user
 	logger.Info("success")
 	return paths, nil
 }
+
+func (uc *NoteUsecase) GetSharedAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	resultNote, err := uc.baseRepo.ReadPublicNote(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return []string{}, errors.New("not found")
+	}
+
+	if !resultNote.Public {
+		logger.Error("not public note")
+		return []string{}, errors.New("not found")
+	}
+
+	paths, err := uc.baseRepo.GetAttachList(ctx, noteID)
+	if err != nil {
+		logger.Error(err.Error())
+		return []string{}, err
+	}
+
+	logger.Info("success")
+	return paths, nil
+}

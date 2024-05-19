@@ -44,6 +44,7 @@ type NoteClient interface {
 	SetPublic(ctx context.Context, in *AccessModeRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	SetPrivate(ctx context.Context, in *AccessModeRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
 	GetAttachList(ctx context.Context, in *GetAttachListRequest, opts ...grpc.CallOption) (*GetAttachListResponse, error)
+	GetSharedAttachList(ctx context.Context, in *GetSharedAttachListRequest, opts ...grpc.CallOption) (*GetAttachListResponse, error)
 }
 
 type noteClient struct {
@@ -252,6 +253,15 @@ func (c *noteClient) GetAttachList(ctx context.Context, in *GetAttachListRequest
 	return out, nil
 }
 
+func (c *noteClient) GetSharedAttachList(ctx context.Context, in *GetSharedAttachListRequest, opts ...grpc.CallOption) (*GetAttachListResponse, error) {
+	out := new(GetAttachListResponse)
+	err := c.cc.Invoke(ctx, "/note.Note/GetSharedAttachList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NoteServer is the server API for Note service.
 // All implementations must embed UnimplementedNoteServer
 // for forward compatibility
@@ -278,6 +288,7 @@ type NoteServer interface {
 	SetPublic(context.Context, *AccessModeRequest) (*GetNoteResponse, error)
 	SetPrivate(context.Context, *AccessModeRequest) (*GetNoteResponse, error)
 	GetAttachList(context.Context, *GetAttachListRequest) (*GetAttachListResponse, error)
+	GetSharedAttachList(context.Context, *GetSharedAttachListRequest) (*GetAttachListResponse, error)
 	mustEmbedUnimplementedNoteServer()
 }
 
@@ -350,6 +361,9 @@ func (UnimplementedNoteServer) SetPrivate(context.Context, *AccessModeRequest) (
 }
 func (UnimplementedNoteServer) GetAttachList(context.Context, *GetAttachListRequest) (*GetAttachListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAttachList not implemented")
+}
+func (UnimplementedNoteServer) GetSharedAttachList(context.Context, *GetSharedAttachListRequest) (*GetAttachListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSharedAttachList not implemented")
 }
 func (UnimplementedNoteServer) mustEmbedUnimplementedNoteServer() {}
 
@@ -760,6 +774,24 @@ func _Note_GetAttachList_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Note_GetSharedAttachList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSharedAttachListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteServer).GetSharedAttachList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/note.Note/GetSharedAttachList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteServer).GetSharedAttachList(ctx, req.(*GetSharedAttachListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Note_ServiceDesc is the grpc.ServiceDesc for Note service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -854,6 +886,10 @@ var Note_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAttachList",
 			Handler:    _Note_GetAttachList_Handler,
+		},
+		{
+			MethodName: "GetSharedAttachList",
+			Handler:    _Note_GetSharedAttachList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

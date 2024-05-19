@@ -188,6 +188,7 @@ func main() {
 	shared := r.PathPrefix("/shared").Subrouter()
 	{
 		shared.Handle("/note/{id}", http.HandlerFunc(NoteDelivery.GetPublicNote)).Methods(http.MethodGet, http.MethodOptions)
+		shared.Handle("/note/{id}/make_zip", http.HandlerFunc(NoteDelivery.ExportZip)).Methods(http.MethodPost, http.MethodOptions)
 		shared.Handle("/attach/{id}", http.HandlerFunc(AttachDelivery.GetSharedAttach)).Methods(http.MethodGet, http.MethodOptions)
 	}
 

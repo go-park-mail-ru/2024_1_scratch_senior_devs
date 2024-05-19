@@ -229,6 +229,21 @@ func (mr *MockNoteUsecaseMockRecorder) GetPublicNote(ctx, noteId interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteUsecase)(nil).GetPublicNote), ctx, noteId)
 }
 
+// GetSharedAttachList mocks base method.
+func (m *MockNoteUsecase) GetSharedAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSharedAttachList", ctx, noteID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSharedAttachList indicates an expected call of GetSharedAttachList.
+func (mr *MockNoteUsecaseMockRecorder) GetSharedAttachList(ctx, noteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSharedAttachList", reflect.TypeOf((*MockNoteUsecase)(nil).GetSharedAttachList), ctx, noteID)
+}
+
 // GetTags mocks base method.
 func (m *MockNoteUsecase) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
 	m.ctrl.T.Helper()

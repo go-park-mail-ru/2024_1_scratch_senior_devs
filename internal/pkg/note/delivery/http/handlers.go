@@ -35,6 +35,10 @@ import (
 const (
 	TimeLayout     = "2006-01-02 15:04:05 -0700 UTC"
 	RpcErrorPrefix = "rpc error: code = Unknown desc = "
+	ErrParsingHTML = "internal error while parsing processed HTML"
+	ErrInputHTML   = "invalid input HTML"
+	ErrIncorrectId = "incorrect id parameter"
+	ErrReadBody    = "can`t read request body: "
 )
 
 type NoteHandler struct {
@@ -50,10 +54,6 @@ func CreateNotesHandler(client gen.NoteClient, authClient authGen.AuthClient, hu
 		hub:        hub,
 	}
 }
-
-const (
-	incorrectIdErr = "incorrect id parameter"
-)
 
 var (
 	upgrader = websocket.Upgrader{}
@@ -188,7 +188,7 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -232,7 +232,7 @@ func (h *NoteHandler) GetPublicNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -342,7 +342,7 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -420,7 +420,7 @@ func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -473,7 +473,7 @@ func (h *NoteHandler) CreateSubNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -543,7 +543,7 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 	noteIdString := mux.Vars(r)["id"]
 	noteID, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -591,7 +591,7 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -1176,20 +1176,20 @@ func (h *NoteHandler) ExportToPDF(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, "can`t read request body: "+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrReadBody+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
 		return
 	}
 
 	resultPDF, noteTitle, _, _, err := exportpdf.GeneratePDF(string(payload))
 	if err != nil {
-		if err.Error() == "invalid input HTML" {
+		if err.Error() == ErrInputHTML {
 			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
 			return
 		}
 
-		if err.Error() == "internal error while parsing processed HTML" {
+		if err.Error() == ErrParsingHTML {
 			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
 			return
@@ -1227,20 +1227,20 @@ func (h *NoteHandler) ExportZip(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, "can`t read request body: "+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrReadBody+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
 		return
 	}
 
 	resultPDF, noteTitle, picturesOrder, filenames, err := exportpdf.GeneratePDF(string(payload))
 	if err != nil {
-		if err.Error() == "invalid input HTML" {
+		if err.Error() == ErrInputHTML {
 			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
 			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
 			return
 		}
 
-		if err.Error() == "internal error while parsing processed HTML" {
+		if err.Error() == ErrParsingHTML {
 			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
 			return
@@ -1257,6 +1257,61 @@ func (h *NoteHandler) ExportZip(w http.ResponseWriter, r *http.Request) {
 	})
 
 	YouNoteZip, err := zipper.CreateYouNoteZip(noteTitle+".pdf", resultPDF, result.Paths, jwtPayload.Username, picturesOrder, filenames)
+	if err != nil {
+		log.LogHandlerInfo(logger, http.StatusInternalServerError, err.Error())
+		responses.WriteErrorMessage(w, http.StatusInternalServerError, errors.New("ха-ха, разработчик не смог создать zip-архив"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip", noteTitle))
+	_, _ = w.Write(YouNoteZip.Bytes())
+	w.WriteHeader(http.StatusOK)
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) ExportZipShared(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrReadBody+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
+		return
+	}
+
+	resultPDF, noteTitle, picturesOrder, filenames, err := exportpdf.GeneratePDF(string(payload))
+	if err != nil {
+		if err.Error() == ErrInputHTML {
+			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if err.Error() == ErrParsingHTML {
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		log.LogHandlerInfo(logger, http.StatusUnavailableForLegalReasons, err.Error())
+		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему"))
+		return
+	}
+
+	result, err := h.client.GetSharedAttachList(r.Context(), &gen.GetSharedAttachListRequest{
+		NoteId: noteIdString,
+	})
+
+	YouNoteZip, err := zipper.CreateYouNoteZip(noteTitle+".pdf", resultPDF, result.Paths, "anonymous user", picturesOrder, filenames)
 	if err != nil {
 		log.LogHandlerInfo(logger, http.StatusInternalServerError, err.Error())
 		responses.WriteErrorMessage(w, http.StatusInternalServerError, errors.New("ха-ха, разработчик не смог создать zip-архив"))

@@ -316,6 +316,26 @@ func (mr *MockNoteClientMockRecorder) GetPublicNote(ctx, in interface{}, opts ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteClient)(nil).GetPublicNote), varargs...)
 }
 
+// GetSharedAttachList mocks base method.
+func (m *MockNoteClient) GetSharedAttachList(ctx context.Context, in *gen.GetSharedAttachListRequest, opts ...grpc.CallOption) (*gen.GetAttachListResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetSharedAttachList", varargs...)
+	ret0, _ := ret[0].(*gen.GetAttachListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSharedAttachList indicates an expected call of GetSharedAttachList.
+func (mr *MockNoteClientMockRecorder) GetSharedAttachList(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSharedAttachList", reflect.TypeOf((*MockNoteClient)(nil).GetSharedAttachList), varargs...)
+}
+
 // GetTags mocks base method.
 func (m *MockNoteClient) GetTags(ctx context.Context, in *gen.GetTagsRequest, opts ...grpc.CallOption) (*gen.GetTagsResponse, error) {
 	m.ctrl.T.Helper()
@@ -707,6 +727,21 @@ func (m *MockNoteServer) GetPublicNote(arg0 context.Context, arg1 *gen.GetPublic
 func (mr *MockNoteServerMockRecorder) GetPublicNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteServer)(nil).GetPublicNote), arg0, arg1)
+}
+
+// GetSharedAttachList mocks base method.
+func (m *MockNoteServer) GetSharedAttachList(arg0 context.Context, arg1 *gen.GetSharedAttachListRequest) (*gen.GetAttachListResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSharedAttachList", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetAttachListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSharedAttachList indicates an expected call of GetSharedAttachList.
+func (mr *MockNoteServerMockRecorder) GetSharedAttachList(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSharedAttachList", reflect.TypeOf((*MockNoteServer)(nil).GetSharedAttachList), arg0, arg1)
 }
 
 // GetTags mocks base method.

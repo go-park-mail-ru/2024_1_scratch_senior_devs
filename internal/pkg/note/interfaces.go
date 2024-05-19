@@ -49,6 +49,7 @@ type NoteUsecase interface {
 	SetPrivate(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error)
 
 	GetAttachList(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) ([]string, error)
+	GetSharedAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error)
 }
 
 type NoteBaseRepo interface {
