@@ -633,7 +633,9 @@ func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid
 		logger.Error("not owner and not collaborator")
 		return models.Note{}, errors.New("not owner and not collaborator")
 	}
-
+	if !resultNote.Favorite {
+		return resultNote, nil
+	}
 	if err := uc.baseRepo.DelFav(ctx, noteID, userID); err != nil {
 		logger.Error(err.Error())
 		return models.Note{}, err
@@ -643,7 +645,7 @@ func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid
 	uc.wg.Add(1)
 	go func() {
 		defer uc.wg.Done()
-		if err := uc.searchRepo.ChangeFlag(ctx, noteID, true); err != nil {
+		if err := uc.searchRepo.ChangeFlag(ctx, noteID, false); err != nil {
 			logger.Error(err.Error())
 		}
 	}()

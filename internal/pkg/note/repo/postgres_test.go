@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	mock_metrics "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics/mocks"
-
 	"github.com/driftprogramming/pgxpoolmock"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
+	mock_metrics "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/satori/uuid"
 	"github.com/stretchr/testify/assert"
@@ -545,6 +545,698 @@ func TestNotePostgres_GetTags(t *testing.T) {
 
 			repo := CreateNotePostgres(mockPool, mockMetrics)
 			_, err := repo.GetTags(context.Background(), tt.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_RememberTag(t *testing.T) {
+	userId := uuid.NewV4()
+	type args struct {
+		userId  uuid.UUID
+		tagName string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, pgx.Rows, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "RememberTag_Success",
+			args: args{
+				userId:  userId,
+				tagName: "tag",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				commandTag := pgconn.CommandTag("INSERT 0 1")
+				mockPool.EXPECT().Exec(gomock.Any(), rememberTag, args.tagName, args.userId).Return(commandTag, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+		{
+			name: "RememberTag_Fail_No_rows_affected",
+			args: args{
+				userId:  userId,
+				tagName: "tag",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), rememberTag, args.tagName, args.userId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("tag already exists"),
+		},
+		{
+			name: "RememberTag_Fail_Error",
+			args: args{
+				userId:  userId,
+				tagName: "tag",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), rememberTag, args.tagName, args.userId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			pgxRows := pgxpoolmock.NewRows([]string{"tag_name", "user_id"}).AddRow("t", "0").ToPgxRows()
+
+			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.RememberTag(context.Background(), tt.args.tagName, tt.args.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_ForgetTag(t *testing.T) {
+	userId := uuid.NewV4()
+	type args struct {
+		userId  uuid.UUID
+		tagName string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, pgx.Rows, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "ForgetTag_Success",
+			args: args{
+				userId:  userId,
+				tagName: "tag",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), forgetTag, args.tagName, args.userId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "ForgetTag_Fail_Error",
+			args: args{
+				userId:  userId,
+				tagName: "tag",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), forgetTag, args.tagName, args.userId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			pgxRows := pgxpoolmock.NewRows([]string{"tag_name", "user_id"}).AddRow("t", "0").ToPgxRows()
+
+			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.ForgetTag(context.Background(), tt.args.tagName, tt.args.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_DeleteTagFromAllNotes(t *testing.T) {
+	userId := uuid.NewV4()
+	type args struct {
+		userId  uuid.UUID
+		tagName string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, pgx.Rows, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_DeleteTagFromAllNotes_Success",
+			args: args{
+				userId:  userId,
+				tagName: "tag",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), deleteTagFromAllNotes, args.tagName, args.userId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_DeleteTagFromAllNotes_Fail_Error",
+			args: args{
+				userId:  userId,
+				tagName: "tag",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), deleteTagFromAllNotes, args.tagName, args.userId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			pgxRows := pgxpoolmock.NewRows([]string{"tag_name", "user_id"}).AddRow("t", "0").ToPgxRows()
+
+			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.DeleteTagFromAllNotes(context.Background(), tt.args.tagName, tt.args.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_UpdateTag(t *testing.T) {
+	userId := uuid.NewV4()
+	type args struct {
+		userId  uuid.UUID
+		oldName string
+		newName string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, pgx.Rows, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_UpdateTag_Success",
+			args: args{
+				userId:  userId,
+				oldName: "tag",
+				newName: "tag1",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), updateTag, args.newName, args.userId, args.oldName).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_UpdateTag_Fail_Error",
+			args: args{
+				userId:  userId,
+				oldName: "tag",
+				newName: "tag1",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), updateTag, args.newName, args.userId, args.oldName).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			pgxRows := pgxpoolmock.NewRows([]string{"tag_name", "user_id"}).AddRow("t", "0").ToPgxRows()
+
+			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.UpdateTag(context.Background(), tt.args.oldName, tt.args.newName, tt.args.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_SetIcon(t *testing.T) {
+	noteId := uuid.NewV4()
+	type args struct {
+		noteId uuid.UUID
+		icon   string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, pgx.Rows, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_SetIcon_Success",
+			args: args{
+				noteId: noteId,
+				icon:   "icon",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setIcon, args.icon, args.noteId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_SetIcons_Fail_Error",
+			args: args{
+				noteId: noteId,
+				icon:   "icon",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setIcon, args.icon, args.noteId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			pgxRows := pgxpoolmock.NewRows([]string{"tag_name", "user_id"}).AddRow("t", "0").ToPgxRows()
+
+			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.SetIcon(context.Background(), tt.args.noteId, tt.args.icon)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_SetHeader(t *testing.T) {
+	noteId := uuid.NewV4()
+	type args struct {
+		noteId uuid.UUID
+		header string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_SetHeader_Success",
+			args: args{
+				noteId: noteId,
+				header: "header",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setHeader, args.header, args.noteId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_SetHeader_Fail_Error",
+			args: args{
+				noteId: noteId,
+				header: "header",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setHeader, args.header, args.noteId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			tt.mockRepoAction(mockPool, mockMetrics, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.SetHeader(context.Background(), tt.args.noteId, tt.args.header)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_AddFav(t *testing.T) {
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+	type args struct {
+		noteId uuid.UUID
+		userId uuid.UUID
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_AddFav_Success",
+			args: args{
+				noteId: noteId,
+				userId: userId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), addFav, args.noteId, args.userId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_AddFav_Fail_Error",
+			args: args{
+				noteId: noteId,
+				userId: userId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), addFav, args.noteId, args.userId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			tt.mockRepoAction(mockPool, mockMetrics, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.AddFav(context.Background(), tt.args.noteId, tt.args.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_DelFav(t *testing.T) {
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+	type args struct {
+		noteId uuid.UUID
+		userId uuid.UUID
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_DelFav_Success",
+			args: args{
+				noteId: noteId,
+				userId: userId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), delFav, args.noteId, args.userId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_DelFav_Fail_Error",
+			args: args{
+				noteId: noteId,
+				userId: userId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), delFav, args.noteId, args.userId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			tt.mockRepoAction(mockPool, mockMetrics, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.DelFav(context.Background(), tt.args.noteId, tt.args.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_SetPublic(t *testing.T) {
+	noteId := uuid.NewV4()
+
+	type args struct {
+		noteId uuid.UUID
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_SetPublic_Success",
+			args: args{
+				noteId: noteId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setPublic, args.noteId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_SetPublic_Fail_Error",
+			args: args{
+				noteId: noteId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setPublic, args.noteId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			tt.mockRepoAction(mockPool, mockMetrics, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.SetPublic(context.Background(), tt.args.noteId)
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_SetPrivate(t *testing.T) {
+	noteId := uuid.NewV4()
+
+	type args struct {
+		noteId uuid.UUID
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_SetPrivate_Success",
+			args: args{
+				noteId: noteId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setPrivate, args.noteId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_SetPrivate_Fail_Error",
+			args: args{
+				noteId: noteId,
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), setPrivate, args.noteId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			tt.mockRepoAction(mockPool, mockMetrics, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.SetPrivate(context.Background(), tt.args.noteId)
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
+
+func TestNotePostgres_GetAttachList(t *testing.T) {
+	noteId := uuid.NewV4()
+	type args struct {
+		noteId uuid.UUID
+	}
+	tests := []struct {
+		args           args
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, args)
+		userId         uuid.UUID
+		expectedErr    error
+	}{
+		{
+			name: "GetTags_Success",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				pgxRows := pgxpoolmock.NewRows([]string{"path"}).AddRow("path").ToPgxRows()
+
+				mockPool.EXPECT().Query(gomock.Any(), getAttachList, args.noteId).Return(pgxRows, nil)
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+			args: args{
+				noteId: noteId,
+			},
+
+			expectedErr: nil,
+		},
+		{
+			name: "GetTags_Fail",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, args args) {
+				pgxRows := pgxpoolmock.NewRows([]string{"path"}).ToPgxRows()
+
+				mockPool.EXPECT().Query(gomock.Any(), getAttachList, args.noteId).Return(pgxRows, pgx.ErrNoRows)
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+			args: args{
+				noteId: noteId,
+			},
+			expectedErr: pgx.ErrNoRows,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			tt.mockRepoAction(mockPool, mockMetrics, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			_, err := repo.GetAttachList(context.Background(), tt.args.noteId)
 
 			assert.Equal(t, tt.expectedErr, err)
 		})
