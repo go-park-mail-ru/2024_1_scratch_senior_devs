@@ -1703,3 +1703,566 @@ func TestNoteUsecase_DelFav(t *testing.T) {
 		})
 	}
 }
+
+func TestNoteUsecase_SetPublic(t *testing.T) {
+	elasticConfig := config.ElasticConfig{}
+
+	constraintsConfig := config.ConstraintsConfig{}
+
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx    context.Context
+		userId uuid.UUID
+		noteId uuid.UUID
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args)
+		args       args
+		wantErr    bool
+		want       models.Note
+	}{
+		{
+			name: "Test_SetPublic_Success",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: args.userId,
+					Id:      args.noteId,
+					Public:  false,
+				}, nil).Times(1)
+				baseRepo.EXPECT().SetPublic(ctx, args.noteId).Return(nil)
+				searchRepo.EXPECT().SetPublic(ctx, args.noteId).Return(nil)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: false,
+			want: models.Note{
+				OwnerId: userId,
+				Id:      noteId,
+				Public:  true,
+			},
+		},
+		{
+			name: "Test_SetPublic_FailOnSet",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId:  args.userId,
+					Id:       args.noteId,
+					Favorite: true,
+				}, nil).Times(1)
+				baseRepo.EXPECT().SetPublic(ctx, args.noteId).Return(errors.New("err"))
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    models.Note{},
+		},
+
+		{
+			name: "Test_SetPublic_FailOnRead",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: args.userId,
+					Id:      args.noteId,
+				}, errors.New("err")).Times(1)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    models.Note{},
+		},
+		{
+			name: "Test_SetPublic_NotOwner",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: uuid.NewV4(),
+					Id:      args.noteId,
+				}, nil).Times(1)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    models.Note{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo, tt.args)
+
+			got, err := uc.SetPublic(context.Background(), tt.args.noteId, tt.args.userId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.SetPublic error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestNoteUsecase_SetPrivate(t *testing.T) {
+	elasticConfig := config.ElasticConfig{}
+
+	constraintsConfig := config.ConstraintsConfig{}
+
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx    context.Context
+		userId uuid.UUID
+		noteId uuid.UUID
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args)
+		args       args
+		wantErr    bool
+		want       models.Note
+	}{
+		{
+			name: "Test_SetPrivate_Success",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: args.userId,
+					Id:      args.noteId,
+					Public:  true,
+				}, nil).Times(1)
+				baseRepo.EXPECT().SetPrivate(ctx, args.noteId).Return(nil)
+				searchRepo.EXPECT().SetPrivate(ctx, args.noteId).Return(nil)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: false,
+			want: models.Note{
+				OwnerId: userId,
+				Id:      noteId,
+				Public:  false,
+			},
+		},
+		{
+			name: "Test_SetPrivate_FailOnSet",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId:  args.userId,
+					Id:       args.noteId,
+					Favorite: true,
+				}, nil).Times(1)
+				baseRepo.EXPECT().SetPrivate(ctx, args.noteId).Return(errors.New("err"))
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    models.Note{},
+		},
+
+		{
+			name: "Test_SetPublic_FailOnRead",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: args.userId,
+					Id:      args.noteId,
+				}, errors.New("err")).Times(1)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    models.Note{},
+		},
+		{
+			name: "Test_SetPrivate_NotOwner",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: uuid.NewV4(),
+					Id:      args.noteId,
+				}, nil).Times(1)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    models.Note{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo, tt.args)
+
+			got, err := uc.SetPrivate(context.Background(), tt.args.noteId, tt.args.userId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.SetPrivate error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestNoteUsecase_GetAttachList(t *testing.T) {
+	elasticConfig := config.ElasticConfig{}
+
+	constraintsConfig := config.ConstraintsConfig{}
+
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx    context.Context
+		userId uuid.UUID
+		noteId uuid.UUID
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args)
+		args       args
+		wantErr    bool
+		want       []string
+	}{
+		{
+			name: "Test_GetAttachList_Success",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: args.userId,
+					Id:      args.noteId,
+					Public:  true,
+				}, nil).Times(1)
+				baseRepo.EXPECT().GetAttachList(ctx, args.noteId).Return([]string{"1", "2"}, nil)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: false,
+			want:    []string{"1", "2"},
+		},
+		{
+			name: "Test_GetAttachList_FailOnGet",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId:  args.userId,
+					Id:       args.noteId,
+					Favorite: true,
+				}, nil).Times(1)
+				baseRepo.EXPECT().GetAttachList(ctx, args.noteId).Return([]string{}, errors.New("err"))
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    []string{},
+		},
+
+		{
+			name: "Test_GetAttachList_FailOnRead",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: args.userId,
+					Id:      args.noteId,
+				}, errors.New("err")).Times(1)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    []string{},
+		},
+		{
+			name: "Test_GetAttachList_NotOwner",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadNote(ctx, noteId, userId).Return(models.Note{
+					OwnerId: uuid.NewV4(),
+					Id:      args.noteId,
+				}, nil).Times(1)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+				noteId: noteId,
+			},
+			wantErr: true,
+			want:    []string{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo, tt.args)
+
+			got, err := uc.GetAttachList(context.Background(), tt.args.noteId, tt.args.userId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.GetAttachList error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestNoteUsecase_RememberTag(t *testing.T) {
+	elasticConfig := config.ElasticConfig{}
+
+	constraintsConfig := config.ConstraintsConfig{}
+
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx    context.Context
+		userId uuid.UUID
+
+		tagName string
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args)
+		args       args
+		wantErr    bool
+	}{
+		{
+			name: "Test_RememberTag_Success",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().RememberTag(ctx, args.tagName, args.userId).Return(nil).Times(1)
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test_RememberTag_FailOnAdd",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().RememberTag(ctx, args.tagName, args.userId).Return(errors.New("error")).Times(1)
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo, tt.args)
+
+			err := uc.RememberTag(tt.args.ctx, tt.args.tagName, tt.args.userId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.RememberTag error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestNoteUsecase_ForgetTag(t *testing.T) {
+	elasticConfig := config.ElasticConfig{}
+
+	constraintsConfig := config.ConstraintsConfig{}
+
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx    context.Context
+		userId uuid.UUID
+
+		tagName string
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args)
+		args       args
+		wantErr    bool
+	}{
+		{
+			name: "Test_ForgetTag_Success",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ForgetTag(ctx, args.tagName, args.userId).Return(nil).Times(1)
+				baseRepo.EXPECT().DeleteTagFromAllNotes(ctx, args.tagName, args.userId)
+				searchRepo.EXPECT().DeleteTagFromAllNotes(ctx, args.tagName, args.userId)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test_ForgetTag_FailOnForget",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ForgetTag(ctx, args.tagName, args.userId).Return(errors.New("error")).Times(1)
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test_ForgetTag_FailOnForget",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ForgetTag(ctx, args.tagName, args.userId).Return(nil).Times(1)
+				baseRepo.EXPECT().DeleteTagFromAllNotes(ctx, args.tagName, args.userId).Return(errors.New("err"))
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo, tt.args)
+
+			err := uc.ForgetTag(tt.args.ctx, tt.args.tagName, tt.args.userId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.RememberTag error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestNoteUsecase_UpdateTag(t *testing.T) {
+	elasticConfig := config.ElasticConfig{}
+
+	constraintsConfig := config.ConstraintsConfig{}
+
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx    context.Context
+		userId uuid.UUID
+
+		tagName string
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args)
+		args       args
+		wantErr    bool
+	}{
+		{
+			name: "Test_UpdateTag_Success",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().UpdateTag(ctx, "", args.tagName, args.userId).Return(nil)
+				searchRepo.EXPECT().UpdateTagOnAllNotes(ctx, "", args.tagName, args.userId)
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test_UpdatetTag_FailOnUpdate",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().UpdateTag(ctx, "", args.tagName, args.userId).Return(errors.New("error")).Times(1)
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo, tt.args)
+
+			err := uc.UpdateTag(tt.args.ctx, "", tt.args.tagName, tt.args.userId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.UpdateTag error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
