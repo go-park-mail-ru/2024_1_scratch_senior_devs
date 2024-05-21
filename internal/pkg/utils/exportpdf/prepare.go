@@ -15,7 +15,7 @@ import (
 const (
 	maxFilenameLength = 50
 	emptyTitleReplace = "Без названия"
-	imagesBasePath    = "/mnt/c/projects/Go/YouNote_data/images"
+	imagesBasePath    = "/opt/images"
 )
 
 func getNoteTitle(basicHTML string) string {
