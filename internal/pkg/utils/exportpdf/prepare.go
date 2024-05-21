@@ -1,10 +1,13 @@
 package exportpdf
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/satori/uuid"
+	"os"
+	"path"
 	"strings"
 	"unicode/utf8"
 )
@@ -12,6 +15,7 @@ import (
 const (
 	maxFilenameLength = 50
 	emptyTitleReplace = "Без названия"
+	imagesBasePath    = "/mnt/c/projects/Go/YouNote_data/images"
 )
 
 func getNoteTitle(basicHTML string) string {
@@ -47,7 +51,14 @@ func processImg(document *goquery.Document) map[uuid.UUID]int {
 		if exists {
 			pictureCount++
 			result[uuid.FromStringOrNil(imgID)] = pictureCount
-			s.ReplaceWithHtml(fmt.Sprintf(`<div>----- картинка %d -----</div>`, pictureCount))
+
+			file, err := os.ReadFile(path.Join(imagesBasePath, fmt.Sprintf("%s.webp", imgID)))
+			if err == nil {
+				base64Image := base64.StdEncoding.EncodeToString(file)
+				s.SetAttr("src", fmt.Sprintf("data:image/webp;base64,%s", base64Image))
+			}
+
+			s.BeforeHtml(fmt.Sprintf(`<div>---------- картинка %d ----------</div>`, pictureCount))
 		}
 	})
 
