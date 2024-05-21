@@ -15,7 +15,6 @@ import (
 const (
 	maxFilenameLength = 50
 	emptyTitleReplace = "Без названия"
-	imagesBasePath    = "/opt/images"
 )
 
 func getNoteTitle(basicHTML string) string {
@@ -52,13 +51,16 @@ func processImg(document *goquery.Document) map[uuid.UUID]int {
 			pictureCount++
 			result[uuid.FromStringOrNil(imgID)] = pictureCount
 
-			file, err := os.ReadFile(path.Join(imagesBasePath, fmt.Sprintf("%s.webp", imgID)))
+			file, err := os.ReadFile(path.Join(os.Getenv("ATTACHES_BASE_PATH"), fmt.Sprintf("%s.webp", imgID)))
 			if err == nil {
 				base64Image := base64.StdEncoding.EncodeToString(file)
 				s.SetAttr("src", fmt.Sprintf("data:image/webp;base64,%s", base64Image))
 			}
 
-			s.BeforeHtml(fmt.Sprintf(`<div>---------- картинка %d ----------</div>`, pictureCount))
+			innerText := fmt.Sprintf(`---------- картинка %d ----------`, pictureCount)
+			innerTextLength := utf8.RuneCountInString(innerText)
+			s.BeforeHtml(fmt.Sprintf(`<div style="font-family: monospace;">%s</div>`, innerText))
+			s.AfterHtml(fmt.Sprintf(`<div style="font-family: monospace;">%s</div>`, strings.Repeat("-", innerTextLength)))
 		}
 	})
 
