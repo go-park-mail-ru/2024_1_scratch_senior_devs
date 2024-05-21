@@ -77,6 +77,7 @@ type NoteBaseRepo interface {
 	ForgetTag(ctx context.Context, tagName string, userID uuid.UUID) error
 	DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error
 	UpdateTag(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error
+	UpdateTagOnAllNotes(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error
 
 	SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error
 	SetHeader(ctx context.Context, noteID uuid.UUID, header string) error

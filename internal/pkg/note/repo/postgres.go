@@ -71,6 +71,7 @@ const (
 	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
 	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
 	updateTag             = "UPDATE all_tags SET tag_name = $1 WHERE user_id = $2 AND tag_name = $3;"
+	updateTagInAllNotes   = "UPDATE notes SET tags = array_replace(tags, $1, $2) WHERE owner_id = $3;"
 	deleteTagFromAllNotes = "UPDATE notes SET tags = array_remove(tags, $1) WHERE owner_id = $2;"
 
 	setIcon   = "UPDATE notes SET icon = $1 WHERE id = $2;"
@@ -442,6 +443,21 @@ func (repo *NotePostgres) DeleteTagFromAllNotes(ctx context.Context, tagName str
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("deleteTagFromAllNotes")
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+func (repo *NotePostgres) UpdateTagOnAllNotes(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.db.Exec(ctx, updateTagInAllNotes, oldTag, newTag, userID)
+	repo.metr.ObserveResponseTime("updateTagInAllNotes", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("updateTagInAllNotes")
 		return err
 	}
 

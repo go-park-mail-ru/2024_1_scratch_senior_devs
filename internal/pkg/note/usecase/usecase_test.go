@@ -2223,7 +2223,8 @@ func TestNoteUsecase_UpdateTag(t *testing.T) {
 			name: "Test_UpdateTag_Success",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
 				baseRepo.EXPECT().UpdateTag(ctx, "", args.tagName, args.userId).Return(nil)
-				searchRepo.EXPECT().UpdateTagOnAllNotes(ctx, "", args.tagName, args.userId)
+				searchRepo.EXPECT().UpdateTagOnAllNotes(ctx, "", args.tagName, args.userId).Return(nil)
+				baseRepo.EXPECT().UpdateTagOnAllNotes(ctx, "", args.tagName, args.userId).Return(nil)
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -2237,6 +2238,21 @@ func TestNoteUsecase_UpdateTag(t *testing.T) {
 			name: "Test_UpdatetTag_FailOnUpdate",
 			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
 				baseRepo.EXPECT().UpdateTag(ctx, "", args.tagName, args.userId).Return(errors.New("error")).Times(1)
+
+			},
+			args: args{
+				ctx:    context.Background(),
+				userId: userId,
+
+				tagName: "tag1",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test_UpdatetTag_FailOnUpdateAll",
+			repoMocker: func(ctx context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().UpdateTag(ctx, "", args.tagName, args.userId).Return(nil).Times(1)
+				baseRepo.EXPECT().UpdateTagOnAllNotes(ctx, "", args.tagName, args.userId).Return(errors.New("err"))
 
 			},
 			args: args{

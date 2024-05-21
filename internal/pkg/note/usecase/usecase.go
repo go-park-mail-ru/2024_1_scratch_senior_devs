@@ -493,6 +493,10 @@ func (uc *NoteUsecase) UpdateTag(ctx context.Context, oldTag string, newTag stri
 		logger.Error(err.Error())
 		return err
 	}
+	if err := uc.baseRepo.UpdateTagOnAllNotes(ctx, oldTag, newTag, userID); err != nil {
+		logger.Error(err.Error())
+		return err
+	}
 
 	uc.wg.Add(1)
 	go func() {

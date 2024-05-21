@@ -1242,3 +1242,69 @@ func TestNotePostgres_GetAttachList(t *testing.T) {
 		})
 	}
 }
+
+func TestNotePostgres_UpdateTagOnAllNotes(t *testing.T) {
+	userId := uuid.NewV4()
+	type args struct {
+		userId  uuid.UUID
+		oldName string
+		newName string
+	}
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, pgx.Rows, args)
+		args           args
+		expectedErr    error
+	}{
+		{
+			name: "Test_UpdateTag_Success",
+			args: args{
+				userId:  userId,
+				oldName: "tag",
+				newName: "tag1",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), updateTagInAllNotes, args.oldName, args.newName, args.userId).Return(nil, nil)
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+
+			expectedErr: nil,
+		},
+
+		{
+			name: "Test_UpdateTag_Fail_Error",
+			args: args{
+				userId:  userId,
+				oldName: "tag",
+				newName: "tag1",
+			},
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, args args) {
+				mockPool.EXPECT().Exec(gomock.Any(), updateTagInAllNotes, args.oldName, args.newName, args.userId).Return(nil, errors.New("err"))
+
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+				metr.EXPECT().IncreaseErrors(gomock.Any()).Return()
+			},
+
+			expectedErr: errors.New("err"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			pgxRows := pgxpoolmock.NewRows([]string{"tag_name", "user_id"}).AddRow("t", "0").ToPgxRows()
+
+			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.args)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			err := repo.UpdateTagOnAllNotes(context.Background(), tt.args.oldName, tt.args.newName, tt.args.userId)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
