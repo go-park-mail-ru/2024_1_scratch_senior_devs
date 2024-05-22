@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/zipper"
 	"io"
 	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/zipper"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/exportpdf"
 
@@ -1252,7 +1253,7 @@ func (h *NoteHandler) ExportZip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.client.GetAttachList(r.Context(), &gen.GetAttachListRequest{
+	result, _ := h.client.GetAttachList(r.Context(), &gen.GetAttachListRequest{
 		NoteId: noteIdString,
 		UserId: jwtPayload.Id.String(),
 	})
@@ -1308,7 +1309,7 @@ func (h *NoteHandler) ExportZipShared(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.client.GetSharedAttachList(r.Context(), &gen.GetSharedAttachListRequest{
+	result, _ := h.client.GetSharedAttachList(r.Context(), &gen.GetSharedAttachListRequest{
 		NoteId: noteIdString,
 	})
 
