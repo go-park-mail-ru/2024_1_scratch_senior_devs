@@ -67,7 +67,7 @@ const (
 	addTag    = "UPDATE notes SET tags = array_append(tags, $1) WHERE id = $2;"
 	deleteTag = "UPDATE notes SET tags = array_remove(tags, $1) WHERE id = $2;"
 
-	getTags               = `SELECT tag_name FROM all_tags WHERE user_id = $1;`
+	getTags               = `SELECT tag_name FROM all_tags WHERE user_id = $1 ORDER BY tag_name;`
 	rememberTag           = "INSERT INTO all_tags(tag_name, user_id) VALUES ($1, $2) ON CONFLICT (tag_name, user_id) DO NOTHING;"
 	forgetTag             = "DELETE FROM all_tags WHERE tag_name = $1 AND user_id = $2;"
 	updateTag             = "UPDATE all_tags SET tag_name = $1 WHERE user_id = $2 AND tag_name = $3;"

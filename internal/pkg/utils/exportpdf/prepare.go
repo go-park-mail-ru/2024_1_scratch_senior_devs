@@ -15,6 +15,7 @@ import (
 const (
 	maxFilenameLength = 50
 	emptyTitleReplace = "Без названия"
+	assetsPath        = "/mnt/c/projects/Go/YouNote_data/public"
 )
 
 func getNoteTitle(basicHTML string) string {
@@ -42,6 +43,19 @@ func wrap(basicHTML string) string {
 
 func processImg(document *goquery.Document) map[uuid.UUID]int {
 	document.Find("img").Not("[data-imgid]").Remove()
+
+	//Each(func(i int, s *goquery.Selection) {
+	//	src, exists := s.Attr("src")
+	//	if exists {
+	//		file, err := os.ReadFile(path.Join(assetsPath, src))
+	//		if err == nil {
+	//			base64Image := base64.StdEncoding.EncodeToString(file)
+	//			s.SetAttr("src", fmt.Sprintf("data:image/webp;base64,%s", base64Image))
+	//		} else {
+	//			s.Remove()
+	//		}
+	//	}
+	//})
 
 	pictureCount := 0
 	result := make(map[uuid.UUID]int, 0)

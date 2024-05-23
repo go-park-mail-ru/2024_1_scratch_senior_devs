@@ -1216,6 +1216,8 @@ func TestNoteHandler_AddCollaborator(t *testing.T) {
 }
 
 func TestExportToPDF(t *testing.T) {
+	_ = os.Setenv("ATTACHES_BASE_PATH", "/mnt/c/projects/Go/YouNote_data/attaches")
+
 	t.Run("TestExportToPDF_Success", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mockClient := mock_grpc.NewMockNoteClient(ctrl)
