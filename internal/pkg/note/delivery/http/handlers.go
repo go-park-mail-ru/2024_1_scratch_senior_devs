@@ -579,6 +579,31 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 	logger.Info("client disconnected: ", slog.Any("noteID", noteID))
 }
 
+func (h *NoteHandler) SubscribeOnInvites(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	upgrader.Subprotocols = []string{r.Header.Get("Sec-WebSocket-Protocol")}
+	connection, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("fail to upgrade to websocket"))
+		return
+	}
+
+	logger.Info("connection upgraded: ", slog.Any("userID", jwtPayload.Id))
+
+	h.hub.AddClientMain(r.Context(), jwtPayload.Id, hub.NewCustomClient(connection))
+
+	logger.Info("client disconnected: ", slog.Any("userID", jwtPayload.Id))
+}
+
 func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
 
@@ -590,7 +615,7 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	noteIdString := mux.Vars(r)["id"]
-	_, err := uuid.FromString(noteIdString)
+	noteID, err := uuid.FromString(noteIdString)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
@@ -617,7 +642,7 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
+	result, err := h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
 		NoteId:  noteIdString,
 		UserId:  jwtPayload.Id.String(),
 		GuestId: guest.Id,
@@ -639,6 +664,14 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
+
+	h.hub.WriteToCacheMain(r.Context(), noteID, models.InviteMessage{
+		Type:      "invite",
+		NoteId:    noteID,
+		NoteTitle: result.Title,
+		Owner:     jwtPayload.Username,
+		Created:   time.Now().UTC(),
+	})
 
 	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")

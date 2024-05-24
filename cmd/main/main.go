@@ -183,6 +183,7 @@ func main() {
 		note.Handle("/{id}/set_public", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPublic))).Methods(http.MethodPut, http.MethodOptions)
 		note.Handle("/{id}/set_private", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPrivate))).Methods(http.MethodPut, http.MethodOptions)
 		note.Handle("/{id}/make_zip", JwtMiddleware(http.HandlerFunc(NoteDelivery.ExportZip))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/subscribe_on_invites", JwtWebsocketMiddleware(http.HandlerFunc(NoteDelivery.SubscribeOnInvites))).Methods(http.MethodGet, http.MethodOptions)
 	}
 
 	shared := r.PathPrefix("/shared").Subrouter()
@@ -228,6 +229,7 @@ func main() {
 
 	go NoteHub.Run(context.WithValue(context.Background(), config.LoggerContextKey, logger))
 	go NoteHub.StartCache(context.WithValue(context.Background(), config.LoggerContextKey, logger))
+	go NoteHub.StartCacheMain(context.WithValue(context.Background(), config.LoggerContextKey, logger))
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)

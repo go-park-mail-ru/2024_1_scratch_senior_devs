@@ -539,7 +539,7 @@ func TestGrpcNoteHandler_AddCollaborator(t *testing.T) {
 			want:    &gen.AddCollaboratorResponse{},
 			wantErr: false,
 			mocker: func(req *gen.AddCollaboratorRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return(nil)
+				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return("", nil)
 			},
 		},
 		{
@@ -552,7 +552,7 @@ func TestGrpcNoteHandler_AddCollaborator(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocker: func(req *gen.AddCollaboratorRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return(errors.New("error"))
+				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return("", errors.New("error"))
 			},
 		},
 	}

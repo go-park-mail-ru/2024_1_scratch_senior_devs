@@ -21,21 +21,30 @@ import (
 const ErrHubWrite = "can`t write hub`s message: "
 
 type Hub struct {
-	connect       sync.Map
+	connect       sync.Map // wsConnection : noteID
 	currentOffset time.Time
-	repo          note.NoteBaseRepo
-	cache         *ttlcache.Cache[uuid.UUID, models.CacheMessage]
-	cfg           config.HubConfig
-	metr          metrics.WSMetrics
+	cache         *ttlcache.Cache[uuid.UUID, models.CacheMessage] // noteID : message
+
+	connectMain       sync.Map // wsConnection : userID
+	currentOffsetMain time.Time
+	cacheMain         *ttlcache.Cache[uuid.UUID, []models.InviteMessage] // userID : []message
+
+	repo note.NoteBaseRepo
+	cfg  config.HubConfig
+	metr metrics.WSMetrics
 }
 
 func NewHub(repo note.NoteBaseRepo, cfg config.HubConfig, metr metrics.WSMetrics) *Hub {
 	return &Hub{
-		repo:          repo,
 		currentOffset: time.Now().UTC(),
 		cache:         ttlcache.New[uuid.UUID, models.CacheMessage](ttlcache.WithTTL[uuid.UUID, models.CacheMessage](cfg.CacheTtl)),
-		cfg:           cfg,
-		metr:          metr,
+
+		currentOffsetMain: time.Now().UTC(),
+		cacheMain:         ttlcache.New[uuid.UUID, []models.InviteMessage](ttlcache.WithTTL[uuid.UUID, []models.InviteMessage](cfg.CacheTtl)),
+
+		repo: repo,
+		cfg:  cfg,
+		metr: metr,
 	}
 }
 
@@ -43,7 +52,16 @@ func (h *Hub) StartCache(ctx context.Context) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	h.cache.Start()
+
 	logger.Info("hub cache started")
+}
+
+func (h *Hub) StartCacheMain(ctx context.Context) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	h.cacheMain.Start()
+
+	logger.Info("hub cacheMain started")
 }
 
 func (h *Hub) WriteToCache(ctx context.Context, message models.CacheMessage) {
@@ -51,6 +69,14 @@ func (h *Hub) WriteToCache(ctx context.Context, message models.CacheMessage) {
 
 	h.cache.Set(message.NoteId, message, h.cfg.CacheTtl)
 	logger.Info("cache - new message")
+}
+
+func (h *Hub) WriteToCacheMain(ctx context.Context, invitedID uuid.UUID, message models.InviteMessage) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	h.cacheMain.Set(invitedID, append(h.cacheMain.Get(invitedID).Value(), message), h.cfg.CacheTtl)
+
+	logger.Info("cacheMain - new message")
 }
 
 type CustomClient struct {
@@ -128,11 +154,37 @@ func (h *Hub) AddClient(ctx context.Context, noteID uuid.UUID, client *CustomCli
 	})
 }
 
+func (h *Hub) AddClientMain(ctx context.Context, invitedID uuid.UUID, client *CustomClient) {
+	client.SocketID = uuid.NewV4()
+	h.connectMain.Store(client, invitedID)
+	h.metr.IncreaseConnections()
+
+	go func() {
+		for {
+			_, _, err := client.NextReader()
+			if err != nil {
+				_ = client.Close()
+				h.metr.DecreaseConnections()
+				return
+			}
+		}
+	}()
+
+	client.SetCloseHandler(func(code int, text string) error {
+		h.connect.Delete(client)
+		h.metr.DecreaseConnections()
+		return nil
+	})
+}
+
 func (h *Hub) Run(ctx context.Context) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	t := time.NewTicker(h.cfg.Period)
 	defer t.Stop()
+
+	tMain := time.NewTicker(h.cfg.Period)
+	defer tMain.Stop()
 
 	for {
 		select {
@@ -169,6 +221,27 @@ func (h *Hub) Run(ctx context.Context) {
 			})
 
 			h.currentOffset = h.currentOffset.Add(h.cfg.Period)
+
+		case <-tMain.C:
+			h.connectMain.Range(func(key, value interface{}) bool {
+				connect := key.(*CustomClient)
+				invitedID := value.(uuid.UUID)
+
+				if h.cacheMain.Has(invitedID) {
+					inviteMessages := h.cacheMain.Get(invitedID).Value()
+					for _, message := range inviteMessages {
+						if !message.Created.Before(h.currentOffsetMain) {
+							if err := connect.WriteJSON(message); err != nil {
+								logger.Error(ErrHubWrite + err.Error())
+							}
+						}
+					}
+				}
+
+				return true
+			})
+
+			h.currentOffsetMain = h.currentOffsetMain.Add(h.cfg.Period)
 
 		case <-ctx.Done():
 			return

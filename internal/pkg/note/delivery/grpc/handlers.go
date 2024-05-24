@@ -129,13 +129,14 @@ func (h *GrpcNoteHandler) ForgetTag(ctx context.Context, in *generatedNote.AllTa
 func (h *GrpcNoteHandler) AddCollaborator(ctx context.Context, in *generatedNote.AddCollaboratorRequest) (*generatedNote.AddCollaboratorResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	if err := h.uc.AddCollaborator(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId), uuid.FromStringOrNil(in.GuestId)); err != nil {
+	title, err := h.uc.AddCollaborator(ctx, uuid.FromStringOrNil(in.NoteId), uuid.FromStringOrNil(in.UserId), uuid.FromStringOrNil(in.GuestId))
+	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}
 
 	logger.Info("success")
-	return &generatedNote.AddCollaboratorResponse{}, nil
+	return &generatedNote.AddCollaboratorResponse{Title: title}, nil
 }
 
 func (h *GrpcNoteHandler) GetAllNotes(ctx context.Context, in *generatedNote.GetAllRequest) (*generatedNote.GetAllResponse, error) {

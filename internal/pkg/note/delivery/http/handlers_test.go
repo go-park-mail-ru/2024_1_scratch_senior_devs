@@ -1075,7 +1075,7 @@ func TestNoteHandler_AddCollaborator(t *testing.T) {
 					UserId:  userId.String(),
 					GuestId: guestId.String(),
 				}).Return(&gen.AddCollaboratorResponse{}, nil)
-
+				mockHub.EXPECT().WriteToCacheMain(gomock.Any(), gomock.Any(), gomock.Any())
 			},
 		},
 		{

@@ -62,7 +62,7 @@ const (
 
 	getUpdates = "SELECT note_id, created, message_info FROM messages WHERE note_id = $1 AND created > $2;"
 
-	addCollaborator = "UPDATE notes SET collaborators = array_append(collaborators, $1) WHERE id = $2;"
+	addCollaborator = "UPDATE notes SET collaborators = array_append(collaborators, $1) WHERE id = $2 returning notes.data->'title';"
 
 	addTag    = "UPDATE notes SET tags = array_append(tags, $1) WHERE id = $2;"
 	deleteTag = "UPDATE notes SET tags = array_remove(tags, $1) WHERE id = $2;"
@@ -124,19 +124,21 @@ func (repo *NotePostgres) GetTags(ctx context.Context, userID uuid.UUID) ([]stri
 	return result, nil
 }
 
-func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, guestID uuid.UUID) error {
+func (repo *NotePostgres) AddCollaborator(ctx context.Context, noteID uuid.UUID, guestID uuid.UUID) (string, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
+	var title string
+
 	start := time.Now()
-	_, err := repo.db.Exec(ctx, addCollaborator, guestID, noteID)
+	err := repo.db.QueryRow(ctx, addCollaborator, guestID, noteID).Scan(&title)
 	repo.metr.ObserveResponseTime("addCollaborator", time.Since(start).Seconds())
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("addCollaborator")
-		return err
+		return "", err
 	}
 
-	return nil
+	return title, nil
 }
 
 func (repo *NotePostgres) GetUpdates(ctx context.Context, noteID uuid.UUID, offset time.Time) ([]models.Message, error) {

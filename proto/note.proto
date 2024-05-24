@@ -96,7 +96,9 @@ message AddCollaboratorRequest {
      string GuestId = 3;
 }
 
-message AddCollaboratorResponse {}
+message AddCollaboratorResponse {
+     string Title = 1;
+}
 
 message GetAllRequest{
      int64 Count = 1;

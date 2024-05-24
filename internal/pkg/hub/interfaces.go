@@ -11,7 +11,10 @@ import (
 
 type HubInterface interface {
 	StartCache(context.Context)
+	StartCacheMain(ctx context.Context)
 	WriteToCache(context.Context, models.CacheMessage)
+	WriteToCacheMain(context.Context, uuid.UUID, models.InviteMessage)
 	AddClient(context.Context, uuid.UUID, *CustomClient)
+	AddClientMain(context.Context, uuid.UUID, *CustomClient)
 	Run(context.Context)
 }

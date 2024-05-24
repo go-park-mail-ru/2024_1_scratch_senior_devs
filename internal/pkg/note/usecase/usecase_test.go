@@ -802,7 +802,7 @@ func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
 				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.Note{
 					Id: noteId,
 				}, nil)
-				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(errors.New("error"))
+				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return("", errors.New("error"))
 
 			},
 		},
@@ -813,7 +813,7 @@ func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
 				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.Note{
 					Id: noteId,
 				}, nil)
-				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(nil)
+				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return("", nil)
 
 			},
 		},
@@ -927,7 +927,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 					OwnerId: userId,
 					Parent:  uuid.UUID{},
 				}, nil).Times(1)
-				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return(errors.New("error"))
+				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return("", errors.New("error"))
 
 			},
 
@@ -944,7 +944,7 @@ func TestNoteUsecase_AddCollaborator(t *testing.T) {
 
 			tt.repoMocker(context.Background(), repo, searchRepo)
 
-			err := uc.AddCollaborator(context.Background(), noteId, userId, guestId)
+			_, err := uc.AddCollaborator(context.Background(), noteId, userId, guestId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NoteUsecase.AddCollaborator error = %v, wantErr %v", err, tt.wantErr)
 				return

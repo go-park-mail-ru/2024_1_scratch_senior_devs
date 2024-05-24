@@ -30,6 +30,14 @@ type JoinMessage struct {
 	ImagePath string    `json:"image_path,omitempty"`
 }
 
+type InviteMessage struct {
+	Type      string    `json:"type"`
+	NoteId    uuid.UUID `json:"note_id"`
+	NoteTitle string    `json:"note_title"`
+	Owner     string    `json:"owner"`
+	Created   time.Time `json:"created"`
+}
+
 type SocketIDMessage struct {
 	Type     string    `json:"type"`
 	SocketID uuid.UUID `json:"socket_id"`

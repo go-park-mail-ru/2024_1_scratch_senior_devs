@@ -38,11 +38,12 @@ func (m *MockNoteUsecase) EXPECT() *MockNoteUsecaseMockRecorder {
 }
 
 // AddCollaborator mocks base method.
-func (m *MockNoteUsecase) AddCollaborator(arg0 context.Context, arg1, arg2, arg3 uuid.UUID) error {
+func (m *MockNoteUsecase) AddCollaborator(arg0 context.Context, arg1, arg2, arg3 uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AddCollaborator indicates an expected call of AddCollaborator.
@@ -401,11 +402,12 @@ func (m *MockNoteBaseRepo) EXPECT() *MockNoteBaseRepoMockRecorder {
 }
 
 // AddCollaborator mocks base method.
-func (m *MockNoteBaseRepo) AddCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) error {
+func (m *MockNoteBaseRepo) AddCollaborator(arg0 context.Context, arg1, arg2 uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddCollaborator", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AddCollaborator indicates an expected call of AddCollaborator.

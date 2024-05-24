@@ -297,7 +297,8 @@ func (uc *NoteUsecase) addCollaboratorRecursive(ctx context.Context, noteID uuid
 		return err
 	}
 
-	if err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
+	_, err = uc.baseRepo.AddCollaborator(ctx, noteID, guestID)
+	if err != nil {
 		return err
 	}
 
@@ -310,45 +311,46 @@ func (uc *NoteUsecase) addCollaboratorRecursive(ctx context.Context, noteID uuid
 	return nil
 }
 
-func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, guestID uuid.UUID) error {
+func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, guestID uuid.UUID) (string, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
 	if err != nil {
 		logger.Error(err.Error())
-		return err
+		return "", err
 	}
 
 	if currentNote.OwnerId != userID {
 		logger.Error("not owner")
-		return errors.New("not found")
+		return "", errors.New("not found")
 	}
 
 	emptyID := uuid.UUID{}
 	if currentNote.Parent != emptyID {
 		logger.Error("note has a parent")
-		return errors.New("not found")
+		return "", errors.New("not found")
 	}
 
 	if slices.Contains(currentNote.Collaborators, guestID) {
 		logger.Error(note.ErrAlreadyCollaborator)
-		return errors.New(note.ErrAlreadyCollaborator)
+		return "", errors.New(note.ErrAlreadyCollaborator)
 	}
 
 	if len(currentNote.Collaborators) >= uc.constraints.MaxCollaborators {
 		logger.Error(note.ErrTooManyCollaborators)
-		return errors.New(note.ErrTooManyCollaborators)
+		return "", errors.New(note.ErrTooManyCollaborators)
 	}
 
-	if err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
+	title, err := uc.baseRepo.AddCollaborator(ctx, noteID, guestID)
+	if err != nil {
 		logger.Error(err.Error())
-		return err
+		return "", err
 	}
 
 	for _, child := range currentNote.Children {
 		if err := uc.addCollaboratorRecursive(ctx, child, guestID, userID); err != nil {
 			logger.Error(err.Error())
-			return err
+			return "", err
 		}
 	}
 
@@ -362,7 +364,7 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 	uc.wg.Wait()
 
 	logger.Info("success")
-	return nil
+	return title, nil
 }
 
 func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
