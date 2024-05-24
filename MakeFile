@@ -14,8 +14,8 @@ lint:
 swag_gen:
 	GOPATH/bin/swag init -d cmd/main/ --parseInternal --output internal/pkg/docs --parseDependency
 
-mock_gen:
+gen_all:
 	go generate ./...
 
-easyjson:
-	easyjson -all -pkg ./internal/models/
+#easyjson:
+#	easyjson -all -pkg ./internal/models/
