@@ -665,7 +665,7 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.hub.WriteToCacheMain(r.Context(), noteID, models.InviteMessage{
+	h.hub.WriteToCacheMain(r.Context(), uuid.FromStringOrNil(guest.Id), models.InviteMessage{
 		Type:      "invite",
 		NoteId:    noteID,
 		NoteTitle: result.Title,

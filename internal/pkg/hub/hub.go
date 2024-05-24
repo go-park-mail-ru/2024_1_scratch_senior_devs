@@ -74,7 +74,17 @@ func (h *Hub) WriteToCache(ctx context.Context, message models.CacheMessage) {
 func (h *Hub) WriteToCacheMain(ctx context.Context, invitedID uuid.UUID, message models.InviteMessage) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	h.cacheMain.Set(invitedID, append(h.cacheMain.Get(invitedID).Value(), message), h.cfg.CacheTtl)
+	var invites []models.InviteMessage
+
+	item := h.cacheMain.Get(invitedID)
+	if item == nil {
+		invites = make([]models.InviteMessage, 0, 1)
+	} else {
+		invites = item.Value()
+	}
+
+	invites = append(invites, message)
+	h.cacheMain.Set(invitedID, invites, h.cfg.CacheTtl)
 
 	logger.Info("cacheMain - new message")
 }
