@@ -65,7 +65,14 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), &slog.HandlerOptions{Level: slog.LevelInfo}))
 	cfg := config.LoadConfig(os.Getenv("CONFIG_FILE"), logger)
 
-	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	dbConfig, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		logger.Error("Unable to parse database URL: %v", err)
+	}
+
+	dbConfig.MaxConns = 10
+
+	db, err := pgxpool.ConnectConfig(context.Background(), dbConfig)
 	if err != nil {
 		logger.Error("error connecting to postgres: " + err.Error())
 		return

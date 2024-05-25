@@ -90,6 +90,8 @@ services:
     volumes:
       - ./build/sql/create_tables.sql:/docker-entrypoint-initdb.d/initdb.sql
       - younote-db-data:/var/lib/postgresql/data
+      - ./build/sql/post  postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
   proxy:
     container_name: nginx
     image: nginx

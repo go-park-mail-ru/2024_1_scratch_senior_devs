@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
         CONSTRAINT image_path_length CHECK (char_length(image_path) <= 255),
     secret TEXT
         CONSTRAINT secret_length CHECK (char_length(secret) <= 255)
-);
+    );
 
 CREATE TABLE IF NOT EXISTS notes (
     id              UUID        PRIMARY KEY,
@@ -27,17 +27,17 @@ CREATE TABLE IF NOT EXISTS notes (
     create_time     TIMESTAMP   NOT NULL,
     update_time     TIMESTAMP   NOT NULL,
     owner_id        UUID        NOT NULL
-                    REFERENCES users (id),
+        REFERENCES users (id),
     parent          UUID        DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
     children        UUID[],
     tags            TEXT[],
     collaborators   UUID[],
     icon            TEXT
-                    CONSTRAINT icon_length CHECK (char_length(icon) <= 255),
+        CONSTRAINT icon_length CHECK (char_length(icon) <= 255),
     header          TEXT
-                    CONSTRAINT header_length CHECK (char_length(header) <= 255),
+        CONSTRAINT header_length CHECK (char_length(header) <= 255),
     is_public       BOOLEAN     NOT NULL
-                    DEFAULT false
+        DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS favorites (
@@ -48,9 +48,9 @@ CREATE TABLE IF NOT EXISTS favorites (
 
 CREATE TABLE IF NOT EXISTS all_tags (
     tag_name    TEXT
-                CONSTRAINT tag_name_length CHECK (char_length(tag_name) <= 255),
+        CONSTRAINT tag_name_length CHECK (char_length(tag_name) <= 255),
     user_id     UUID
-                REFERENCES users (id),
+        REFERENCES users (id),
     PRIMARY KEY (tag_name, user_id)
 );
 
@@ -76,10 +76,10 @@ CREATE OR REPLACE FUNCTION delete_children_notes()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     AS $BODY$
-    BEGIN
-        DELETE FROM notes WHERE id = ANY(SELECT UNNEST(OLD.children));
-        RETURN OLD;
-    END;
+BEGIN
+    DELETE FROM notes WHERE id = ANY(SELECT UNNEST(OLD.children));
+    RETURN OLD;
+END;
 $BODY$;
 
 CREATE OR REPLACE TRIGGER trigger_delete_children_notes
@@ -102,16 +102,16 @@ CREATE OR REPLACE TRIGGER trigger_insert_message
     AFTER UPDATE
     ON notes
     FOR EACH ROW
-EXECUTE FUNCTION insert_message();
+    EXECUTE FUNCTION insert_message();
 
 CREATE OR REPLACE FUNCTION update_tags()
     RETURNS trigger
     LANGUAGE 'plpgsql'
     AS $BODY$
-    BEGIN
-        UPDATE notes SET tags = array_replace(tags, OLD.tag_name, NEW.tag_name) WHERE owner_id=OLD.user_id;
-        RETURN OLD;
-    END;
+BEGIN
+    UPDATE notes SET tags = array_replace(tags, OLD.tag_name, NEW.tag_name) WHERE owner_id=OLD.user_id;
+    RETURN OLD;
+END;
 $BODY$;
 
 CREATE OR REPLACE TRIGGER trigger_update_tags
