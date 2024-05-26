@@ -661,6 +661,31 @@ func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid
 	return resultNote, nil
 }
 
+func (uc *NoteUsecase) changeModeRecursive(ctx context.Context, noteID uuid.UUID, userID uuid.UUID, isPublic bool) error {
+	currentNote, err := uc.baseRepo.ReadNote(ctx, noteID, userID)
+	if err != nil {
+		return err
+	}
+
+	if isPublic {
+		if err = uc.baseRepo.SetPublic(ctx, noteID); err != nil {
+			return err
+		}
+	} else {
+		if err = uc.baseRepo.SetPrivate(ctx, noteID); err != nil {
+			return err
+		}
+	}
+
+	for _, child := range currentNote.Children {
+		if err := uc.changeModeRecursive(ctx, child, userID, isPublic); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (uc *NoteUsecase) SetPublic(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) (models.Note, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -680,6 +705,13 @@ func (uc *NoteUsecase) SetPublic(ctx context.Context, noteID uuid.UUID, userID u
 		return models.Note{}, err
 	}
 	resultNote.Public = true
+
+	for _, child := range resultNote.Children {
+		if err := uc.changeModeRecursive(ctx, child, userID, true); err != nil {
+			logger.Error(err.Error())
+			return models.Note{}, err
+		}
+	}
 
 	uc.wg.Add(1)
 	go func() {
@@ -713,6 +745,13 @@ func (uc *NoteUsecase) SetPrivate(ctx context.Context, noteID uuid.UUID, userID 
 		return models.Note{}, err
 	}
 	resultNote.Public = false
+
+	for _, child := range resultNote.Children {
+		if err := uc.changeModeRecursive(ctx, child, userID, false); err != nil {
+			logger.Error(err.Error())
+			return models.Note{}, err
+		}
+	}
 
 	uc.wg.Add(1)
 	go func() {

@@ -11,11 +11,8 @@ test:
 lint:
 	golangci-lint run --config=.golangci.yaml 
 	
-swag_gen:
-	GOPATH/bin/swag init -d cmd/main/ --parseInternal --output internal/pkg/docs --parseDependency
+swagger:
+	swag init -d cmd/main/ --parseInternal --output internal/pkg/docs --parseDependency
 
-gen_all:
+generate:
 	go generate ./...
-
-#easyjson:
-#	easyjson -all -pkg ./internal/models/

@@ -1,6 +1,6 @@
 syntax = "proto3";
 package note;
-option go_package = "./internal/pkg/note/delivery/grpc/gen/;gen";
+option go_package = "../internal/pkg/note/delivery/grpc/gen/;gen";
 
 service Note {
      rpc GetAllNotes(GetAllRequest) returns (GetAllResponse) {}

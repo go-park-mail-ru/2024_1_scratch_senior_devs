@@ -1,6 +1,6 @@
 syntax = "proto3";
 package auth;
-option go_package = "./internal/pkg/auth/delivery/grpc/gen/;gen";
+option go_package = "../internal/pkg/auth/delivery/grpc/gen/;gen";
 
 service Auth {
   rpc SignUp(UserFormData) returns (SignUpResponse) {}
