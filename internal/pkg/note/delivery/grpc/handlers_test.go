@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
+	generatedNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
@@ -1318,6 +1319,141 @@ func TestGrpcNoteHandler_SetPrivate(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GrpcNoteHandler.SetPrivate() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_GetAttachList(t *testing.T) {
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx context.Context
+		in  *generatedNote.GetAttachListRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *generatedNote.GetAttachListResponse
+		mocker  func(req *gen.GetAttachListRequest, mock *mock_note.MockNoteUsecase)
+		wantErr bool
+	}{
+		{
+			name: "Test_GetAttachList_Success",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetAttachListRequest{
+					NoteId: noteId.String(),
+					UserId: userId.String(),
+				},
+			},
+			want: &generatedNote.GetAttachListResponse{
+				Paths: []string{"1", "2"},
+			},
+			wantErr: false,
+			mocker: func(req *generatedNote.GetAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return([]string{"1", "2"}, nil)
+			},
+		},
+		{
+			name: "Test_GetAttachList_Fail",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetAttachListRequest{
+					NoteId: noteId.String(),
+					UserId: userId.String(),
+				},
+			},
+			want:    nil,
+			wantErr: true,
+			mocker: func(req *generatedNote.GetAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return([]string{}, errors.New("err"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.args.in, mockUsecase)
+
+			got, err := h.GetAttachList(tt.args.ctx, tt.args.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.GetAttachList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GrpcNoteHandler.GetAttachList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_GetSharedAttachList(t *testing.T) {
+	noteId := uuid.NewV4()
+
+	type args struct {
+		ctx context.Context
+		in  *generatedNote.GetSharedAttachListRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *generatedNote.GetAttachListResponse
+		mocker  func(req *gen.GetSharedAttachListRequest, mock *mock_note.MockNoteUsecase)
+		wantErr bool
+	}{
+		{
+			name: "Test_GetSharedAttachList_Success",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetSharedAttachListRequest{
+					NoteId: noteId.String(),
+				},
+			},
+			want: &generatedNote.GetAttachListResponse{
+				Paths: []string{"1", "2"},
+			},
+			wantErr: false,
+			mocker: func(req *generatedNote.GetSharedAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetSharedAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId)).Return([]string{"1", "2"}, nil)
+			},
+		},
+		{
+			name: "Test_GetSharedAttachList_Fail",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetSharedAttachListRequest{
+					NoteId: noteId.String(),
+				},
+			},
+			want:    nil,
+			wantErr: true,
+			mocker: func(req *generatedNote.GetSharedAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetSharedAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId)).Return([]string{}, errors.New("err"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.args.in, mockUsecase)
+
+			got, err := h.GetSharedAttachList(tt.args.ctx, tt.args.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.GetSharedAttachList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GrpcNoteHandler.GetSharedAttachList() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -2282,3 +2282,96 @@ func TestNoteUsecase_UpdateTag(t *testing.T) {
 		})
 	}
 }
+
+func TestNoteUsecase_GetSharedAttachList(t *testing.T) {
+	elasticConfig := config.ElasticConfig{}
+
+	constraintsConfig := config.ConstraintsConfig{}
+
+	noteId := uuid.NewV4()
+	type args struct {
+		noteID uuid.UUID
+	}
+	tests := []struct {
+		name       string
+		args       args
+		repoMocker func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args)
+		want       []string
+		wantErr    bool
+	}{
+		{
+			name: "Test_GetSharedAttachList_Success",
+			args: args{
+				noteID: noteId,
+			},
+			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{
+					Public: true,
+					Id:     args.noteID,
+				}, nil)
+				baseRepo.EXPECT().GetAttachList(gomock.Any(), args.noteID).Return([]string{"1", "2"}, nil)
+
+			},
+			want:    []string{"1", "2"},
+			wantErr: false,
+		},
+		{
+			name: "Test_GetSharedAttachList_NotPublic",
+			args: args{
+				noteID: noteId,
+			},
+			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{
+					Public: false,
+				}, nil)
+
+			},
+			want:    []string{},
+			wantErr: true,
+		},
+		{
+			name: "Test_GetSharedAttachList_FailRead",
+			args: args{
+				noteID: noteId,
+			},
+			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{}, errors.New("err"))
+
+			},
+			want:    []string{},
+			wantErr: true,
+		},
+		{
+			name: "Test_GetSharedAttachList_FailGetList",
+			args: args{
+				noteID: noteId,
+			},
+			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{
+					Public: true,
+				}, nil)
+				baseRepo.EXPECT().GetAttachList(gomock.Any(), args.noteID).Return([]string{}, errors.New("err"))
+
+			},
+			want:    []string{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(repo, searchRepo, tt.args)
+			got, err := uc.GetSharedAttachList(context.Background(), tt.args.noteID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.GetSharedAttachList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
