@@ -1308,3 +1308,53 @@ func TestNotePostgres_UpdateTagOnAllNotes(t *testing.T) {
 		})
 	}
 }
+
+func TestNoteRepo_GetOwnerInfo(t *testing.T) {
+	tests := []struct {
+		name           string
+		mockRepoAction func(*pgxpoolmock.MockPgxPool, *mock_metrics.MockDBMetrics, pgx.Rows, uuid.UUID)
+		Id             uuid.UUID
+		columns        []string
+		expectedErr    error
+	}{
+		{
+			name: "GetOwnerInfo_Success",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, id uuid.UUID) {
+				mockPool.EXPECT().QueryRow(gomock.Any(), getOwnerInfo, id).Return(pgxRows)
+				pgxRows.Next()
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+			Id:          uuid.NewV4(),
+			columns:     []string{"username", "image_path"},
+			expectedErr: nil,
+		},
+		{
+			name: "GetOwnerInfo_Fail",
+			mockRepoAction: func(mockPool *pgxpoolmock.MockPgxPool, metr *mock_metrics.MockDBMetrics, pgxRows pgx.Rows, id uuid.UUID) {
+				mockPool.EXPECT().QueryRow(gomock.Any(), getOwnerInfo, id).Return(pgxRows)
+				pgxRows.Next()
+				metr.EXPECT().ObserveResponseTime(gomock.Any(), gomock.Any()).Return()
+			},
+			Id:          uuid.NewV4(),
+			columns:     []string{"username", "image_path"},
+			expectedErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockPool := pgxpoolmock.NewMockPgxPool(ctrl)
+			mockMetrics := mock_metrics.NewMockDBMetrics(ctrl)
+			defer ctrl.Finish()
+
+			pgxRows := pgxpoolmock.NewRows(tt.columns).AddRow("", "").ToPgxRows()
+
+			tt.mockRepoAction(mockPool, mockMetrics, pgxRows, tt.Id)
+
+			repo := CreateNotePostgres(mockPool, mockMetrics)
+			_, err := repo.GetOwnerInfo(context.Background(), tt.Id)
+
+			assert.Equal(t, tt.expectedErr, err)
+		})
+	}
+}
