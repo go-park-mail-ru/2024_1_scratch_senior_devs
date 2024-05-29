@@ -2411,12 +2411,13 @@ func TestNoteUsecase_GetSharedAttachList(t *testing.T) {
 				noteID: noteId,
 			},
 			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
-				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{
-					Public: true,
-					Id:     args.noteID,
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.NoteResponse{
+					Note: models.Note{
+						Public: true,
+						Id:     args.noteID,
+					},
 				}, nil)
 				baseRepo.EXPECT().GetAttachList(gomock.Any(), args.noteID).Return([]string{"1", "2"}, nil)
-
 			},
 			want:    []string{"1", "2"},
 			wantErr: false,
@@ -2427,8 +2428,10 @@ func TestNoteUsecase_GetSharedAttachList(t *testing.T) {
 				noteID: noteId,
 			},
 			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
-				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{
-					Public: false,
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.NoteResponse{
+					Note: models.Note{
+						Public: false,
+					},
 				}, nil)
 
 			},
@@ -2441,7 +2444,7 @@ func TestNoteUsecase_GetSharedAttachList(t *testing.T) {
 				noteID: noteId,
 			},
 			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
-				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{}, errors.New("err"))
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.NoteResponse{}, errors.New("err"))
 
 			},
 			want:    []string{},
@@ -2453,8 +2456,10 @@ func TestNoteUsecase_GetSharedAttachList(t *testing.T) {
 				noteID: noteId,
 			},
 			repoMocker: func(baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo, args args) {
-				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.Note{
-					Public: true,
+				baseRepo.EXPECT().ReadPublicNote(gomock.Any(), args.noteID).Return(models.NoteResponse{
+					Note: models.Note{
+						Public: true,
+					},
 				}, nil)
 				baseRepo.EXPECT().GetAttachList(gomock.Any(), args.noteID).Return([]string{}, errors.New("err"))
 
