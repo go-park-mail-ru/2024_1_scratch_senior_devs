@@ -36,6 +36,26 @@ func (m *MockAuthClient) EXPECT() *MockAuthClientMockRecorder {
 	return m.recorder
 }
 
+// CheckLoginAttempts mocks base method.
+func (m *MockAuthClient) CheckLoginAttempts(ctx context.Context, in *gen.CheckLoginAttemptsRequest, opts ...grpc.CallOption) (*gen.EmptyMessage, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CheckLoginAttempts", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckLoginAttempts indicates an expected call of CheckLoginAttempts.
+func (mr *MockAuthClientMockRecorder) CheckLoginAttempts(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckLoginAttempts", reflect.TypeOf((*MockAuthClient)(nil).CheckLoginAttempts), varargs...)
+}
+
 // CheckUser mocks base method.
 func (m *MockAuthClient) CheckUser(ctx context.Context, in *gen.CheckUserRequest, opts ...grpc.CallOption) (*gen.User, error) {
 	m.ctrl.T.Helper()
@@ -217,6 +237,21 @@ func NewMockAuthServer(ctrl *gomock.Controller) *MockAuthServer {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAuthServer) EXPECT() *MockAuthServerMockRecorder {
 	return m.recorder
+}
+
+// CheckLoginAttempts mocks base method.
+func (m *MockAuthServer) CheckLoginAttempts(arg0 context.Context, arg1 *gen.CheckLoginAttemptsRequest) (*gen.EmptyMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckLoginAttempts", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckLoginAttempts indicates an expected call of CheckLoginAttempts.
+func (mr *MockAuthServerMockRecorder) CheckLoginAttempts(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckLoginAttempts", reflect.TypeOf((*MockAuthServer)(nil).CheckLoginAttempts), arg0, arg1)
 }
 
 // CheckUser mocks base method.

@@ -55,7 +55,7 @@ func TestHub_StartCache(t *testing.T) {
 			NoteId:      noteID,
 			Username:    "test",
 			Created:     time.Now().UTC(),
-			MessageInfo: []byte("{}"),
+			MessageInfo: "{}",
 			Type:        "updated",
 		}, hubConfig.CacheTtl)
 
@@ -86,7 +86,7 @@ func TestHub_WriteToCache(t *testing.T) {
 			NoteId:      noteID,
 			Username:    "test",
 			Created:     time.Now().UTC(),
-			MessageInfo: []byte("{}"),
+			MessageInfo: "{}",
 			Type:        "updated",
 		})
 
@@ -211,7 +211,10 @@ func TestHub_Run(t *testing.T) {
 		defer hub.cache.Stop()
 
 		noteID := uuid.NewV4()
-		hub.connect.Store(connection, noteID)
+		socketID := uuid.NewV4()
+		customConnection := NewCustomClient(connection)
+		customConnection.SocketID = socketID
+		hub.connect.Store(customConnection, noteID)
 
 		currentTime := time.Now().UTC()
 		updateCacheMessage := models.CacheMessage{
@@ -219,6 +222,7 @@ func TestHub_Run(t *testing.T) {
 			NoteId:   noteID,
 			Username: "test",
 			Created:  currentTime,
+			SocketID: socketID,
 		}
 		updateMessage := models.Message{
 			Type:    "updated",
@@ -232,7 +236,7 @@ func TestHub_Run(t *testing.T) {
 
 		hub.WriteToCache(context.Background(), updateCacheMessage)
 
-		_, byteMessage, err := connection.ReadMessage()
+		_, byteMessage, err := customConnection.ReadMessage()
 		if err != nil {
 			t.Fatalf("%v", err)
 		}
@@ -248,7 +252,7 @@ func TestHub_Run(t *testing.T) {
 
 		// =====================================================================
 
-		_, byteMessage2, err := connection.ReadMessage()
+		_, byteMessage2, err := customConnection.ReadMessage()
 		if err != nil {
 			t.Fatalf("%v", err)
 		}

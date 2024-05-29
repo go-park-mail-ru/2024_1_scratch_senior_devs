@@ -43,6 +43,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlockerUsecase := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			mockUsecase.EXPECT().SignUp(gomock.Any(), models.UserFormData{
@@ -55,7 +56,7 @@ func TestAuthHandler_SignUp(t *testing.T) {
 				PasswordHash: responses.GetHash(tt.password),
 			}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 
-			handler := NewGrpcAuthHandler(mockUsecase)
+			handler := NewGrpcAuthHandler(mockUsecase, mockBlockerUsecase)
 			_, err := handler.SignUp(context.Background(), &gen.UserFormData{
 				Username: tt.username,
 				Password: tt.password,
@@ -98,6 +99,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlockerUsecase := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			mockUsecase.EXPECT().SignIn(gomock.Any(), models.UserFormData{
@@ -110,7 +112,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 				PasswordHash: responses.GetHash(tt.password),
 			}, "this_is_jwt_token", time.Now(), tt.usecaseErr)
 
-			handler := NewGrpcAuthHandler(mockUsecase)
+			handler := NewGrpcAuthHandler(mockUsecase, mockBlockerUsecase)
 			_, err := handler.SignIn(context.Background(), &gen.UserFormData{
 				Username: tt.username,
 				Password: tt.password,
@@ -150,6 +152,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlockerUsecase := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			mockUsecase.EXPECT().CheckUser(gomock.Any(), tt.id).Return(models.User{
@@ -159,7 +162,7 @@ func TestAuthHandler_CheckUser(t *testing.T) {
 				PasswordHash: responses.GetHash("12345678a"),
 			}, tt.usecaseErr)
 
-			handler := NewGrpcAuthHandler(mockUsecase)
+			handler := NewGrpcAuthHandler(mockUsecase, mockBlockerUsecase)
 			_, err := handler.CheckUser(context.Background(), &gen.CheckUserRequest{
 				UserId: tt.id.String(),
 			})
@@ -208,6 +211,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlockerUsecase := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			mockUsecase.EXPECT().UpdateProfile(gomock.Any(), userID, gomock.Any()).Return(models.User{
@@ -217,7 +221,7 @@ func TestAuthHandler_UpdateProfile(t *testing.T) {
 				PasswordHash: responses.GetHash("12345678b"),
 			}, tt.usecaseErr)
 
-			handler := NewGrpcAuthHandler(mockUsecase)
+			handler := NewGrpcAuthHandler(mockUsecase, mockBlockerUsecase)
 			_, err := handler.UpdateProfile(context.Background(), &gen.UpdateProfileRequest{
 				UserId: tt.args.userID.String(),
 				Payload: &gen.ProfileUpdatePayload{
@@ -274,11 +278,12 @@ func TestAuthHandler_DisableSecondFactor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlockerUsecase := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			mockUsecase.EXPECT().DeleteSecret(gomock.Any(), username).Return(tt.usecaseErr)
 
-			handler := NewGrpcAuthHandler(mockUsecase)
+			handler := NewGrpcAuthHandler(mockUsecase, mockBlockerUsecase)
 			_, err := handler.DeleteSecret(context.Background(), &gen.SecretRequest{
 				Username: tt.args.username,
 			})
@@ -328,11 +333,12 @@ func TestAuthHandler_GetQRCode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockUsecase := mock_auth.NewMockAuthUsecase(ctrl)
+			mockBlockerUsecase := mock_auth.NewMockBlockerUsecase(ctrl)
 			defer ctrl.Finish()
 
 			mockUsecase.EXPECT().GenerateAndUpdateSecret(gomock.Any(), username).Return([]byte{}, tt.usecaseErr)
 
-			handler := NewGrpcAuthHandler(mockUsecase)
+			handler := NewGrpcAuthHandler(mockUsecase, mockBlockerUsecase)
 			_, err := handler.GenerateAndUpdateSecret(context.Background(), &gen.SecretRequest{
 				Username: tt.args.username,
 			})

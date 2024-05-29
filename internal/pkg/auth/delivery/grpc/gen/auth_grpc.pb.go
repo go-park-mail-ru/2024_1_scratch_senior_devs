@@ -30,6 +30,7 @@ type AuthClient interface {
 	UpdateProfileAvatar(ctx context.Context, in *UpdateProfileAvatarRequest, opts ...grpc.CallOption) (*User, error)
 	GenerateAndUpdateSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*GenerateAndUpdateSecretResponse, error)
 	DeleteSecret(ctx context.Context, in *SecretRequest, opts ...grpc.CallOption) (*EmptyMessage, error)
+	CheckLoginAttempts(ctx context.Context, in *CheckLoginAttemptsRequest, opts ...grpc.CallOption) (*EmptyMessage, error)
 }
 
 type authClient struct {
@@ -112,6 +113,15 @@ func (c *authClient) DeleteSecret(ctx context.Context, in *SecretRequest, opts .
 	return out, nil
 }
 
+func (c *authClient) CheckLoginAttempts(ctx context.Context, in *CheckLoginAttemptsRequest, opts ...grpc.CallOption) (*EmptyMessage, error) {
+	out := new(EmptyMessage)
+	err := c.cc.Invoke(ctx, "/auth.Auth/CheckLoginAttempts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
@@ -124,6 +134,7 @@ type AuthServer interface {
 	UpdateProfileAvatar(context.Context, *UpdateProfileAvatarRequest) (*User, error)
 	GenerateAndUpdateSecret(context.Context, *SecretRequest) (*GenerateAndUpdateSecretResponse, error)
 	DeleteSecret(context.Context, *SecretRequest) (*EmptyMessage, error)
+	CheckLoginAttempts(context.Context, *CheckLoginAttemptsRequest) (*EmptyMessage, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -154,6 +165,9 @@ func (UnimplementedAuthServer) GenerateAndUpdateSecret(context.Context, *SecretR
 }
 func (UnimplementedAuthServer) DeleteSecret(context.Context, *SecretRequest) (*EmptyMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
+}
+func (UnimplementedAuthServer) CheckLoginAttempts(context.Context, *CheckLoginAttemptsRequest) (*EmptyMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckLoginAttempts not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -312,6 +326,24 @@ func _Auth_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_CheckLoginAttempts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckLoginAttemptsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).CheckLoginAttempts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.Auth/CheckLoginAttempts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).CheckLoginAttempts(ctx, req.(*CheckLoginAttemptsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +382,10 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteSecret",
 			Handler:    _Auth_DeleteSecret_Handler,
+		},
+		{
+			MethodName: "CheckLoginAttempts",
+			Handler:    _Auth_CheckLoginAttempts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -42,7 +42,7 @@ func TestGrpcMiddleware_ServerMetricsInterceptor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			interceptor := NewGrpcMw(*metr)
+			interceptor := NewGrpcMw(metr)
 
 			ctx := context.Background()
 			req := httptest.NewRequest(http.MethodGet, "http://example/", bytes.NewReader([]byte{}))

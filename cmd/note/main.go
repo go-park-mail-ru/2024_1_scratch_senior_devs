@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 	"io"
 	"log/slog"
 	"net"
@@ -13,20 +12,24 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
+
 	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
+
 	grpcNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc"
 	generatedNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
+
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
 	noteUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/usecase"
+
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/olivere/elastic/v7"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 )
 
@@ -59,6 +62,7 @@ func run() (err error) {
 		return
 	}
 	defer db.Close()
+
 	elasticClient, err := elastic.NewClient(elastic.SetURL(os.Getenv("ELASTIC_URL")))
 	if err != nil {
 		logger.Error("error connecting to elasticsearch: " + err.Error())
@@ -67,18 +71,23 @@ func run() (err error) {
 
 	tlsCredentials, err := loadtls.LoadTLSCredentials(cfg.Grpc.NoteIP)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("fail to load TLS credentials" + err.Error())
 		return
 	}
 
 	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "note")
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (note postgres): " + err.Error())
 	}
 
 	elasticMetrics, err := metrics.NewDatabaseMetrics("elastic", "note")
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (note elastic): " + err.Error())
+	}
+
+	grpcMetrics, err := metrics.NewGrpcMetrics("note")
+	if err != nil {
+		logger.Error("can`t create metrics (note grpc): " + err.Error())
 	}
 
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db, &postgresMetrics)
@@ -87,22 +96,19 @@ func run() (err error) {
 	NoteUsecase := noteUsecase.CreateNoteUsecase(NoteBaseRepo, NoteSearchRepo, cfg.Elastic, cfg.Constraints, &sync.WaitGroup{})
 	NoteDelivery := grpcNote.NewGrpcNoteHandler(NoteUsecase)
 
-	grpcMetrics, err := metrics.NewGrpcMetrics("note")
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	metricsMw := metricsmw.NewGrpcMw(*grpcMetrics)
-	logMw := log.NewGrpcLogMw(logger)
+	MetricsMiddleware := metricsmw.NewGrpcMw(grpcMetrics)
+	LogMiddleware := log.NewGrpcLogMw(logger)
+
 	gRPCServer := grpc.NewServer(
 		grpc.Creds(tlsCredentials),
-		grpc.ChainUnaryInterceptor(metricsMw.ServerMetricsInterceptor, logMw.ServerLogsInterceptor),
+		grpc.ChainUnaryInterceptor(MetricsMiddleware.ServerMetricsInterceptor, LogMiddleware.ServerLogsInterceptor),
 	)
 	generatedNote.RegisterNoteServer(gRPCServer, NoteDelivery)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 	http.Handle("/", r)
-	httpSrv := http.Server{Handler: r, Addr: fmt.Sprintf(":%d", 7072)}
+	httpSrv := http.Server{Handler: r, Addr: fmt.Sprintf(":%s", cfg.Grpc.NoteMetricsPort)}
 	go func() {
 		if err := httpSrv.ListenAndServe(); err != nil {
 			logger.Error("fail httpSrv.ListenAndServe")

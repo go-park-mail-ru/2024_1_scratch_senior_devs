@@ -19,18 +19,36 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS notes (
-    id UUID PRIMARY KEY,
-    data JSON,
-    create_time TIMESTAMP
-        NOT NULL,
-    update_time TIMESTAMP
-        NOT NULL,
-    owner_id UUID REFERENCES users (id)
-        NOT NULL,
-    parent UUID DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
-    children UUID[],
-    tags TEXT[],
-    collaborators UUID[]
+    id              UUID        PRIMARY KEY,
+    data            JSON,
+    create_time     TIMESTAMP   NOT NULL,
+    update_time     TIMESTAMP   NOT NULL,
+    owner_id        UUID        NOT NULL
+                    REFERENCES users (id),
+    parent          UUID        DEFAULT ('00000000-0000-0000-0000-000000000000'::UUID),
+    children        UUID[],
+    tags            TEXT[],
+    collaborators   UUID[],
+    icon            TEXT
+                    CONSTRAINT icon_length CHECK (char_length(icon) <= 255),
+    header          TEXT
+                    CONSTRAINT header_length CHECK (char_length(header) <= 255),
+    is_public       BOOLEAN     NOT NULL
+                    DEFAULT false
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+    note_id UUID REFERENCES notes (id),
+    user_id UUID REFERENCES users (id),
+    PRIMARY KEY(note_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS all_tags (
+    tag_name    TEXT
+                CONSTRAINT tag_name_length CHECK (char_length(tag_name) <= 255),
+    user_id     UUID
+                REFERENCES users (id),
+    PRIMARY KEY (tag_name, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS attaches (
@@ -47,6 +65,7 @@ CREATE TABLE IF NOT EXISTS messages (
     created         TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     message_info    JSON
 );
+
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -82,3 +101,18 @@ CREATE OR REPLACE TRIGGER trigger_insert_message
     FOR EACH ROW
 EXECUTE FUNCTION insert_message();
 
+CREATE OR REPLACE FUNCTION update_tags()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    AS $BODY$
+    BEGIN
+        UPDATE notes SET tags = array_replace(tags, OLD.tag_name, NEW.tag_name) WHERE owner_id=OLD.user_id;
+        RETURN OLD;
+    END;
+$BODY$;
+
+CREATE OR REPLACE TRIGGER trigger_update_tags
+    AFTER UPDATE
+    ON all_tags
+    FOR EACH ROW
+    EXECUTE FUNCTION  update_tags();

@@ -3,11 +3,17 @@ package http
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/zipper"
+
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/exportpdf"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note"
 
@@ -30,6 +36,10 @@ import (
 const (
 	TimeLayout     = "2006-01-02 15:04:05 -0700 UTC"
 	RpcErrorPrefix = "rpc error: code = Unknown desc = "
+	ErrParsingHTML = "internal error while parsing processed HTML"
+	ErrInputHTML   = "invalid input HTML"
+	ErrIncorrectId = "incorrect id parameter"
+	ErrReadBody    = "can`t read request body: "
 )
 
 type NoteHandler struct {
@@ -45,10 +55,6 @@ func CreateNotesHandler(client gen.NoteClient, authClient authGen.AuthClient, hu
 		hub:        hub,
 	}
 }
-
-const (
-	incorrectIdErr = "incorrect id parameter"
-)
 
 var (
 	upgrader = websocket.Upgrader{}
@@ -84,13 +90,67 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 	return models.Note{
 		Id:            uuid.FromStringOrNil(note.Id),
 		OwnerId:       uuid.FromStringOrNil(note.OwnerId),
-		Data:          []byte(note.Data),
+		Data:          note.Data,
 		CreateTime:    createTime,
 		UpdateTime:    updateTime,
 		Parent:        uuid.FromStringOrNil(note.Parent),
 		Children:      children,
 		Tags:          tags,
 		Collaborators: collaborators,
+		Icon:          note.Icon,
+		Header:        note.Header,
+		Favorite:      note.Favorite,
+		Public:        note.Public,
+	}, nil
+}
+
+func getNoteResponse(note *gen.NoteResponseModel) (models.NoteResponse, error) {
+	if note == nil {
+		return models.NoteResponse{}, errors.New("not found")
+	}
+	createTime, err := time.Parse(TimeLayout, note.CreateTime)
+	if err != nil {
+		return models.NoteResponse{}, err
+	}
+
+	updateTime, err := time.Parse(TimeLayout, note.UpdateTime)
+	if err != nil {
+		return models.NoteResponse{}, err
+	}
+
+	children := make([]uuid.UUID, len(note.Children))
+	for i, child := range note.Children {
+		children[i] = uuid.FromStringOrNil(child)
+	}
+
+	collaborators := make([]uuid.UUID, len(note.Collaborators))
+	for i, collaborator := range note.Collaborators {
+		collaborators[i] = uuid.FromStringOrNil(collaborator)
+	}
+
+	tags := make([]string, len(note.Tags))
+	copy(tags, note.Tags)
+
+	return models.NoteResponse{
+		Note: models.Note{
+			Id:            uuid.FromStringOrNil(note.Id),
+			OwnerId:       uuid.FromStringOrNil(note.OwnerId),
+			Data:          note.Data,
+			CreateTime:    createTime,
+			UpdateTime:    updateTime,
+			Parent:        uuid.FromStringOrNil(note.Parent),
+			Children:      children,
+			Tags:          tags,
+			Collaborators: collaborators,
+			Icon:          note.Icon,
+			Header:        note.Header,
+			Favorite:      note.Favorite,
+			Public:        note.Public,
+		},
+		OwnerInfo: models.OwnerInfo{
+			Username:  note.Username,
+			ImagePath: note.ImagePath,
+		},
 	}, nil
 }
 
@@ -144,9 +204,9 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := make([]models.Note, len(protoData.Notes))
-	for i, note := range protoData.Notes {
-		data[i], err = getNote(note)
+	data := make([]models.NoteResponse, len(protoData.Notes))
+	for i, protoNote := range protoData.Notes {
+		data[i], err = getNoteResponse(protoNote)
 		if err != nil {
 			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -179,7 +239,7 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -201,7 +261,43 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultNote, err := getNote(protoNote.Note)
+	resultNote, err := getNoteResponse(protoNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) GetPublicNote(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	protoNote, err := h.client.GetPublicNote(r.Context(), &gen.GetPublicNoteRequest{
+		NoteId: noteIdString,
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
+		responses.WriteErrorMessage(w, http.StatusNotFound, err)
+		return
+	}
+
+	resultNote, err := getNoteResponse(protoNote.Note)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -297,7 +393,7 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -347,10 +443,12 @@ func (h *NoteHandler) UpdateNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.hub.WriteToCache(r.Context(), models.CacheMessage{
+		Type:        "updated",
 		NoteId:      resultNote.Id,
 		Username:    jwtPayload.Username,
 		Created:     time.Now().UTC(),
 		MessageInfo: resultNote.Data,
+		SocketID:    payload.SocketID,
 	})
 
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
@@ -373,7 +471,7 @@ func (h *NoteHandler) DeleteNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -426,7 +524,7 @@ func (h *NoteHandler) CreateSubNote(w http.ResponseWriter, r *http.Request) {
 	noteIdString := mux.Vars(r)["id"]
 	_, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -496,7 +594,7 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 	noteIdString := mux.Vars(r)["id"]
 	noteID, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -526,9 +624,34 @@ func (h *NoteHandler) SubscribeOnUpdates(w http.ResponseWriter, r *http.Request)
 
 	logger.Info("connection upgraded: ", slog.Any("noteID", noteID))
 
-	h.hub.AddClient(r.Context(), noteID, connection)
+	h.hub.AddClient(r.Context(), noteID, hub.NewCustomClient(connection))
 
 	logger.Info("client disconnected: ", slog.Any("noteID", noteID))
+}
+
+func (h *NoteHandler) SubscribeOnInvites(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	upgrader.Subprotocols = []string{r.Header.Get("Sec-WebSocket-Protocol")}
+	connection, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("fail to upgrade to websocket"))
+		return
+	}
+
+	logger.Info("connection upgraded: ", slog.Any("userID", jwtPayload.Id))
+
+	h.hub.AddClientMain(r.Context(), jwtPayload.Id, hub.NewCustomClient(connection))
+
+	logger.Info("client disconnected: ", slog.Any("userID", jwtPayload.Id))
 }
 
 func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
@@ -542,9 +665,9 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	noteIdString := mux.Vars(r)["id"]
-	_, err := uuid.FromString(noteIdString)
+	noteID, err := uuid.FromString(noteIdString)
 	if err != nil {
-		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrIncorrectId+err.Error())
 		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
 		return
 	}
@@ -569,7 +692,7 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
+	result, err := h.client.AddCollaborator(r.Context(), &gen.AddCollaboratorRequest{
 		NoteId:  noteIdString,
 		UserId:  jwtPayload.Id.String(),
 		GuestId: guest.Id,
@@ -591,6 +714,14 @@ func (h *NoteHandler) AddCollaborator(w http.ResponseWriter, r *http.Request) {
 		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("not found"))
 		return
 	}
+
+	h.hub.WriteToCacheMain(r.Context(), uuid.FromStringOrNil(guest.Id), models.InviteMessage{
+		Type:      "invite",
+		NoteId:    noteID,
+		NoteTitle: result.Title,
+		Owner:     jwtPayload.Username,
+		Created:   time.Now().UTC(),
+	})
 
 	w.WriteHeader(http.StatusNoContent)
 	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
@@ -686,7 +817,7 @@ func (h *NoteHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	note, err := h.client.DeleteTag(r.Context(), &gen.TagRequest{
+	responseNote, err := h.client.DeleteTag(r.Context(), &gen.TagRequest{
 		TagName: tagName.TagName,
 		NoteId:  noteIdString,
 		UserId:  jwtPayload.Id.String(),
@@ -697,7 +828,300 @@ func (h *NoteHandler) DeleteTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultNote, err := getNote(note.Note)
+	resultNote, err := getNote(responseNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) RememberTag(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var tagName models.TagRequest
+	if err := responses.GetRequestData(r, &tagName); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	_, err := h.client.RememberTag(r.Context(), &gen.AllTagRequest{
+		TagName: tagName.TagName,
+		UserId:  jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("tag already exists"))
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *NoteHandler) ForgetTag(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var tagName models.TagRequest
+	if err := responses.GetRequestData(r, &tagName); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	_, err := h.client.ForgetTag(r.Context(), &gen.AllTagRequest{
+		TagName: tagName.TagName,
+		UserId:  jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *NoteHandler) UpdateTag(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var tagName models.UpdateTagRequest
+	if err := responses.GetRequestData(r, &tagName); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+	tagName.Sanitize()
+	if err := tagName.Validate(); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	_, err := h.client.UpdateTag(r.Context(), &gen.UpdateTagRequest{
+		OldTag: tagName.OldTag,
+		NewTag: tagName.NewTag,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusNoContent, "success")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *NoteHandler) SetIcon(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	var iconRequest models.SetIconRequest
+	if err := responses.GetRequestData(r, &iconRequest); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	currentNote, err := h.client.SetIcon(r.Context(), &gen.SetIconRequest{
+		NoteId: noteIdString,
+		Icon:   iconRequest.Icon,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(currentNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) SetHeader(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	var headerRequest models.SetHeaderRequest
+	if err := responses.GetRequestData(r, &headerRequest); err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, responses.ParseBodyError+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("incorrect data format"))
+		return
+	}
+
+	currentNote, err := h.client.SetHeader(r.Context(), &gen.SetHeaderRequest{
+		NoteId: noteIdString,
+		Header: headerRequest.Header,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(currentNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	protoNote, err := h.client.AddFav(r.Context(), &gen.ChangeFlagRequest{
+
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(protoNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) DeleteFavorite(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	protoNote, err := h.client.DelFav(r.Context(), &gen.ChangeFlagRequest{
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(protoNote.Note)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -741,5 +1165,247 @@ func (h *NoteHandler) GetTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) SetPublic(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	currentNote, err := h.client.SetPublic(r.Context(), &gen.AccessModeRequest{
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(currentNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) SetPrivate(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	currentNote, err := h.client.SetPrivate(r.Context(), &gen.AccessModeRequest{
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	resultNote, err := getNote(currentNote.Note)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := responses.WriteResponseData(w, resultNote, http.StatusOK); err != nil {
+		log.LogHandlerError(logger, http.StatusInternalServerError, responses.WriteBodyError+err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) ExportToPDF(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrReadBody+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
+		return
+	}
+
+	resultPDF, noteTitle, _, _, err := exportpdf.GeneratePDF(string(payload))
+	if err != nil {
+		if err.Error() == ErrInputHTML {
+			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if err.Error() == ErrParsingHTML {
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		log.LogHandlerInfo(logger, http.StatusUnavailableForLegalReasons, err.Error())
+		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.pdf", noteTitle))
+	_, _ = w.Write(resultPDF)
+	w.WriteHeader(http.StatusOK)
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) ExportZip(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	jwtPayload, ok := r.Context().Value(config.PayloadContextKey).(models.JwtPayload)
+	if !ok {
+		log.LogHandlerError(logger, http.StatusUnauthorized, responses.JwtPayloadParseError)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrReadBody+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
+		return
+	}
+
+	resultPDF, noteTitle, picturesOrder, filenames, err := exportpdf.GeneratePDF(string(payload))
+	if err != nil {
+		if err.Error() == ErrInputHTML {
+			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if err.Error() == ErrParsingHTML {
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		log.LogHandlerInfo(logger, http.StatusUnavailableForLegalReasons, err.Error())
+		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему"))
+		return
+	}
+
+	result, _ := h.client.GetAttachList(r.Context(), &gen.GetAttachListRequest{
+		NoteId: noteIdString,
+		UserId: jwtPayload.Id.String(),
+	})
+
+	YouNoteZip, err := zipper.CreateYouNoteZip(noteTitle+".pdf", resultPDF, result.Paths, jwtPayload.Username, picturesOrder, filenames)
+	if err != nil {
+		log.LogHandlerInfo(logger, http.StatusInternalServerError, err.Error())
+		responses.WriteErrorMessage(w, http.StatusInternalServerError, errors.New("ха-ха, разработчик не смог создать zip-архив"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip", noteTitle))
+	_, _ = w.Write(YouNoteZip.Bytes())
+	w.WriteHeader(http.StatusOK)
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}
+
+func (h *NoteHandler) ExportZipShared(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	noteIdString := mux.Vars(r)["id"]
+	_, err := uuid.FromString(noteIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("note id must be a type of uuid"))
+		return
+	}
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, ErrReadBody+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("can`t read request body"))
+		return
+	}
+
+	resultPDF, noteTitle, picturesOrder, filenames, err := exportpdf.GeneratePDF(string(payload))
+	if err != nil {
+		if err.Error() == ErrInputHTML {
+			log.LogHandlerError(logger, http.StatusBadRequest, err.Error())
+			responses.WriteErrorMessage(w, http.StatusBadRequest, err)
+			return
+		}
+
+		if err.Error() == ErrParsingHTML {
+			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
+			responses.WriteErrorMessage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		log.LogHandlerInfo(logger, http.StatusUnavailableForLegalReasons, err.Error())
+		responses.WriteErrorMessage(w, http.StatusUnavailableForLegalReasons, errors.New("прости, но эта заметка слишком сложная для конвертации в PDF. Мы усиленно работаем, чтобы решить эту проблему"))
+		return
+	}
+
+	result, _ := h.client.GetSharedAttachList(r.Context(), &gen.GetSharedAttachListRequest{
+		NoteId: noteIdString,
+	})
+
+	YouNoteZip, err := zipper.CreateYouNoteZip(noteTitle+".pdf", resultPDF, result.Paths, "anonymous user", picturesOrder, filenames)
+	if err != nil {
+		log.LogHandlerInfo(logger, http.StatusInternalServerError, err.Error())
+		responses.WriteErrorMessage(w, http.StatusInternalServerError, errors.New("ха-ха, разработчик не смог создать zip-архив"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip", noteTitle))
+	_, _ = w.Write(YouNoteZip.Bytes())
+	w.WriteHeader(http.StatusOK)
 	log.LogHandlerInfo(logger, http.StatusOK, "success")
 }

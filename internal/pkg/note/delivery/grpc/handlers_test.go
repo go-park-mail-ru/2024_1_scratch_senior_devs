@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
+	generatedNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 	mock_note "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/satori/uuid"
@@ -34,7 +35,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			id:       uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 			username: "testuser",
 			wantErr:  false,
-			expectedData: &gen.GetAllResponse{Notes: []*gen.NoteModel{
+			expectedData: &gen.GetAllResponse{Notes: []*gen.NoteResponseModel{
 				{
 					Id:            "c80e3ea8-0813-4731-b6ee-b41604c56f95",
 					OwnerId:       "a89e3ea8-0813-4731-b6ee-b41604c56f95",
@@ -78,33 +79,36 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
 
 			if tt.name == successTestName {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.Note{
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.NoteResponse{
 					{
-						Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-						OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
-						UpdateTime:    time.Time{},
-						CreateTime:    time.Time{},
-						Data:          []byte("nil"),
-						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-						Children:      []uuid.UUID{},
-						Tags:          []string{},
-						Collaborators: []uuid.UUID{},
+						Note: models.Note{
+							Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+							OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
+							UpdateTime:    time.Time{},
+							CreateTime:    time.Time{},
+							Data:          "nil",
+							Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+							Children:      []uuid.UUID{},
+							Tags:          []string{},
+							Collaborators: []uuid.UUID{}},
 					},
 					{
-						Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
-						OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
-						UpdateTime:    time.Time{},
-						CreateTime:    time.Time{},
-						Data:          []byte("nil"),
-						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-						Children:      []uuid.UUID{},
-						Tags:          []string{},
-						Collaborators: []uuid.UUID{},
+						Note: models.Note{
+							Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
+							OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
+							UpdateTime:    time.Time{},
+							CreateTime:    time.Time{},
+							Data:          "nil",
+							Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+							Children:      []uuid.UUID{},
+							Tags:          []string{},
+							Collaborators: []uuid.UUID{},
+						},
 					},
 				}, nil)
 			}
 			if tt.name == "Test Error" {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.Note{}, errors.New("error"))
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.NoteResponse{}, errors.New("error"))
 
 			}
 			req = req.WithContext(ctx)
@@ -139,7 +143,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 		userId       uuid.UUID
 		noteId       uuid.UUID
 		username     string
-		expectedData *gen.GetNoteResponse
+		expectedData *gen.GetNoteResponseResponse
 	}{
 		// TODO: Add test cases.
 		{
@@ -148,8 +152,8 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			noteId:   uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 			userId:   uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
 			username: "test_user",
-			expectedData: &gen.GetNoteResponse{
-				Note: &gen.NoteModel{
+			expectedData: &gen.GetNoteResponseResponse{
+				Note: &gen.NoteResponseModel{
 					Id:            "c80e3ea8-0813-4731-b6ee-b41604c56f95",
 					OwnerId:       "a89e3ea8-0813-4731-b6ee-b41604c56f95",
 					Data:          "",
@@ -182,20 +186,22 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.userId, Username: tt.username})
 
 			if tt.name == successTestName {
-				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.Note{
-					Id:            uuid.FromStringOrNil(tt.expectedData.Note.Id),
-					OwnerId:       uuid.FromStringOrNil(tt.expectedData.Note.OwnerId),
-					CreateTime:    time.Time{},
-					UpdateTime:    time.Time{},
-					Data:          []byte(tt.expectedData.Note.Data),
-					Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-					Children:      []uuid.UUID{},
-					Tags:          []string{},
-					Collaborators: []uuid.UUID{},
+				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.NoteResponse{
+					Note: models.Note{
+						Id:            uuid.FromStringOrNil(tt.expectedData.Note.Id),
+						OwnerId:       uuid.FromStringOrNil(tt.expectedData.Note.OwnerId),
+						CreateTime:    time.Time{},
+						UpdateTime:    time.Time{},
+						Data:          tt.expectedData.Note.Data,
+						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+						Children:      []uuid.UUID{},
+						Tags:          []string{},
+						Collaborators: []uuid.UUID{},
+					},
 				}, nil)
 			}
 			if tt.name == "Test Error" {
-				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.Note{}, errors.New("error"))
+				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.NoteResponse{}, errors.New("error"))
 
 			}
 			req = req.WithContext(ctx)
@@ -277,7 +283,7 @@ func TestNoteHandler_AddNote(t *testing.T) {
 				} else {
 					call.Return(models.Note{
 						Id:            id,
-						Data:          []byte(tt.requestBody.Data),
+						Data:          tt.requestBody.Data,
 						CreateTime:    currTime,
 						UpdateTime:    currTime,
 						OwnerId:       id,
@@ -539,7 +545,7 @@ func TestGrpcNoteHandler_AddCollaborator(t *testing.T) {
 			want:    &gen.AddCollaboratorResponse{},
 			wantErr: false,
 			mocker: func(req *gen.AddCollaboratorRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return(nil)
+				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return("", nil)
 			},
 		},
 		{
@@ -552,7 +558,7 @@ func TestGrpcNoteHandler_AddCollaborator(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocker: func(req *gen.AddCollaboratorRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return(errors.New("error"))
+				mock.EXPECT().AddCollaborator(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId), uuid.FromStringOrNil(req.GuestId)).Return("", errors.New("error"))
 			},
 		},
 	}
@@ -666,7 +672,7 @@ func TestGrpcNoteHandler_CreateSubNote(t *testing.T) {
 			},
 			wantErr: false,
 			mocker: func(req *gen.CreateSubNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), []byte(req.NoteData), uuid.FromStringOrNil(req.ParentId)).Return(
+				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), req.NoteData, uuid.FromStringOrNil(req.ParentId)).Return(
 					models.Note{
 						Id:      childId,
 						OwnerId: userId,
@@ -686,7 +692,7 @@ func TestGrpcNoteHandler_CreateSubNote(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocker: func(req *gen.CreateSubNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), []byte(req.NoteData), uuid.FromStringOrNil(req.ParentId)).Return(
+				mock.EXPECT().CreateSubNote(gomock.Any(), uuid.FromStringOrNil(req.UserId), req.NoteData, uuid.FromStringOrNil(req.ParentId)).Return(
 					models.Note{}, errors.New("error"))
 			},
 		},
@@ -744,7 +750,7 @@ func TestGrpcNoteHandler_UpdateNote(t *testing.T) {
 			},
 			wantErr: false,
 			mocker: func(req *gen.UpdateNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), []byte(req.Data)).Return(
+				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), req.Data).Return(
 					models.Note{
 						Id:      noteId,
 						OwnerId: userId,
@@ -762,7 +768,7 @@ func TestGrpcNoteHandler_UpdateNote(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 			mocker: func(req *gen.UpdateNoteRequest, mock *mock_note.MockNoteUsecase) {
-				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), []byte(req.Data)).Return(
+				mock.EXPECT().UpdateNote(gomock.Any(), uuid.FromStringOrNil(req.Id), uuid.FromStringOrNil(req.UserId), req.Data).Return(
 					models.Note{}, errors.New("error"))
 			},
 		},
@@ -842,6 +848,618 @@ func TestGrpcNoteHandler_CheckPermissions(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestGrpcNoteHandler_RememberTag(t *testing.T) {
+	userId := uuid.NewV4()
+
+	tests := []struct {
+		name        string
+		requestBody *gen.AllTagRequest
+		mocker      func(req *gen.AllTagRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_RememberTag_Success",
+			requestBody: &gen.AllTagRequest{
+				TagName: "tag",
+				UserId:  userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.AllTagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().RememberTag(gomock.Any(), req.TagName, uuid.FromStringOrNil(req.UserId)).Return(nil)
+			},
+		},
+		{
+			name: "Test_RememberTag_Fail",
+			requestBody: &gen.AllTagRequest{
+				TagName: "tag",
+				UserId:  userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.AllTagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().RememberTag(gomock.Any(), req.TagName,
+					uuid.FromStringOrNil(req.UserId)).Return(errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.RememberTag(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.RememberTag() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_UpdateTag(t *testing.T) {
+	userId := uuid.NewV4()
+
+	tests := []struct {
+		name        string
+		requestBody *gen.UpdateTagRequest
+		mocker      func(req *gen.UpdateTagRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_UpdateTag_Success",
+			requestBody: &gen.UpdateTagRequest{
+				OldTag: "old",
+				NewTag: "new",
+				UserId: userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.UpdateTagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().UpdateTag(gomock.Any(), req.OldTag, req.NewTag, uuid.FromStringOrNil(req.UserId)).Return(nil)
+			},
+		},
+		{
+			name: "Test_UpdateTag_Fail",
+			requestBody: &gen.UpdateTagRequest{
+				OldTag: "old",
+				NewTag: "new",
+				UserId: userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.UpdateTagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().UpdateTag(gomock.Any(), req.OldTag, req.NewTag,
+					uuid.FromStringOrNil(req.UserId)).Return(errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.UpdateTag(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.UpdateTag() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_ForgetTag(t *testing.T) {
+	userId := uuid.NewV4()
+
+	tests := []struct {
+		name        string
+		requestBody *gen.AllTagRequest
+		mocker      func(req *gen.AllTagRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_ForgetTag_Success",
+			requestBody: &gen.AllTagRequest{
+				TagName: "tag",
+				UserId:  userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.AllTagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().ForgetTag(gomock.Any(), req.TagName, uuid.FromStringOrNil(req.UserId)).Return(nil)
+			},
+		},
+		{
+			name: "Test_ForgetTag_Fail",
+			requestBody: &gen.AllTagRequest{
+				TagName: "tag",
+				UserId:  userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.AllTagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().ForgetTag(gomock.Any(), req.TagName,
+					uuid.FromStringOrNil(req.UserId)).Return(errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.ForgetTag(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.ForgetTag() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_SetIcon(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	tests := []struct {
+		name        string
+		requestBody *gen.SetIconRequest
+		mocker      func(req *gen.SetIconRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_SetIcon_Success",
+			requestBody: &gen.SetIconRequest{
+				Icon:   "icon",
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.SetIconRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetIcon(gomock.Any(), uuid.FromStringOrNil(req.NoteId), req.Icon, uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, nil)
+			},
+		},
+		{
+			name: "Test_SetIcon_Fail",
+			requestBody: &gen.SetIconRequest{
+				Icon:   "icon",
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.SetIconRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetIcon(gomock.Any(), uuid.FromStringOrNil(req.NoteId), req.Icon, uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.SetIcon(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.SetIcon() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_SetHeader(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	tests := []struct {
+		name        string
+		requestBody *gen.SetHeaderRequest
+		mocker      func(req *gen.SetHeaderRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_SetHeader_Success",
+			requestBody: &gen.SetHeaderRequest{
+				Header: "header",
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.SetHeaderRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetHeader(gomock.Any(), uuid.FromStringOrNil(req.NoteId), req.Header, uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, nil)
+			},
+		},
+		{
+			name: "Test_SetHeader_Fail",
+			requestBody: &gen.SetHeaderRequest{
+				Header: "header",
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.SetHeaderRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetHeader(gomock.Any(), uuid.FromStringOrNil(req.NoteId), req.Header, uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.SetHeader(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.SetHeader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_AddFav(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	tests := []struct {
+		name        string
+		requestBody *gen.ChangeFlagRequest
+		mocker      func(req *gen.ChangeFlagRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_AddFav_Success",
+			requestBody: &gen.ChangeFlagRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.ChangeFlagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().AddFav(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, nil)
+			},
+		},
+		{
+			name: "Test_AddFav_Fail",
+			requestBody: &gen.ChangeFlagRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.ChangeFlagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().AddFav(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.AddFav(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.AddFav() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_DelFav(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	tests := []struct {
+		name        string
+		requestBody *gen.ChangeFlagRequest
+		mocker      func(req *gen.ChangeFlagRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_DelFav_Success",
+			requestBody: &gen.ChangeFlagRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.ChangeFlagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().DelFav(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, nil)
+			},
+		},
+		{
+			name: "Test_DelFav_Fail",
+			requestBody: &gen.ChangeFlagRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.ChangeFlagRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().DelFav(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.DelFav(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.DelFav() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_SetPublic(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	tests := []struct {
+		name        string
+		requestBody *gen.AccessModeRequest
+		mocker      func(req *gen.AccessModeRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_SetPublic_Success",
+			requestBody: &gen.AccessModeRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.AccessModeRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetPublic(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, nil)
+			},
+		},
+		{
+			name: "Test_SetPublic_Fail",
+			requestBody: &gen.AccessModeRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.AccessModeRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetPublic(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.SetPublic(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.SetPublic() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_SetPrivate(t *testing.T) {
+	userId := uuid.NewV4()
+	noteId := uuid.NewV4()
+	tests := []struct {
+		name        string
+		requestBody *gen.AccessModeRequest
+		mocker      func(req *gen.AccessModeRequest, mock *mock_note.MockNoteUsecase)
+		wantErr     bool
+	}{
+		{
+			name: "Test_SetPrivate_Success",
+			requestBody: &gen.AccessModeRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+
+			wantErr: false,
+			mocker: func(req *gen.AccessModeRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetPrivate(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, nil)
+			},
+		},
+		{
+			name: "Test_SetPrivate_Fail",
+			requestBody: &gen.AccessModeRequest{
+				NoteId: noteId.String(),
+				UserId: userId.String(),
+			},
+			wantErr: true,
+			mocker: func(req *gen.AccessModeRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().SetPrivate(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return(models.Note{}, errors.New("error"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+			ctx := context.Background()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.requestBody, mockUsecase)
+
+			_, err := h.SetPrivate(ctx, tt.requestBody)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.SetPrivate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_GetAttachList(t *testing.T) {
+	noteId := uuid.NewV4()
+	userId := uuid.NewV4()
+
+	type args struct {
+		ctx context.Context
+		in  *generatedNote.GetAttachListRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *generatedNote.GetAttachListResponse
+		mocker  func(req *gen.GetAttachListRequest, mock *mock_note.MockNoteUsecase)
+		wantErr bool
+	}{
+		{
+			name: "Test_GetAttachList_Success",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetAttachListRequest{
+					NoteId: noteId.String(),
+					UserId: userId.String(),
+				},
+			},
+			want: &generatedNote.GetAttachListResponse{
+				Paths: []string{"1", "2"},
+			},
+			wantErr: false,
+			mocker: func(req *generatedNote.GetAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return([]string{"1", "2"}, nil)
+			},
+		},
+		{
+			name: "Test_GetAttachList_Fail",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetAttachListRequest{
+					NoteId: noteId.String(),
+					UserId: userId.String(),
+				},
+			},
+			want:    nil,
+			wantErr: true,
+			mocker: func(req *generatedNote.GetAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId), uuid.FromStringOrNil(req.UserId)).Return([]string{}, errors.New("err"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.args.in, mockUsecase)
+
+			got, err := h.GetAttachList(tt.args.ctx, tt.args.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.GetAttachList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GrpcNoteHandler.GetAttachList() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGrpcNoteHandler_GetSharedAttachList(t *testing.T) {
+	noteId := uuid.NewV4()
+
+	type args struct {
+		ctx context.Context
+		in  *generatedNote.GetSharedAttachListRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *generatedNote.GetAttachListResponse
+		mocker  func(req *gen.GetSharedAttachListRequest, mock *mock_note.MockNoteUsecase)
+		wantErr bool
+	}{
+		{
+			name: "Test_GetSharedAttachList_Success",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetSharedAttachListRequest{
+					NoteId: noteId.String(),
+				},
+			},
+			want: &generatedNote.GetAttachListResponse{
+				Paths: []string{"1", "2"},
+			},
+			wantErr: false,
+			mocker: func(req *generatedNote.GetSharedAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetSharedAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId)).Return([]string{"1", "2"}, nil)
+			},
+		},
+		{
+			name: "Test_GetSharedAttachList_Fail",
+			args: args{
+				ctx: context.Background(),
+				in: &generatedNote.GetSharedAttachListRequest{
+					NoteId: noteId.String(),
+				},
+			},
+			want:    nil,
+			wantErr: true,
+			mocker: func(req *generatedNote.GetSharedAttachListRequest, mock *mock_note.MockNoteUsecase) {
+				mock.EXPECT().GetSharedAttachList(gomock.Any(), uuid.FromStringOrNil(req.NoteId)).Return([]string{}, errors.New("err"))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUsecase := mock_note.NewMockNoteUsecase(ctrl)
+			defer ctrl.Finish()
+
+			h := NewGrpcNoteHandler(mockUsecase)
+			tt.mocker(tt.args.in, mockUsecase)
+
+			got, err := h.GetSharedAttachList(tt.args.ctx, tt.args.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GrpcNoteHandler.GetSharedAttachList() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GrpcNoteHandler.GetSharedAttachList() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

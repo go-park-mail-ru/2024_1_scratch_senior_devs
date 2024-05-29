@@ -11,15 +11,13 @@ import (
 
 type BlockerUsecase struct {
 	repo auth.BlockerRepo
-
-	cfg config.BlockerConfig
+	cfg  config.BlockerConfig
 }
 
 func CreateBlockerUsecase(repo auth.BlockerRepo, cfg config.BlockerConfig) *BlockerUsecase {
 	return &BlockerUsecase{
 		repo: repo,
-
-		cfg: cfg,
+		cfg:  cfg,
 	}
 }
 

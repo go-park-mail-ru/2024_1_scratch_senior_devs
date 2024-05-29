@@ -213,3 +213,35 @@ func (h *AttachHandler) GetAttach(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, targetPath)
 
 }
+
+func (h *AttachHandler) GetSharedAttach(w http.ResponseWriter, r *http.Request) {
+	logger := log.GetLoggerFromContext(r.Context()).With(slog.String("func", log.GFN()))
+
+	attachIdString := mux.Vars(r)["id"]
+	attachId, err := uuid.FromString(attachIdString)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusBadRequest, incorrectIdErr+err.Error())
+		responses.WriteErrorMessage(w, http.StatusBadRequest, errors.New("attach id must be a type of uuid"))
+		return
+	}
+
+	attach, err := h.uc.GetSharedAttach(r.Context(), attachId)
+	if err != nil {
+		log.LogHandlerError(logger, http.StatusNotFound, err.Error())
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	targetPath := path.Join(os.Getenv("ATTACHES_BASE_PATH"), attach.Path)
+	fileInfo, err := os.Stat(targetPath)
+	if err != nil {
+		responses.WriteErrorMessage(w, http.StatusNotFound, errors.New("file not found"))
+		return
+	}
+
+	w.Header().Add("etag", fileInfo.ModTime().UTC().String())
+	header := fmt.Sprintf("attachment; filename=\"%s\"", attach.Path)
+	w.Header().Add("Content-Disposition", header)
+	http.ServeFile(w, r, targetPath)
+	log.LogHandlerInfo(logger, http.StatusOK, "success")
+}

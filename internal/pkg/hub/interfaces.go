@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/models"
 
-	"github.com/gorilla/websocket"
 	"github.com/satori/uuid"
 )
 
@@ -12,7 +11,10 @@ import (
 
 type HubInterface interface {
 	StartCache(context.Context)
+	StartCacheMain(ctx context.Context)
 	WriteToCache(context.Context, models.CacheMessage)
-	AddClient(context.Context, uuid.UUID, *websocket.Conn)
+	WriteToCacheMain(context.Context, uuid.UUID, models.InviteMessage)
+	AddClient(context.Context, uuid.UUID, *CustomClient)
+	AddClientMain(context.Context, uuid.UUID, *CustomClient)
 	Run(context.Context)
 }

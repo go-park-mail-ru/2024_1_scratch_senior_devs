@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/elasticsearch"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/log"
 	"github.com/olivere/elastic/v7"
 
@@ -55,7 +54,7 @@ func (repo *NoteElastic) updateNullFieldToEmptyArray(ctx context.Context, fieldN
 	return nil
 }
 
-func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string, tags []string) ([]models.Note, error) {
+func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string, tags []string) ([]models.NoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	ownerQuery := elastic.NewTermsQuery("owner_id", strings.ToLower(userID.String()))
@@ -87,24 +86,24 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors(log.GFN())
-		return []models.Note{}, ErrCantGetResponse
+		return []models.NoteResponse{}, ErrCantGetResponse
 	}
 
-	notes := make([]models.Note, 0)
+	notes := make([]models.NoteResponse, 0)
 	for _, hit := range search.Hits.Hits {
-		note := models.ElasticNote{}
+		note := models.NoteResponse{}
 		if err := json.Unmarshal(hit.Source, &note); err != nil {
 			logger.Error(err.Error())
-			return []models.Note{}, err
+			return []models.NoteResponse{}, err
 		}
-		notes = append(notes, elasticsearch.ConvertToUsualNote(note))
+		notes = append(notes, note)
 	}
 
 	logger.Info("success")
 	return notes, nil
 }
 
-func (repo *NoteElastic) CreateNote(ctx context.Context, note models.ElasticNote) error {
+func (repo *NoteElastic) CreateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	noteJSON, err := json.Marshal(note)
@@ -136,7 +135,7 @@ func (repo *NoteElastic) CreateNote(ctx context.Context, note models.ElasticNote
 	return nil
 }
 
-func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.ElasticNote) error {
+func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.Note) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	noteJSON, err := json.Marshal(note)
@@ -166,7 +165,6 @@ func (repo *NoteElastic) UpdateNote(ctx context.Context, note models.ElasticNote
 
 	logger.Info("success")
 	return nil
-
 }
 
 func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {
@@ -191,7 +189,9 @@ func (repo *NoteElastic) DeleteNote(ctx context.Context, id uuid.UUID) error {
 func (repo *NoteElastic) AddSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("ctx._source.children.add(params.childID)").Lang("painless").Param("childID", childID.String())
+	script := elastic.NewScript("ctx._source.children.add(params.childID)").
+		Lang("painless").
+		Param("childID", childID.String())
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -213,7 +213,9 @@ func (repo *NoteElastic) AddSubNote(ctx context.Context, id uuid.UUID, childID u
 func (repo *NoteElastic) RemoveSubNote(ctx context.Context, id uuid.UUID, childID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("ctx._source.children.removeIfContains(params.childID)").Lang("painless").Param("childID", childID.String())
+	script := elastic.NewScript("ctx._source.children.removeIfContains(params.childID)").
+		Lang("painless").
+		Param("childID", childID.String())
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -235,7 +237,9 @@ func (repo *NoteElastic) RemoveSubNote(ctx context.Context, id uuid.UUID, childI
 func (repo *NoteElastic) AddCollaborator(ctx context.Context, noteID uuid.UUID, userID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("ctx._source.collaborators.add(params.collaboratorID)").Lang("painless").Param("collaboratorID", userID.String())
+	script := elastic.NewScript("ctx._source.collaborators.add(params.collaboratorID)").
+		Lang("painless").
+		Param("collaboratorID", userID.String())
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -262,7 +266,9 @@ func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid
 		return err
 	}
 
-	script := elastic.NewScript("ctx._source.tags.add(params.tagName)").Lang("painless").Param("tagName", tagName)
+	script := elastic.NewScript("ctx._source.tags.add(params.tagName)").
+		Lang("painless").
+		Param("tagName", tagName)
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
@@ -284,13 +290,202 @@ func (repo *NoteElastic) AddTag(ctx context.Context, tagName string, noteID uuid
 func (repo *NoteElastic) DeleteTag(ctx context.Context, tagName string, noteID uuid.UUID) error {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	script := elastic.NewScript("if (ctx._source.tags.contains(params.tagName)) { ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName)) }").Lang("painless").Param("tagName", tagName)
+	script := elastic.NewScript("if (ctx._source.tags.contains(params.tagName)) { ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName)) }").
+		Lang("painless").
+		Param("tagName", tagName)
 
 	start := time.Now()
 	_, err := repo.elastic.Update().
 		Index(repo.cfg.ElasticIndexName).
 		Id(noteID.String()).
 		Script(script).
+		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) DeleteTagFromAllNotes(ctx context.Context, tagName string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	script := elastic.NewScript("ctx._source.tags.remove(ctx._source.tags.indexOf(params.tagName))").
+		Lang("painless").
+		Param("tagName", tagName)
+
+	query := elastic.NewBoolQuery().
+		Must(elastic.NewTermQuery("owner_id", userID)).
+		Must(elastic.NewTermQuery("tags", tagName))
+
+	searchResult, err := repo.elastic.Search().
+		Index(repo.cfg.ElasticIndexName).
+		Query(query).
+		Do(context.Background())
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	bulkRequest := repo.elastic.Bulk()
+	for _, hit := range searchResult.Hits.Hits {
+		bulkRequest = bulkRequest.Add(elastic.NewBulkUpdateRequest().
+			Index(repo.cfg.ElasticIndexName).
+			Id(hit.Id).
+			Script(script),
+		)
+	}
+
+	start := time.Now()
+	_, err = bulkRequest.Do(context.Background())
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) UpdateTagOnAllNotes(ctx context.Context, oldTag string, newTag string, userID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	script := elastic.NewScript("ctx._source.tags[ctx._source.tags.indexOf(params.oldTag)] = params.NewTag").
+		Lang("painless").
+		Params(map[string]interface{}{
+			"oldTag": oldTag,
+			"newTag": newTag,
+		})
+
+	query := elastic.NewBoolQuery().
+		Must(elastic.NewTermQuery("owner_id", userID)).
+		Must(elastic.NewTermQuery("tags", oldTag))
+
+	searchResult, err := repo.elastic.Search().
+		Index(repo.cfg.ElasticIndexName).
+		Query(query).
+		Do(context.Background())
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	bulkRequest := repo.elastic.Bulk()
+	for _, hit := range searchResult.Hits.Hits {
+		bulkRequest = bulkRequest.Add(elastic.NewBulkUpdateRequest().
+			Index(repo.cfg.ElasticIndexName).
+			Id(hit.Id).
+			Script(script),
+		)
+	}
+
+	start := time.Now()
+	_, err = bulkRequest.Do(context.Background())
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) SetIcon(ctx context.Context, noteID uuid.UUID, icon string) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Doc(map[string]interface{}{"icon": icon}).
+		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) SetHeader(ctx context.Context, noteID uuid.UUID, header string) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Doc(map[string]interface{}{"header": header}).
+		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) ChangeFlag(ctx context.Context, noteID uuid.UUID, flag bool) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Doc(map[string]interface{}{"favorite": flag}).
+		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) SetPublic(ctx context.Context, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Doc(map[string]interface{}{"public": true}).
+		Do(ctx)
+	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors(log.GFN())
+		return err
+	}
+
+	logger.Info("success")
+	return nil
+}
+
+func (repo *NoteElastic) SetPrivate(ctx context.Context, noteID uuid.UUID) error {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	start := time.Now()
+	_, err := repo.elastic.Update().
+		Index(repo.cfg.ElasticIndexName).
+		Id(noteID.String()).
+		Doc(map[string]interface{}{"public": false}).
 		Do(ctx)
 	repo.metr.ObserveResponseTime(log.GFN(), time.Since(start).Seconds())
 	if err != nil {

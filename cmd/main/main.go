@@ -3,41 +3,38 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/config"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/hub"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/log"
-	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/path"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/protection"
 	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/recover"
+	"github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/utils/loadtls"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
+
+	_ "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	metricsmw "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/middleware/metrics"
 
 	grpcAuth "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/grpc/gen"
 	grpcNote "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/grpc/gen"
 
 	authDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/delivery/http"
-	authRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/repo"
-	authUsecase "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/auth/usecase"
-	_ "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/docs"
 
 	noteDelivery "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/delivery/http"
 	noteRepo "github.com/go-park-mail-ru/2024_1_scratch_senior_devs/internal/pkg/note/repo"
@@ -75,20 +72,14 @@ func main() {
 	}
 	defer db.Close()
 
-	redisOpts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
-	if err != nil {
-		logger.Error("error connecting to redis: " + err.Error())
-		return
-	}
-	redisDB := redis.NewClient(redisOpts)
-
 	tlsCredentials, err := loadtls.LoadTLSClientCredentials()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("fail to load TLS credentials" + err.Error())
 	}
 
 	authConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%s", cfg.Grpc.AuthIP, cfg.Grpc.AuthPort),
+
 		grpc.WithTransportCredentials(tlsCredentials),
 	)
 	if err != nil {
@@ -107,37 +98,23 @@ func main() {
 	}
 	defer noteConn.Close()
 
-	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
-	JwtWebsocketMiddleware := protection.CreateJwtWebsocketMiddleware(cfg.AuthHandler.Jwt)
-	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
 	Metrics, err := metrics.NewHttpMetrics("main")
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (main http): " + err.Error())
 	}
-	MetricsMiddleware := metricsmw.CreateHttpMetricsMiddleware(Metrics, logger)
-
-	logMW := log.CreateLogMiddleware(logger)
 
 	postgresMetrics, err := metrics.NewDatabaseMetrics("postgres", "main")
 	if err != nil {
-		logger.Error(err.Error())
-	}
-
-	redisMetrics, err := metrics.NewDatabaseMetrics("redis", "main")
-	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (main postgres): " + err.Error())
 	}
 
 	websocketMetrics, err := metrics.NewWebsocketMetrics()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error("can`t create metrics (websockets): " + err.Error())
 	}
 
-	BlockerRepo := authRepo.CreateBlockerRepo(*redisDB, cfg.Blocker, &redisMetrics)
-	BlockerUsecase := authUsecase.CreateBlockerUsecase(BlockerRepo, cfg.Blocker)
-
 	NoteBaseRepo := noteRepo.CreateNotePostgres(db, &postgresMetrics)
-	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub, &websocketMetrics)
+	NoteHub := hub.NewHub(NoteBaseRepo, cfg.Hub, websocketMetrics)
 
 	AttachRepo := attachRepo.CreateAttachRepo(db, &postgresMetrics)
 	AttachUsecase := attachUsecase.CreateAttachUsecase(AttachRepo, NoteBaseRepo)
@@ -146,16 +123,24 @@ func main() {
 	AuthClient := grpcAuth.NewAuthClient(authConn)
 	NoteClient := grpcNote.NewNoteClient(noteConn)
 
-	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, BlockerUsecase, NoteClient, cfg.AuthHandler, cfg.Validation)
+	AuthDelivery := authDelivery.CreateAuthHandler(AuthClient, NoteClient, cfg.AuthHandler, cfg.Validation)
 	NoteDelivery := noteDelivery.CreateNotesHandler(NoteClient, AuthClient, NoteHub)
+
+	JwtMiddleware := protection.CreateJwtMiddleware(cfg.AuthHandler.Jwt)
+	JwtWebsocketMiddleware := protection.CreateJwtWebsocketMiddleware(cfg.AuthHandler.Jwt)
+	CsrfMiddleware := protection.CreateCsrfMiddleware(cfg.AuthHandler.Csrf)
+	MetricsMiddleware := metricsmw.CreateHttpMetricsMiddleware(Metrics)
+	LogMiddleware := log.CreateLogMiddleware(logger)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.Error("query to path: " + r.URL.String())
 		w.WriteHeader(http.StatusNotFound)
 	})
+
 	r.Use(
-		logMW,
+		LogMiddleware,
 		MetricsMiddleware,
 		protection.CorsMiddleware,
 		recover.RecoverMiddleware,
@@ -191,6 +176,21 @@ func main() {
 		note.Handle("/{id}/subscribe_on_updates", JwtWebsocketMiddleware(http.HandlerFunc(NoteDelivery.SubscribeOnUpdates))).Methods(http.MethodGet, http.MethodOptions)
 		note.Handle("/{id}/add_tag", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddTag))).Methods(http.MethodPost, http.MethodOptions)
 		note.Handle("/{id}/delete_tag", JwtMiddleware(http.HandlerFunc(NoteDelivery.DeleteTag))).Methods(http.MethodDelete, http.MethodOptions)
+		note.Handle("/{id}/set_icon", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetIcon))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/set_header", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetHeader))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/{id}/add_fav", JwtMiddleware(http.HandlerFunc(NoteDelivery.AddFavorite))).Methods(http.MethodPut, http.MethodOptions)
+		note.Handle("/{id}/del_fav", JwtMiddleware(http.HandlerFunc(NoteDelivery.DeleteFavorite))).Methods(http.MethodPut, http.MethodOptions)
+		note.Handle("/{id}/set_public", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPublic))).Methods(http.MethodPut, http.MethodOptions)
+		note.Handle("/{id}/set_private", JwtMiddleware(http.HandlerFunc(NoteDelivery.SetPrivate))).Methods(http.MethodPut, http.MethodOptions)
+		note.Handle("/{id}/make_zip", JwtMiddleware(http.HandlerFunc(NoteDelivery.ExportZip))).Methods(http.MethodPost, http.MethodOptions)
+		note.Handle("/subscribe/on_invites", JwtWebsocketMiddleware(http.HandlerFunc(NoteDelivery.SubscribeOnInvites))).Methods(http.MethodGet, http.MethodOptions)
+	}
+
+	shared := r.PathPrefix("/shared").Subrouter()
+	{
+		shared.Handle("/note/{id}", http.HandlerFunc(NoteDelivery.GetPublicNote)).Methods(http.MethodGet, http.MethodOptions)
+		shared.Handle("/note/{id}/make_zip", http.HandlerFunc(NoteDelivery.ExportZip)).Methods(http.MethodPost, http.MethodOptions)
+		shared.Handle("/attach/{id}", http.HandlerFunc(AttachDelivery.GetSharedAttach)).Methods(http.MethodGet, http.MethodOptions)
 	}
 
 	profile := r.PathPrefix("/profile").Subrouter()
@@ -208,7 +208,20 @@ func main() {
 		attach.Handle("/{id}/delete", http.HandlerFunc(AttachDelivery.DeleteAttach)).Methods(http.MethodDelete, http.MethodOptions)
 	}
 
-	r.PathPrefix("/tags").Handler(JwtMiddleware(http.HandlerFunc(NoteDelivery.GetTags))).Methods(http.MethodGet, http.MethodOptions)
+	tags := r.PathPrefix("/tags").Subrouter()
+	tags.Use(JwtMiddleware, CsrfMiddleware)
+	{
+		tags.Handle("", http.HandlerFunc(NoteDelivery.GetTags)).Methods(http.MethodGet, http.MethodOptions)
+		tags.Handle("/remember", http.HandlerFunc(NoteDelivery.RememberTag)).Methods(http.MethodPost, http.MethodOptions)
+		tags.Handle("/forget", http.HandlerFunc(NoteDelivery.ForgetTag)).Methods(http.MethodDelete, http.MethodOptions)
+		tags.Handle("/update", http.HandlerFunc(NoteDelivery.UpdateTag)).Methods(http.MethodPost, http.MethodOptions)
+	}
+
+	export := r.PathPrefix("/export_to_pdf").Subrouter()
+	export.Use(protection.ReadAndCloseBody)
+	{
+		export.Handle("", http.HandlerFunc(NoteDelivery.ExportToPDF)).Methods(http.MethodPost, http.MethodOptions)
+	}
 
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 
@@ -216,17 +229,18 @@ func main() {
 
 	go NoteHub.Run(context.WithValue(context.Background(), config.LoggerContextKey, logger))
 	go NoteHub.StartCache(context.WithValue(context.Background(), config.LoggerContextKey, logger))
+	go NoteHub.StartCacheMain(context.WithValue(context.Background(), config.LoggerContextKey, logger))
 
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
 	server := http.Server{
 		Handler:           path.PathMiddleware(r),
-		Addr:              ":8080",
-		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      10 * time.Second,
-		ReadHeaderTimeout: 10 * time.Second,
-		IdleTimeout:       30 * time.Second,
+		Addr:              fmt.Sprintf(":%s", cfg.Main.Port),
+		ReadTimeout:       cfg.Main.ReadTimeout,
+		WriteTimeout:      cfg.Main.WriteTimeout,
+		ReadHeaderTimeout: cfg.Main.ReadHeaderTimeout,
+		IdleTimeout:       cfg.Main.IdleTimeout,
 	}
 
 	go func() {
@@ -239,7 +253,7 @@ func main() {
 	sig := <-signalCh
 	logger.Info("Received signal: " + sig.String())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Main.ShutdownTimeout)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {

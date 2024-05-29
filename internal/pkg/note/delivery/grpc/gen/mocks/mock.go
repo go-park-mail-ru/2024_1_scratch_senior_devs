@@ -56,6 +56,26 @@ func (mr *MockNoteClientMockRecorder) AddCollaborator(ctx, in interface{}, opts 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteClient)(nil).AddCollaborator), varargs...)
 }
 
+// AddFav mocks base method.
+func (m *MockNoteClient) AddFav(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddFav", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddFav indicates an expected call of AddFav.
+func (mr *MockNoteClientMockRecorder) AddFav(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFav", reflect.TypeOf((*MockNoteClient)(nil).AddFav), varargs...)
+}
+
 // AddNote mocks base method.
 func (m *MockNoteClient) AddNote(ctx context.Context, in *gen.AddNoteRequest, opts ...grpc.CallOption) (*gen.AddNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -136,6 +156,26 @@ func (mr *MockNoteClientMockRecorder) CreateSubNote(ctx, in interface{}, opts ..
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubNote", reflect.TypeOf((*MockNoteClient)(nil).CreateSubNote), varargs...)
 }
 
+// DelFav mocks base method.
+func (m *MockNoteClient) DelFav(ctx context.Context, in *gen.ChangeFlagRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DelFav", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DelFav indicates an expected call of DelFav.
+func (mr *MockNoteClientMockRecorder) DelFav(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelFav", reflect.TypeOf((*MockNoteClient)(nil).DelFav), varargs...)
+}
+
 // DeleteNote mocks base method.
 func (m *MockNoteClient) DeleteNote(ctx context.Context, in *gen.DeleteNoteRequest, opts ...grpc.CallOption) (*gen.DeleteNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -176,6 +216,26 @@ func (mr *MockNoteClientMockRecorder) DeleteTag(ctx, in interface{}, opts ...int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteClient)(nil).DeleteTag), varargs...)
 }
 
+// ForgetTag mocks base method.
+func (m *MockNoteClient) ForgetTag(ctx context.Context, in *gen.AllTagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ForgetTag", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ForgetTag indicates an expected call of ForgetTag.
+func (mr *MockNoteClientMockRecorder) ForgetTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetTag", reflect.TypeOf((*MockNoteClient)(nil).ForgetTag), varargs...)
+}
+
 // GetAllNotes mocks base method.
 func (m *MockNoteClient) GetAllNotes(ctx context.Context, in *gen.GetAllRequest, opts ...grpc.CallOption) (*gen.GetAllResponse, error) {
 	m.ctrl.T.Helper()
@@ -196,15 +256,35 @@ func (mr *MockNoteClientMockRecorder) GetAllNotes(ctx, in interface{}, opts ...i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllNotes", reflect.TypeOf((*MockNoteClient)(nil).GetAllNotes), varargs...)
 }
 
+// GetAttachList mocks base method.
+func (m *MockNoteClient) GetAttachList(ctx context.Context, in *gen.GetAttachListRequest, opts ...grpc.CallOption) (*gen.GetAttachListResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetAttachList", varargs...)
+	ret0, _ := ret[0].(*gen.GetAttachListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAttachList indicates an expected call of GetAttachList.
+func (mr *MockNoteClientMockRecorder) GetAttachList(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachList", reflect.TypeOf((*MockNoteClient)(nil).GetAttachList), varargs...)
+}
+
 // GetNote mocks base method.
-func (m *MockNoteClient) GetNote(ctx context.Context, in *gen.GetNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+func (m *MockNoteClient) GetNote(ctx context.Context, in *gen.GetNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponseResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetNote", varargs...)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -214,6 +294,46 @@ func (mr *MockNoteClientMockRecorder) GetNote(ctx, in interface{}, opts ...inter
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteClient)(nil).GetNote), varargs...)
+}
+
+// GetPublicNote mocks base method.
+func (m *MockNoteClient) GetPublicNote(ctx context.Context, in *gen.GetPublicNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponseResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetPublicNote", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPublicNote indicates an expected call of GetPublicNote.
+func (mr *MockNoteClientMockRecorder) GetPublicNote(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteClient)(nil).GetPublicNote), varargs...)
+}
+
+// GetSharedAttachList mocks base method.
+func (m *MockNoteClient) GetSharedAttachList(ctx context.Context, in *gen.GetSharedAttachListRequest, opts ...grpc.CallOption) (*gen.GetAttachListResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetSharedAttachList", varargs...)
+	ret0, _ := ret[0].(*gen.GetAttachListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSharedAttachList indicates an expected call of GetSharedAttachList.
+func (mr *MockNoteClientMockRecorder) GetSharedAttachList(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSharedAttachList", reflect.TypeOf((*MockNoteClient)(nil).GetSharedAttachList), varargs...)
 }
 
 // GetTags mocks base method.
@@ -236,6 +356,106 @@ func (mr *MockNoteClientMockRecorder) GetTags(ctx, in interface{}, opts ...inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteClient)(nil).GetTags), varargs...)
 }
 
+// RememberTag mocks base method.
+func (m *MockNoteClient) RememberTag(ctx context.Context, in *gen.AllTagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RememberTag", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RememberTag indicates an expected call of RememberTag.
+func (mr *MockNoteClientMockRecorder) RememberTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteClient)(nil).RememberTag), varargs...)
+}
+
+// SetHeader mocks base method.
+func (m *MockNoteClient) SetHeader(ctx context.Context, in *gen.SetHeaderRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetHeader", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetHeader indicates an expected call of SetHeader.
+func (mr *MockNoteClientMockRecorder) SetHeader(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockNoteClient)(nil).SetHeader), varargs...)
+}
+
+// SetIcon mocks base method.
+func (m *MockNoteClient) SetIcon(ctx context.Context, in *gen.SetIconRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetIcon", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetIcon indicates an expected call of SetIcon.
+func (mr *MockNoteClientMockRecorder) SetIcon(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteClient)(nil).SetIcon), varargs...)
+}
+
+// SetPrivate mocks base method.
+func (m *MockNoteClient) SetPrivate(ctx context.Context, in *gen.AccessModeRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetPrivate", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPrivate indicates an expected call of SetPrivate.
+func (mr *MockNoteClientMockRecorder) SetPrivate(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivate", reflect.TypeOf((*MockNoteClient)(nil).SetPrivate), varargs...)
+}
+
+// SetPublic mocks base method.
+func (m *MockNoteClient) SetPublic(ctx context.Context, in *gen.AccessModeRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SetPublic", varargs...)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPublic indicates an expected call of SetPublic.
+func (mr *MockNoteClientMockRecorder) SetPublic(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPublic", reflect.TypeOf((*MockNoteClient)(nil).SetPublic), varargs...)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteClient) UpdateNote(ctx context.Context, in *gen.UpdateNoteRequest, opts ...grpc.CallOption) (*gen.UpdateNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -254,6 +474,26 @@ func (mr *MockNoteClientMockRecorder) UpdateNote(ctx, in interface{}, opts ...in
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteClient)(nil).UpdateNote), varargs...)
+}
+
+// UpdateTag mocks base method.
+func (m *MockNoteClient) UpdateTag(ctx context.Context, in *gen.UpdateTagRequest, opts ...grpc.CallOption) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateTag", varargs...)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTag indicates an expected call of UpdateTag.
+func (mr *MockNoteClientMockRecorder) UpdateTag(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockNoteClient)(nil).UpdateTag), varargs...)
 }
 
 // MockNoteServer is a mock of NoteServer interface.
@@ -292,6 +532,21 @@ func (m *MockNoteServer) AddCollaborator(arg0 context.Context, arg1 *gen.AddColl
 func (mr *MockNoteServerMockRecorder) AddCollaborator(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCollaborator", reflect.TypeOf((*MockNoteServer)(nil).AddCollaborator), arg0, arg1)
+}
+
+// AddFav mocks base method.
+func (m *MockNoteServer) AddFav(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddFav", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddFav indicates an expected call of AddFav.
+func (mr *MockNoteServerMockRecorder) AddFav(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFav", reflect.TypeOf((*MockNoteServer)(nil).AddFav), arg0, arg1)
 }
 
 // AddNote mocks base method.
@@ -354,6 +609,21 @@ func (mr *MockNoteServerMockRecorder) CreateSubNote(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubNote", reflect.TypeOf((*MockNoteServer)(nil).CreateSubNote), arg0, arg1)
 }
 
+// DelFav mocks base method.
+func (m *MockNoteServer) DelFav(arg0 context.Context, arg1 *gen.ChangeFlagRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DelFav", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DelFav indicates an expected call of DelFav.
+func (mr *MockNoteServerMockRecorder) DelFav(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelFav", reflect.TypeOf((*MockNoteServer)(nil).DelFav), arg0, arg1)
+}
+
 // DeleteNote mocks base method.
 func (m *MockNoteServer) DeleteNote(arg0 context.Context, arg1 *gen.DeleteNoteRequest) (*gen.DeleteNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -384,6 +654,21 @@ func (mr *MockNoteServerMockRecorder) DeleteTag(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockNoteServer)(nil).DeleteTag), arg0, arg1)
 }
 
+// ForgetTag mocks base method.
+func (m *MockNoteServer) ForgetTag(arg0 context.Context, arg1 *gen.AllTagRequest) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForgetTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ForgetTag indicates an expected call of ForgetTag.
+func (mr *MockNoteServerMockRecorder) ForgetTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetTag", reflect.TypeOf((*MockNoteServer)(nil).ForgetTag), arg0, arg1)
+}
+
 // GetAllNotes mocks base method.
 func (m *MockNoteServer) GetAllNotes(arg0 context.Context, arg1 *gen.GetAllRequest) (*gen.GetAllResponse, error) {
 	m.ctrl.T.Helper()
@@ -399,11 +684,26 @@ func (mr *MockNoteServerMockRecorder) GetAllNotes(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllNotes", reflect.TypeOf((*MockNoteServer)(nil).GetAllNotes), arg0, arg1)
 }
 
+// GetAttachList mocks base method.
+func (m *MockNoteServer) GetAttachList(arg0 context.Context, arg1 *gen.GetAttachListRequest) (*gen.GetAttachListResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAttachList", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetAttachListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAttachList indicates an expected call of GetAttachList.
+func (mr *MockNoteServerMockRecorder) GetAttachList(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachList", reflect.TypeOf((*MockNoteServer)(nil).GetAttachList), arg0, arg1)
+}
+
 // GetNote mocks base method.
-func (m *MockNoteServer) GetNote(arg0 context.Context, arg1 *gen.GetNoteRequest) (*gen.GetNoteResponse, error) {
+func (m *MockNoteServer) GetNote(arg0 context.Context, arg1 *gen.GetNoteRequest) (*gen.GetNoteResponseResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNote", arg0, arg1)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -412,6 +712,36 @@ func (m *MockNoteServer) GetNote(arg0 context.Context, arg1 *gen.GetNoteRequest)
 func (mr *MockNoteServerMockRecorder) GetNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNote", reflect.TypeOf((*MockNoteServer)(nil).GetNote), arg0, arg1)
+}
+
+// GetPublicNote mocks base method.
+func (m *MockNoteServer) GetPublicNote(arg0 context.Context, arg1 *gen.GetPublicNoteRequest) (*gen.GetNoteResponseResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPublicNote", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPublicNote indicates an expected call of GetPublicNote.
+func (mr *MockNoteServerMockRecorder) GetPublicNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicNote", reflect.TypeOf((*MockNoteServer)(nil).GetPublicNote), arg0, arg1)
+}
+
+// GetSharedAttachList mocks base method.
+func (m *MockNoteServer) GetSharedAttachList(arg0 context.Context, arg1 *gen.GetSharedAttachListRequest) (*gen.GetAttachListResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSharedAttachList", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetAttachListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSharedAttachList indicates an expected call of GetSharedAttachList.
+func (mr *MockNoteServerMockRecorder) GetSharedAttachList(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSharedAttachList", reflect.TypeOf((*MockNoteServer)(nil).GetSharedAttachList), arg0, arg1)
 }
 
 // GetTags mocks base method.
@@ -429,6 +759,81 @@ func (mr *MockNoteServerMockRecorder) GetTags(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockNoteServer)(nil).GetTags), arg0, arg1)
 }
 
+// RememberTag mocks base method.
+func (m *MockNoteServer) RememberTag(arg0 context.Context, arg1 *gen.AllTagRequest) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RememberTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RememberTag indicates an expected call of RememberTag.
+func (mr *MockNoteServerMockRecorder) RememberTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RememberTag", reflect.TypeOf((*MockNoteServer)(nil).RememberTag), arg0, arg1)
+}
+
+// SetHeader mocks base method.
+func (m *MockNoteServer) SetHeader(arg0 context.Context, arg1 *gen.SetHeaderRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetHeader", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetHeader indicates an expected call of SetHeader.
+func (mr *MockNoteServerMockRecorder) SetHeader(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockNoteServer)(nil).SetHeader), arg0, arg1)
+}
+
+// SetIcon mocks base method.
+func (m *MockNoteServer) SetIcon(arg0 context.Context, arg1 *gen.SetIconRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetIcon", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetIcon indicates an expected call of SetIcon.
+func (mr *MockNoteServerMockRecorder) SetIcon(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIcon", reflect.TypeOf((*MockNoteServer)(nil).SetIcon), arg0, arg1)
+}
+
+// SetPrivate mocks base method.
+func (m *MockNoteServer) SetPrivate(arg0 context.Context, arg1 *gen.AccessModeRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPrivate", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPrivate indicates an expected call of SetPrivate.
+func (mr *MockNoteServerMockRecorder) SetPrivate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivate", reflect.TypeOf((*MockNoteServer)(nil).SetPrivate), arg0, arg1)
+}
+
+// SetPublic mocks base method.
+func (m *MockNoteServer) SetPublic(arg0 context.Context, arg1 *gen.AccessModeRequest) (*gen.GetNoteResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPublic", arg0, arg1)
+	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetPublic indicates an expected call of SetPublic.
+func (mr *MockNoteServerMockRecorder) SetPublic(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPublic", reflect.TypeOf((*MockNoteServer)(nil).SetPublic), arg0, arg1)
+}
+
 // UpdateNote mocks base method.
 func (m *MockNoteServer) UpdateNote(arg0 context.Context, arg1 *gen.UpdateNoteRequest) (*gen.UpdateNoteResponse, error) {
 	m.ctrl.T.Helper()
@@ -442,6 +847,21 @@ func (m *MockNoteServer) UpdateNote(arg0 context.Context, arg1 *gen.UpdateNoteRe
 func (mr *MockNoteServerMockRecorder) UpdateNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNote", reflect.TypeOf((*MockNoteServer)(nil).UpdateNote), arg0, arg1)
+}
+
+// UpdateTag mocks base method.
+func (m *MockNoteServer) UpdateTag(arg0 context.Context, arg1 *gen.UpdateTagRequest) (*gen.EmptyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTag", arg0, arg1)
+	ret0, _ := ret[0].(*gen.EmptyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateTag indicates an expected call of UpdateTag.
+func (mr *MockNoteServerMockRecorder) UpdateTag(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockNoteServer)(nil).UpdateTag), arg0, arg1)
 }
 
 // mustEmbedUnimplementedNoteServer mocks base method.

@@ -81,6 +81,21 @@ func (mr *MockAttachUsecaseMockRecorder) GetAttach(ctx, attachID, userID interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttach", reflect.TypeOf((*MockAttachUsecase)(nil).GetAttach), ctx, attachID, userID)
 }
 
+// GetSharedAttach mocks base method.
+func (m *MockAttachUsecase) GetSharedAttach(ctx context.Context, attachID uuid.UUID) (models.Attach, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSharedAttach", ctx, attachID)
+	ret0, _ := ret[0].(models.Attach)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSharedAttach indicates an expected call of GetSharedAttach.
+func (mr *MockAttachUsecaseMockRecorder) GetSharedAttach(ctx, attachID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSharedAttach", reflect.TypeOf((*MockAttachUsecase)(nil).GetSharedAttach), ctx, attachID)
+}
+
 // MockAttachRepo is a mock of AttachRepo interface.
 type MockAttachRepo struct {
 	ctrl     *gomock.Controller

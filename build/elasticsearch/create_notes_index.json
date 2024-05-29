@@ -50,6 +50,18 @@
       },
       "tags": {
         "type": "keyword"
+      },
+      "icon": {
+        "type": "text"
+      },
+      "header": {
+        "type": "text"
+      },
+      "favorite": {
+        "type": "boolean"
+      },
+      "public": {
+        "type": "boolean"
       }
     }
   }
