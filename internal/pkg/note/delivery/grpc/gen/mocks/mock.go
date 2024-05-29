@@ -277,14 +277,14 @@ func (mr *MockNoteClientMockRecorder) GetAttachList(ctx, in interface{}, opts ..
 }
 
 // GetNote mocks base method.
-func (m *MockNoteClient) GetNote(ctx context.Context, in *gen.GetNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+func (m *MockNoteClient) GetNote(ctx context.Context, in *gen.GetNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponseResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetNote", varargs...)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -297,14 +297,14 @@ func (mr *MockNoteClientMockRecorder) GetNote(ctx, in interface{}, opts ...inter
 }
 
 // GetPublicNote mocks base method.
-func (m *MockNoteClient) GetPublicNote(ctx context.Context, in *gen.GetPublicNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponse, error) {
+func (m *MockNoteClient) GetPublicNote(ctx context.Context, in *gen.GetPublicNoteRequest, opts ...grpc.CallOption) (*gen.GetNoteResponseResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetPublicNote", varargs...)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -700,10 +700,10 @@ func (mr *MockNoteServerMockRecorder) GetAttachList(arg0, arg1 interface{}) *gom
 }
 
 // GetNote mocks base method.
-func (m *MockNoteServer) GetNote(arg0 context.Context, arg1 *gen.GetNoteRequest) (*gen.GetNoteResponse, error) {
+func (m *MockNoteServer) GetNote(arg0 context.Context, arg1 *gen.GetNoteRequest) (*gen.GetNoteResponseResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNote", arg0, arg1)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -715,10 +715,10 @@ func (mr *MockNoteServerMockRecorder) GetNote(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // GetPublicNote mocks base method.
-func (m *MockNoteServer) GetPublicNote(arg0 context.Context, arg1 *gen.GetPublicNoteRequest) (*gen.GetNoteResponse, error) {
+func (m *MockNoteServer) GetPublicNote(arg0 context.Context, arg1 *gen.GetPublicNoteRequest) (*gen.GetNoteResponseResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPublicNote", arg0, arg1)
-	ret0, _ := ret[0].(*gen.GetNoteResponse)
+	ret0, _ := ret[0].(*gen.GetNoteResponseResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

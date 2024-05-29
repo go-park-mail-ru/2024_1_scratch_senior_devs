@@ -52,6 +52,39 @@ func getNote(note models.Note) *generatedNote.NoteModel {
 	}
 }
 
+func getNoteResponse(note models.NoteResponse) *generatedNote.NoteResponseModel {
+	children := make([]string, len(note.Children))
+	for i, child := range note.Children {
+		children[i] = child.String()
+	}
+
+	collaborators := make([]string, len(note.Collaborators))
+	for i, collaborator := range note.Collaborators {
+		collaborators[i] = collaborator.String()
+	}
+
+	tags := make([]string, len(note.Tags))
+	copy(tags, note.Tags)
+
+	return &generatedNote.NoteResponseModel{
+		Id:            note.Id.String(),
+		Data:          note.Data,
+		CreateTime:    note.CreateTime.String(),
+		UpdateTime:    note.UpdateTime.String(),
+		OwnerId:       note.OwnerId.String(),
+		Parent:        note.Parent.String(),
+		Children:      children,
+		Tags:          tags,
+		Collaborators: collaborators,
+		Icon:          note.Icon,
+		Header:        note.Header,
+		Favorite:      note.Favorite,
+		Public:        note.Public,
+		Username:      note.Username,
+		ImagePath:     note.ImagePath,
+	}
+}
+
 func (h *GrpcNoteHandler) GetTags(ctx context.Context, in *generatedNote.GetTagsRequest) (*generatedNote.GetTagsResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
@@ -148,9 +181,9 @@ func (h *GrpcNoteHandler) GetAllNotes(ctx context.Context, in *generatedNote.Get
 		return nil, errors.New("not found")
 	}
 
-	protoNotes := make([]*generatedNote.NoteModel, len(result))
+	protoNotes := make([]*generatedNote.NoteResponseModel, len(result))
 	for i, item := range result {
-		protoNotes[i] = getNote(item)
+		protoNotes[i] = getNoteResponse(item)
 	}
 
 	logger.Info("success")
@@ -159,7 +192,7 @@ func (h *GrpcNoteHandler) GetAllNotes(ctx context.Context, in *generatedNote.Get
 	}, nil
 }
 
-func (h *GrpcNoteHandler) GetNote(ctx context.Context, in *generatedNote.GetNoteRequest) (*generatedNote.GetNoteResponse, error) {
+func (h *GrpcNoteHandler) GetNote(ctx context.Context, in *generatedNote.GetNoteRequest) (*generatedNote.GetNoteResponseResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	result, err := h.uc.GetNote(ctx, uuid.FromStringOrNil(in.Id), uuid.FromStringOrNil(in.UserId))
@@ -169,12 +202,12 @@ func (h *GrpcNoteHandler) GetNote(ctx context.Context, in *generatedNote.GetNote
 	}
 
 	logger.Info("success")
-	return &generatedNote.GetNoteResponse{
-		Note: getNote(result),
+	return &generatedNote.GetNoteResponseResponse{
+		Note: getNoteResponse(result),
 	}, nil
 }
 
-func (h *GrpcNoteHandler) GetPublicNote(ctx context.Context, in *generatedNote.GetPublicNoteRequest) (*generatedNote.GetNoteResponse, error) {
+func (h *GrpcNoteHandler) GetPublicNote(ctx context.Context, in *generatedNote.GetPublicNoteRequest) (*generatedNote.GetNoteResponseResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	result, err := h.uc.GetPublicNote(ctx, uuid.FromStringOrNil(in.NoteId))
@@ -184,8 +217,8 @@ func (h *GrpcNoteHandler) GetPublicNote(ctx context.Context, in *generatedNote.G
 	}
 
 	logger.Info("success")
-	return &generatedNote.GetNoteResponse{
-		Note: getNote(result),
+	return &generatedNote.GetNoteResponseResponse{
+		Note: getNoteResponse(result),
 	}, nil
 }
 

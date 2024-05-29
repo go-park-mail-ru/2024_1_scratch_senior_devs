@@ -20,9 +20,9 @@ const (
 )
 
 type NoteUsecase interface {
-	GetAllNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
-	GetNote(context.Context, uuid.UUID, uuid.UUID) (models.Note, error)
-	GetPublicNote(ctx context.Context, noteId uuid.UUID) (models.Note, error)
+	GetAllNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.NoteResponse, error)
+	GetNote(context.Context, uuid.UUID, uuid.UUID) (models.NoteResponse, error)
+	GetPublicNote(ctx context.Context, noteId uuid.UUID) (models.NoteResponse, error)
 	CreateNote(context.Context, uuid.UUID, string) (models.Note, error)
 	UpdateNote(context.Context, uuid.UUID, uuid.UUID, string) (models.Note, error)
 	DeleteNote(context.Context, uuid.UUID, uuid.UUID) error
@@ -55,9 +55,9 @@ type NoteUsecase interface {
 }
 
 type NoteBaseRepo interface {
-	ReadAllNotes(context.Context, uuid.UUID, int64, int64, []string) ([]models.Note, error)
-	ReadNote(context.Context, uuid.UUID, uuid.UUID) (models.Note, error)
-	ReadPublicNote(context.Context, uuid.UUID) (models.Note, error)
+	ReadAllNotes(context.Context, uuid.UUID, int64, int64, []string) ([]models.NoteResponse, error)
+	ReadNote(context.Context, uuid.UUID, uuid.UUID) (models.NoteResponse, error)
+	ReadPublicNote(context.Context, uuid.UUID) (models.NoteResponse, error)
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error
@@ -89,10 +89,12 @@ type NoteBaseRepo interface {
 	SetPrivate(ctx context.Context, noteID uuid.UUID) error
 
 	GetAttachList(ctx context.Context, noteID uuid.UUID) ([]string, error)
+
+	GetOwnerInfo(ctx context.Context, ownerID uuid.UUID) (models.OwnerInfo, error)
 }
 
 type NoteSearchRepo interface {
-	SearchNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.Note, error)
+	SearchNotes(context.Context, uuid.UUID, int64, int64, string, []string) ([]models.NoteResponse, error)
 	CreateNote(context.Context, models.Note) error
 	UpdateNote(context.Context, models.Note) error
 	DeleteNote(context.Context, uuid.UUID) error

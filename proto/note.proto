@@ -4,8 +4,8 @@ option go_package = "../internal/pkg/note/delivery/grpc/gen/;gen";
 
 service Note {
      rpc GetAllNotes(GetAllRequest) returns (GetAllResponse) {}
-     rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {}
-     rpc GetPublicNote(GetPublicNoteRequest) returns (GetNoteResponse) {}
+     rpc GetNote(GetNoteRequest) returns (GetNoteResponseResponse) {}
+     rpc GetPublicNote(GetPublicNoteRequest) returns (GetNoteResponseResponse) {}
      rpc AddNote(AddNoteRequest) returns (AddNoteResponse) {}
      rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {}
      rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {}
@@ -124,8 +124,26 @@ message NoteModel {
      bool Public = 13;
 }
 
+message NoteResponseModel {
+     string Id = 1;
+     string Data = 2;
+     string CreateTime = 3;
+     string UpdateTime = 4;
+     string OwnerId = 5;
+     string Parent = 6;
+     repeated string Children = 7;
+     repeated string Tags = 8;
+     repeated string Collaborators = 9;
+     string Icon = 10;
+     string Header = 11;
+     bool Favorite = 12;
+     bool Public = 13;
+     string Username = 14;
+     string ImagePath = 15;
+}
+
 message GetAllResponse {
-     repeated NoteModel Notes = 1;  
+     repeated NoteResponseModel Notes = 1;
 }
 
 message GetNoteRequest{
@@ -135,6 +153,10 @@ message GetNoteRequest{
 
 message GetPublicNoteRequest {
      string NoteId = 1;
+}
+
+message GetNoteResponseResponse {
+     NoteResponseModel Note = 1;
 }
 
 message GetNoteResponse {

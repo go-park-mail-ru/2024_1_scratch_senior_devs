@@ -23,8 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NoteClient interface {
 	GetAllNotes(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
-	GetNote(ctx context.Context, in *GetNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
-	GetPublicNote(ctx context.Context, in *GetPublicNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error)
+	GetNote(ctx context.Context, in *GetNoteRequest, opts ...grpc.CallOption) (*GetNoteResponseResponse, error)
+	GetPublicNote(ctx context.Context, in *GetPublicNoteRequest, opts ...grpc.CallOption) (*GetNoteResponseResponse, error)
 	AddNote(ctx context.Context, in *AddNoteRequest, opts ...grpc.CallOption) (*AddNoteResponse, error)
 	UpdateNote(ctx context.Context, in *UpdateNoteRequest, opts ...grpc.CallOption) (*UpdateNoteResponse, error)
 	DeleteNote(ctx context.Context, in *DeleteNoteRequest, opts ...grpc.CallOption) (*DeleteNoteResponse, error)
@@ -64,8 +64,8 @@ func (c *noteClient) GetAllNotes(ctx context.Context, in *GetAllRequest, opts ..
 	return out, nil
 }
 
-func (c *noteClient) GetNote(ctx context.Context, in *GetNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
-	out := new(GetNoteResponse)
+func (c *noteClient) GetNote(ctx context.Context, in *GetNoteRequest, opts ...grpc.CallOption) (*GetNoteResponseResponse, error) {
+	out := new(GetNoteResponseResponse)
 	err := c.cc.Invoke(ctx, "/note.Note/GetNote", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -73,8 +73,8 @@ func (c *noteClient) GetNote(ctx context.Context, in *GetNoteRequest, opts ...gr
 	return out, nil
 }
 
-func (c *noteClient) GetPublicNote(ctx context.Context, in *GetPublicNoteRequest, opts ...grpc.CallOption) (*GetNoteResponse, error) {
-	out := new(GetNoteResponse)
+func (c *noteClient) GetPublicNote(ctx context.Context, in *GetPublicNoteRequest, opts ...grpc.CallOption) (*GetNoteResponseResponse, error) {
+	out := new(GetNoteResponseResponse)
 	err := c.cc.Invoke(ctx, "/note.Note/GetPublicNote", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -267,8 +267,8 @@ func (c *noteClient) GetSharedAttachList(ctx context.Context, in *GetSharedAttac
 // for forward compatibility
 type NoteServer interface {
 	GetAllNotes(context.Context, *GetAllRequest) (*GetAllResponse, error)
-	GetNote(context.Context, *GetNoteRequest) (*GetNoteResponse, error)
-	GetPublicNote(context.Context, *GetPublicNoteRequest) (*GetNoteResponse, error)
+	GetNote(context.Context, *GetNoteRequest) (*GetNoteResponseResponse, error)
+	GetPublicNote(context.Context, *GetPublicNoteRequest) (*GetNoteResponseResponse, error)
 	AddNote(context.Context, *AddNoteRequest) (*AddNoteResponse, error)
 	UpdateNote(context.Context, *UpdateNoteRequest) (*UpdateNoteResponse, error)
 	DeleteNote(context.Context, *DeleteNoteRequest) (*DeleteNoteResponse, error)
@@ -299,10 +299,10 @@ type UnimplementedNoteServer struct {
 func (UnimplementedNoteServer) GetAllNotes(context.Context, *GetAllRequest) (*GetAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllNotes not implemented")
 }
-func (UnimplementedNoteServer) GetNote(context.Context, *GetNoteRequest) (*GetNoteResponse, error) {
+func (UnimplementedNoteServer) GetNote(context.Context, *GetNoteRequest) (*GetNoteResponseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNote not implemented")
 }
-func (UnimplementedNoteServer) GetPublicNote(context.Context, *GetPublicNoteRequest) (*GetNoteResponse, error) {
+func (UnimplementedNoteServer) GetPublicNote(context.Context, *GetPublicNoteRequest) (*GetNoteResponseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPublicNote not implemented")
 }
 func (UnimplementedNoteServer) AddNote(context.Context, *AddNoteRequest) (*AddNoteResponse, error) {

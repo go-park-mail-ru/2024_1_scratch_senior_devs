@@ -35,7 +35,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			id:       uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 			username: "testuser",
 			wantErr:  false,
-			expectedData: &gen.GetAllResponse{Notes: []*gen.NoteModel{
+			expectedData: &gen.GetAllResponse{Notes: []*gen.NoteResponseModel{
 				{
 					Id:            "c80e3ea8-0813-4731-b6ee-b41604c56f95",
 					OwnerId:       "a89e3ea8-0813-4731-b6ee-b41604c56f95",
@@ -79,33 +79,36 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.id, Username: tt.username})
 
 			if tt.name == successTestName {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.Note{
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.NoteResponse{
 					{
-						Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-						OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
-						UpdateTime:    time.Time{},
-						CreateTime:    time.Time{},
-						Data:          "nil",
-						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-						Children:      []uuid.UUID{},
-						Tags:          []string{},
-						Collaborators: []uuid.UUID{},
+						Note: models.Note{
+							Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+							OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
+							UpdateTime:    time.Time{},
+							CreateTime:    time.Time{},
+							Data:          "nil",
+							Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+							Children:      []uuid.UUID{},
+							Tags:          []string{},
+							Collaborators: []uuid.UUID{}},
 					},
 					{
-						Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
-						OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
-						UpdateTime:    time.Time{},
-						CreateTime:    time.Time{},
-						Data:          "nil",
-						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-						Children:      []uuid.UUID{},
-						Tags:          []string{},
-						Collaborators: []uuid.UUID{},
+						Note: models.Note{
+							Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b12e-b41604c56f95"),
+							OwnerId:       uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
+							UpdateTime:    time.Time{},
+							CreateTime:    time.Time{},
+							Data:          "nil",
+							Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+							Children:      []uuid.UUID{},
+							Tags:          []string{},
+							Collaborators: []uuid.UUID{},
+						},
 					},
 				}, nil)
 			}
 			if tt.name == "Test Error" {
-				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.Note{}, errors.New("error"))
+				mockUsecase.EXPECT().GetAllNotes(ctx, tt.id, int64(10), int64(0), "", gomock.Any()).Return([]models.NoteResponse{}, errors.New("error"))
 
 			}
 			req = req.WithContext(ctx)
@@ -140,7 +143,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 		userId       uuid.UUID
 		noteId       uuid.UUID
 		username     string
-		expectedData *gen.GetNoteResponse
+		expectedData *gen.GetNoteResponseResponse
 	}{
 		// TODO: Add test cases.
 		{
@@ -149,8 +152,8 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			noteId:   uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 			userId:   uuid.FromStringOrNil("a89e3ea8-0813-4731-b6ee-b41604c56f95"),
 			username: "test_user",
-			expectedData: &gen.GetNoteResponse{
-				Note: &gen.NoteModel{
+			expectedData: &gen.GetNoteResponseResponse{
+				Note: &gen.NoteResponseModel{
 					Id:            "c80e3ea8-0813-4731-b6ee-b41604c56f95",
 					OwnerId:       "a89e3ea8-0813-4731-b6ee-b41604c56f95",
 					Data:          "",
@@ -183,20 +186,22 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			ctx := context.WithValue(req.Context(), config.PayloadContextKey, models.JwtPayload{Id: tt.userId, Username: tt.username})
 
 			if tt.name == successTestName {
-				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.Note{
-					Id:            uuid.FromStringOrNil(tt.expectedData.Note.Id),
-					OwnerId:       uuid.FromStringOrNil(tt.expectedData.Note.OwnerId),
-					CreateTime:    time.Time{},
-					UpdateTime:    time.Time{},
-					Data:          tt.expectedData.Note.Data,
-					Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-					Children:      []uuid.UUID{},
-					Tags:          []string{},
-					Collaborators: []uuid.UUID{},
+				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.NoteResponse{
+					Note: models.Note{
+						Id:            uuid.FromStringOrNil(tt.expectedData.Note.Id),
+						OwnerId:       uuid.FromStringOrNil(tt.expectedData.Note.OwnerId),
+						CreateTime:    time.Time{},
+						UpdateTime:    time.Time{},
+						Data:          tt.expectedData.Note.Data,
+						Parent:        uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+						Children:      []uuid.UUID{},
+						Tags:          []string{},
+						Collaborators: []uuid.UUID{},
+					},
 				}, nil)
 			}
 			if tt.name == "Test Error" {
-				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.Note{}, errors.New("error"))
+				mockUsecase.EXPECT().GetNote(gomock.Any(), tt.noteId, tt.userId).Return(models.NoteResponse{}, errors.New("error"))
 
 			}
 			req = req.WithContext(ctx)

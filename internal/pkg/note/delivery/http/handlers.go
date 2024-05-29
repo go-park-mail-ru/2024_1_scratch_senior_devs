@@ -104,6 +104,56 @@ func getNote(note *gen.NoteModel) (models.Note, error) {
 	}, nil
 }
 
+func getNoteResponse(note *gen.NoteResponseModel) (models.NoteResponse, error) {
+	if note == nil {
+		return models.NoteResponse{}, errors.New("not found")
+	}
+	createTime, err := time.Parse(TimeLayout, note.CreateTime)
+	if err != nil {
+		return models.NoteResponse{}, err
+	}
+
+	updateTime, err := time.Parse(TimeLayout, note.UpdateTime)
+	if err != nil {
+		return models.NoteResponse{}, err
+	}
+
+	children := make([]uuid.UUID, len(note.Children))
+	for i, child := range note.Children {
+		children[i] = uuid.FromStringOrNil(child)
+	}
+
+	collaborators := make([]uuid.UUID, len(note.Collaborators))
+	for i, collaborator := range note.Collaborators {
+		collaborators[i] = uuid.FromStringOrNil(collaborator)
+	}
+
+	tags := make([]string, len(note.Tags))
+	copy(tags, note.Tags)
+
+	return models.NoteResponse{
+		Note: models.Note{
+			Id:            uuid.FromStringOrNil(note.Id),
+			OwnerId:       uuid.FromStringOrNil(note.OwnerId),
+			Data:          note.Data,
+			CreateTime:    createTime,
+			UpdateTime:    updateTime,
+			Parent:        uuid.FromStringOrNil(note.Parent),
+			Children:      children,
+			Tags:          tags,
+			Collaborators: collaborators,
+			Icon:          note.Icon,
+			Header:        note.Header,
+			Favorite:      note.Favorite,
+			Public:        note.Public,
+		},
+		OwnerInfo: models.OwnerInfo{
+			Username:  note.Username,
+			ImagePath: note.ImagePath,
+		},
+	}, nil
+}
+
 // GetAllNotes godoc
 // @Summary		Get all notes
 // @Description	Get a list of notes of current user
@@ -154,9 +204,9 @@ func (h *NoteHandler) GetAllNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := make([]models.Note, len(protoData.Notes))
+	data := make([]models.NoteResponse, len(protoData.Notes))
 	for i, protoNote := range protoData.Notes {
-		data[i], err = getNote(protoNote)
+		data[i], err = getNoteResponse(protoNote)
 		if err != nil {
 			log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -211,7 +261,7 @@ func (h *NoteHandler) GetNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultNote, err := getNote(protoNote.Note)
+	resultNote, err := getNoteResponse(protoNote.Note)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -247,7 +297,7 @@ func (h *NoteHandler) GetPublicNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultNote, err := getNote(protoNote.Note)
+	resultNote, err := getNoteResponse(protoNote.Note)
 	if err != nil {
 		log.LogHandlerError(logger, http.StatusInternalServerError, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

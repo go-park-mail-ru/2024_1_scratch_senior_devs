@@ -54,7 +54,7 @@ func (repo *NoteElastic) updateNullFieldToEmptyArray(ctx context.Context, fieldN
 	return nil
 }
 
-func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string, tags []string) ([]models.Note, error) {
+func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, count int64, offset int64, searchValue string, tags []string) ([]models.NoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
 	ownerQuery := elastic.NewTermsQuery("owner_id", strings.ToLower(userID.String()))
@@ -86,15 +86,15 @@ func (repo *NoteElastic) SearchNotes(ctx context.Context, userID uuid.UUID, coun
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors(log.GFN())
-		return []models.Note{}, ErrCantGetResponse
+		return []models.NoteResponse{}, ErrCantGetResponse
 	}
 
-	notes := make([]models.Note, 0)
+	notes := make([]models.NoteResponse, 0)
 	for _, hit := range search.Hits.Hits {
-		note := models.Note{}
+		note := models.NoteResponse{}
 		if err := json.Unmarshal(hit.Source, &note); err != nil {
 			logger.Error(err.Error())
-			return []models.Note{}, err
+			return []models.NoteResponse{}, err
 		}
 		notes = append(notes, note)
 	}

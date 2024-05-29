@@ -48,6 +48,16 @@ type SetHeaderRequest struct {
 	Header string `json:"header"`
 }
 
+type OwnerInfo struct {
+	Username  string `json:"username"`
+	ImagePath string `json:"image_path"`
+}
+
+type NoteResponse struct {
+	Note
+	OwnerInfo
+}
+
 // ================================================================
 // only swagger examples
 

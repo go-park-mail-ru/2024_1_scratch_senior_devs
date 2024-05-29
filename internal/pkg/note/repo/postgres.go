@@ -26,7 +26,7 @@ const (
 	    is_public
 	FROM notes n
 	LEFT JOIN favorites f 
-	ON n.id =f.note_id
+	ON n.id = f.note_id
 		WHERE parent = '00000000-0000-0000-0000-000000000000'::UUID
 		AND (
 			owner_id = $1
@@ -84,6 +84,8 @@ const (
 	setPrivate = "UPDATE notes SET is_public = false WHERE id = $1;"
 
 	getAttachList = "SELECT path FROM attaches WHERE note_id = $1;"
+
+	getOwnerInfo = "SELECT username, image_path FROM users WHERE id = $1;"
 )
 
 type NotePostgres struct {
@@ -167,10 +169,10 @@ func (repo *NotePostgres) GetUpdates(ctx context.Context, noteID uuid.UUID, offs
 	return result, nil
 }
 
-func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, tags []string) ([]models.Note, error) {
+func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, count int64, offset int64, tags []string) ([]models.NoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	result := make([]models.Note, 0, count)
+	result := make([]models.NoteResponse, 0, count)
 
 	start := time.Now()
 	query, err := repo.db.Query(ctx, getAllNotes, userId, count, offset, tags)
@@ -182,7 +184,7 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 	}
 
 	for query.Next() {
-		var note models.Note
+		var note models.NoteResponse
 		if err := query.Scan(
 			&note.Id,
 			&note.Data,
@@ -208,10 +210,10 @@ func (repo *NotePostgres) ReadAllNotes(ctx context.Context, userId uuid.UUID, co
 	return result, nil
 }
 
-func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID) (models.Note, error) {
+func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID, userId uuid.UUID) (models.NoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote := models.Note{}
+	resultNote := models.NoteResponse{}
 
 	start := time.Now()
 	err := repo.db.QueryRow(ctx, getNote, noteId, userId).Scan(
@@ -233,17 +235,17 @@ func (repo *NotePostgres) ReadNote(ctx context.Context, noteId uuid.UUID, userId
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("getNote")
-		return models.Note{}, err
+		return models.NoteResponse{}, err
 	}
 
 	logger.Info("success")
 	return resultNote, nil
 }
 
-func (repo *NotePostgres) ReadPublicNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
+func (repo *NotePostgres) ReadPublicNote(ctx context.Context, noteId uuid.UUID) (models.NoteResponse, error) {
 	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
 
-	resultNote := models.Note{}
+	resultNote := models.NoteResponse{}
 
 	start := time.Now()
 	err := repo.db.QueryRow(ctx, getPublicNote, noteId).Scan(
@@ -264,7 +266,7 @@ func (repo *NotePostgres) ReadPublicNote(ctx context.Context, noteId uuid.UUID) 
 	if err != nil {
 		logger.Error(err.Error())
 		repo.metr.IncreaseErrors("getNote")
-		return models.Note{}, err
+		return models.NoteResponse{}, err
 	}
 
 	resultNote.Favorite = false
@@ -602,4 +604,25 @@ func (repo *NotePostgres) GetAttachList(ctx context.Context, noteID uuid.UUID) (
 
 	logger.Info("success")
 	return result, nil
+}
+
+func (repo *NotePostgres) GetOwnerInfo(ctx context.Context, ownerID uuid.UUID) (models.OwnerInfo, error) {
+	logger := log.GetLoggerFromContext(ctx).With(slog.String("func", log.GFN()))
+
+	info := models.OwnerInfo{}
+
+	start := time.Now()
+	err := repo.db.QueryRow(ctx, getOwnerInfo, ownerID).Scan(
+		&info.Username,
+		&info.ImagePath,
+	)
+	repo.metr.ObserveResponseTime("getOwnerInfo", time.Since(start).Seconds())
+	if err != nil {
+		logger.Error(err.Error())
+		repo.metr.IncreaseErrors("getOwnerInfo")
+		return models.OwnerInfo{}, err
+	}
+
+	logger.Info("success")
+	return info, nil
 }

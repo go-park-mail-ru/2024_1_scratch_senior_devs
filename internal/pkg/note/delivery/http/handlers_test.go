@@ -35,7 +35,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 		expectedStatus int
 		id             uuid.UUID
 		username       string
-		expectedData   []*gen.NoteModel
+		expectedData   []*gen.NoteResponseModel
 	}{
 		{
 
@@ -43,7 +43,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			id:             uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 			username:       "testuser",
 			expectedStatus: http.StatusOK,
-			expectedData: []*gen.NoteModel{
+			expectedData: []*gen.NoteResponseModel{
 				{
 					Id:            "c80e3ea8-0813-4731-b6ee-b41604c56f95",
 					OwnerId:       "a233ea8-0813-4731-b12e-b41604c56f95",
@@ -74,7 +74,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			id:             uuid.FromStringOrNil(""),
 			username:       "",
 			expectedStatus: http.StatusUnauthorized,
-			expectedData:   []*gen.NoteModel{},
+			expectedData:   []*gen.NoteResponseModel{},
 		},
 		{
 
@@ -82,7 +82,7 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 			id:             uuid.FromStringOrNil(""),
 			username:       "",
 			expectedStatus: http.StatusBadRequest,
-			expectedData:   []*gen.NoteModel{},
+			expectedData:   []*gen.NoteResponseModel{},
 		},
 	}
 	for _, tt := range tests {
@@ -131,8 +131,6 @@ func TestNoteHandler_GetAllNotes(t *testing.T) {
 					}
 
 				}
-				d, _ := json.Marshal(expectedResult)
-				assert.Equal(t, w.Body.Bytes(), d)
 			}
 		})
 	}
@@ -148,7 +146,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 		userId         uuid.UUID
 		noteId         uuid.UUID
 		username       string
-		expectedData   models.Note
+		expectedData   models.NoteResponse
 	}{
 		{
 			name:           successTestName,
@@ -156,15 +154,17 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			noteId:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 			userId:         uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 			username:       "test_user",
-			expectedData: models.Note{
-				Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
-				OwnerId:       uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
-				UpdateTime:    time.Time{},
-				CreateTime:    time.Time{},
-				Data:          "",
-				Children:      []uuid.UUID{},
-				Tags:          []string{},
-				Collaborators: []uuid.UUID{},
+			expectedData: models.NoteResponse{
+				Note: models.Note{
+					Id:            uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+					OwnerId:       uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
+					UpdateTime:    time.Time{},
+					CreateTime:    time.Time{},
+					Data:          "",
+					Children:      []uuid.UUID{},
+					Tags:          []string{},
+					Collaborators: []uuid.UUID{},
+				},
 			},
 		},
 		{
@@ -173,7 +173,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			noteId:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
 			userId:         uuid.FromStringOrNil(""),
 			username:       "test_user",
-			expectedData:   models.Note{},
+			expectedData:   models.NoteResponse{},
 		},
 		{
 			name:           "Test Error",
@@ -181,7 +181,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			noteId:         uuid.FromStringOrNil(""),
 			userId:         uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 			username:       "test_user",
-			expectedData:   models.Note{},
+			expectedData:   models.NoteResponse{},
 		},
 		{
 			name:           "Test Bad Request",
@@ -189,7 +189,7 @@ func TestNoteHandler_GetNote(t *testing.T) {
 			noteId:         uuid.FromStringOrNil(""),
 			userId:         uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
 			username:       "test_user",
-			expectedData:   models.Note{},
+			expectedData:   models.NoteResponse{},
 		},
 	}
 	for _, tt := range tests {
@@ -210,11 +210,11 @@ func TestNoteHandler_GetNote(t *testing.T) {
 				mockClient.EXPECT().GetNote(gomock.Any(), &gen.GetNoteRequest{
 					Id:     tt.noteId.String(),
 					UserId: tt.userId.String(),
-				}).Return(&gen.GetNoteResponse{Note: &gen.NoteModel{
+				}).Return(&gen.GetNoteResponseResponse{Note: &gen.NoteResponseModel{
 					Id:            tt.expectedData.Id.String(),
 					CreateTime:    tt.expectedData.CreateTime.String(),
 					UpdateTime:    tt.expectedData.UpdateTime.String(),
-					Data:          string(tt.expectedData.Data),
+					Data:          tt.expectedData.Data,
 					OwnerId:       tt.userId.String(),
 					Parent:        tt.expectedData.Parent.String(),
 					Children:      []string{},

@@ -186,10 +186,10 @@ func (mr *MockNoteUsecaseMockRecorder) ForgetTag(ctx, tagName, userID interface{
 }
 
 // GetAllNotes mocks base method.
-func (m *MockNoteUsecase) GetAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string, arg5 []string) ([]models.Note, error) {
+func (m *MockNoteUsecase) GetAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string, arg5 []string) ([]models.NoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllNotes", arg0, arg1, arg2, arg3, arg4, arg5)
-	ret0, _ := ret[0].([]models.Note)
+	ret0, _ := ret[0].([]models.NoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -216,10 +216,10 @@ func (mr *MockNoteUsecaseMockRecorder) GetAttachList(ctx, noteID, userID interfa
 }
 
 // GetNote mocks base method.
-func (m *MockNoteUsecase) GetNote(arg0 context.Context, arg1, arg2 uuid.UUID) (models.Note, error) {
+func (m *MockNoteUsecase) GetNote(arg0 context.Context, arg1, arg2 uuid.UUID) (models.NoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNote", arg0, arg1, arg2)
-	ret0, _ := ret[0].(models.Note)
+	ret0, _ := ret[0].(models.NoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -231,10 +231,10 @@ func (mr *MockNoteUsecaseMockRecorder) GetNote(arg0, arg1, arg2 interface{}) *go
 }
 
 // GetPublicNote mocks base method.
-func (m *MockNoteUsecase) GetPublicNote(ctx context.Context, noteId uuid.UUID) (models.Note, error) {
+func (m *MockNoteUsecase) GetPublicNote(ctx context.Context, noteId uuid.UUID) (models.NoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPublicNote", ctx, noteId)
-	ret0, _ := ret[0].(models.Note)
+	ret0, _ := ret[0].(models.NoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -557,6 +557,21 @@ func (mr *MockNoteBaseRepoMockRecorder) GetAttachList(ctx, noteID interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAttachList", reflect.TypeOf((*MockNoteBaseRepo)(nil).GetAttachList), ctx, noteID)
 }
 
+// GetOwnerInfo mocks base method.
+func (m *MockNoteBaseRepo) GetOwnerInfo(ctx context.Context, ownerID uuid.UUID) (models.OwnerInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOwnerInfo", ctx, ownerID)
+	ret0, _ := ret[0].(models.OwnerInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOwnerInfo indicates an expected call of GetOwnerInfo.
+func (mr *MockNoteBaseRepoMockRecorder) GetOwnerInfo(ctx, ownerID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOwnerInfo", reflect.TypeOf((*MockNoteBaseRepo)(nil).GetOwnerInfo), ctx, ownerID)
+}
+
 // GetTags mocks base method.
 func (m *MockNoteBaseRepo) GetTags(ctx context.Context, userID uuid.UUID) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -588,10 +603,10 @@ func (mr *MockNoteBaseRepoMockRecorder) GetUpdates(arg0, arg1, arg2 interface{})
 }
 
 // ReadAllNotes mocks base method.
-func (m *MockNoteBaseRepo) ReadAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 []string) ([]models.Note, error) {
+func (m *MockNoteBaseRepo) ReadAllNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 []string) ([]models.NoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadAllNotes", arg0, arg1, arg2, arg3, arg4)
-	ret0, _ := ret[0].([]models.Note)
+	ret0, _ := ret[0].([]models.NoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -603,10 +618,10 @@ func (mr *MockNoteBaseRepoMockRecorder) ReadAllNotes(arg0, arg1, arg2, arg3, arg
 }
 
 // ReadNote mocks base method.
-func (m *MockNoteBaseRepo) ReadNote(arg0 context.Context, arg1, arg2 uuid.UUID) (models.Note, error) {
+func (m *MockNoteBaseRepo) ReadNote(arg0 context.Context, arg1, arg2 uuid.UUID) (models.NoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadNote", arg0, arg1, arg2)
-	ret0, _ := ret[0].(models.Note)
+	ret0, _ := ret[0].(models.NoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -618,10 +633,10 @@ func (mr *MockNoteBaseRepoMockRecorder) ReadNote(arg0, arg1, arg2 interface{}) *
 }
 
 // ReadPublicNote mocks base method.
-func (m *MockNoteBaseRepo) ReadPublicNote(arg0 context.Context, arg1 uuid.UUID) (models.Note, error) {
+func (m *MockNoteBaseRepo) ReadPublicNote(arg0 context.Context, arg1 uuid.UUID) (models.NoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadPublicNote", arg0, arg1)
-	ret0, _ := ret[0].(models.Note)
+	ret0, _ := ret[0].(models.NoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -908,10 +923,10 @@ func (mr *MockNoteSearchRepoMockRecorder) RemoveSubNote(arg0, arg1, arg2 interfa
 }
 
 // SearchNotes mocks base method.
-func (m *MockNoteSearchRepo) SearchNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string, arg5 []string) ([]models.Note, error) {
+func (m *MockNoteSearchRepo) SearchNotes(arg0 context.Context, arg1 uuid.UUID, arg2, arg3 int64, arg4 string, arg5 []string) ([]models.NoteResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SearchNotes", arg0, arg1, arg2, arg3, arg4, arg5)
-	ret0, _ := ret[0].([]models.Note)
+	ret0, _ := ret[0].([]models.NoteResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
