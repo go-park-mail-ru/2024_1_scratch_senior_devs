@@ -250,6 +250,108 @@ func TestNoteUsecase_GetNote(t *testing.T) {
 	}
 }
 
+func TestNoteUsecase_GetPublicNote(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          10,
+		MaxSubnotes:      10,
+	}
+
+	type args struct {
+		ctx    context.Context
+		noteId uuid.UUID
+	}
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, repo *mock_note.MockNoteBaseRepo, args args)
+		args       args
+		want       models.NoteResponse
+		wantErr    bool
+	}{
+		{
+			name: "TestSuccess",
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, args args) {
+				mockResp := models.NoteResponse{
+					Note: models.Note{ //мок ответа от уровня репозитория
+						Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+						OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
+						UpdateTime: time.Time{},
+						CreateTime: time.Time{},
+						Data:       "",
+						Parent:     uuid.UUID{},
+						Children:   []uuid.UUID{},
+						Public:     true,
+					},
+				}
+
+				repo.EXPECT().ReadPublicNote(ctx, args.noteId).Return(mockResp, nil).Times(1)
+				repo.EXPECT().GetOwnerInfo(gomock.Any(), gomock.Any()).Return(models.OwnerInfo{}, nil).Times(1)
+			},
+			args: args{
+				context.Background(),
+				uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+			},
+			want: models.NoteResponse{
+				Note: models.Note{
+					Id:         uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+					OwnerId:    uuid.FromStringOrNil("a233ea8-0813-4731-b12e-b41604c56f95"),
+					UpdateTime: time.Time{},
+					CreateTime: time.Time{},
+					Data:       "",
+					Parent:     uuid.UUID{},
+					Children:   []uuid.UUID{},
+					Public:     true,
+				},
+			},
+
+			wantErr: false,
+		},
+		{
+			name: "TestFail",
+			repoMocker: func(ctx context.Context, repo *mock_note.MockNoteBaseRepo, args args) {
+				mockResp := models.NoteResponse{ //мок ответа от уровня репозитория
+
+				}
+
+				repo.EXPECT().ReadPublicNote(ctx, args.noteId).Return(mockResp, errors.New("error")).Times(1)
+			},
+			args: args{
+				context.Background(),
+				uuid.FromStringOrNil("c80e3ea8-0813-4731-b6ee-b41604c56f95"),
+			},
+			want: models.NoteResponse{},
+
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, tt.args)
+
+			got, err := uc.GetPublicNote(tt.args.ctx, tt.args.noteId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.GetPublicNote() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NoteUsecase.GetPublicNote() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestNoteUsecase_CreateNote(t *testing.T) {
 	elasticConfig := config.ElasticConfig{
 		ElasticIndexName:            "notes",
@@ -846,6 +948,25 @@ func TestNoteUsecase_addCollaboratorRecursive(t *testing.T) {
 					},
 				}, nil)
 				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return("", nil)
+
+			},
+		},
+		{
+			name:    "Test_addCollaboratorReqursive_Success",
+			wantErr: false,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id:       noteId,
+						Children: []uuid.UUID{noteId},
+					},
+				}, nil)
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id: noteId,
+					},
+				}, nil)
+				baseRepo.EXPECT().AddCollaborator(gomock.Any(), noteId, guestId).Return("", nil).Times(2)
 
 			},
 		},
@@ -2483,6 +2604,134 @@ func TestNoteUsecase_GetSharedAttachList(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestNoteUsecase_changeModeRecursive(t *testing.T) {
+	elasticConfig := config.ElasticConfig{
+		ElasticIndexName:            "notes",
+		ElasticSearchValueMinLength: 2,
+	}
+
+	constraintsConfig := config.ConstraintsConfig{
+		MaxDepth:         3,
+		MaxCollaborators: 10,
+		MaxTags:          4,
+		MaxSubnotes:      10,
+	}
+
+	noteId := uuid.NewV4()
+	guestId := uuid.NewV4()
+
+	tests := []struct {
+		name       string
+		repoMocker func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo)
+		isPublic   bool
+		wantErr    bool
+	}{
+		{
+			name:    "Test_changeModeRecursive_ReadError",
+			wantErr: true,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{}, errors.New("error"))
+			},
+			isPublic: true,
+		},
+		{
+			name:    "Test_changeModeRecursive_Public_Error",
+			wantErr: true,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id: noteId,
+					},
+				}, nil)
+				baseRepo.EXPECT().SetPublic(gomock.Any(), noteId).Return(errors.New("error"))
+			},
+			isPublic: true,
+		},
+		{
+			name:    "Test_changeModeRecursive_Private_Error",
+			wantErr: true,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id: noteId,
+					},
+				}, nil)
+				baseRepo.EXPECT().SetPrivate(gomock.Any(), noteId).Return(errors.New("error"))
+			},
+			isPublic: false,
+		},
+		{
+			name:    "Test_changeModeRecursive_NoChildren",
+			wantErr: false,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id: noteId,
+					},
+				}, nil)
+				baseRepo.EXPECT().SetPublic(gomock.Any(), noteId).Return(nil)
+			},
+			isPublic: true,
+		},
+		{
+			name:    "Test_changeModeRecursive_Public_Success",
+			wantErr: false,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id:       noteId,
+						Children: []uuid.UUID{noteId},
+					},
+				}, nil)
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id: noteId,
+					},
+				}, nil)
+				baseRepo.EXPECT().SetPublic(gomock.Any(), noteId).Return(nil).Times(2)
+			},
+			isPublic: true,
+		},
+		{
+			name:    "Test_changeModeRecursive_Private_Success",
+			wantErr: false,
+			repoMocker: func(context context.Context, baseRepo *mock_note.MockNoteBaseRepo, searchRepo *mock_note.MockNoteSearchRepo) {
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id:       noteId,
+						Children: []uuid.UUID{noteId},
+					},
+				}, nil)
+				baseRepo.EXPECT().ReadNote(gomock.Any(), noteId, gomock.Any()).Return(models.NoteResponse{
+					Note: models.Note{
+						Id: noteId,
+					},
+				}, nil)
+				baseRepo.EXPECT().SetPrivate(gomock.Any(), noteId).Return(nil).Times(2)
+			},
+			isPublic: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctl := gomock.NewController(t)
+			defer ctl.Finish()
+			repo := mock_note.NewMockNoteBaseRepo(ctl)
+			searchRepo := mock_note.NewMockNoteSearchRepo(ctl)
+			uc := CreateNoteUsecase(repo, searchRepo, elasticConfig, constraintsConfig, &sync.WaitGroup{})
+
+			tt.repoMocker(context.Background(), repo, searchRepo)
+
+			err := uc.changeModeRecursive(context.Background(), noteId, guestId, tt.isPublic)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NoteUsecase.changeModeRecursive error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
 		})
 	}
 }

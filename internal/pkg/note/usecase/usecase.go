@@ -52,13 +52,13 @@ func (uc *NoteUsecase) GetAllNotes(ctx context.Context, userId uuid.UUID, count 
 		return res, err
 	}
 
-	for _, response := range res {
+	for i, response := range res {
 		info, err := uc.baseRepo.GetOwnerInfo(ctx, response.OwnerId)
 		if err != nil {
 			logger.Error(err.Error())
 		}
 
-		response.OwnerInfo = info
+		res[i].OwnerInfo = info
 	}
 
 	logger.Info("success")
