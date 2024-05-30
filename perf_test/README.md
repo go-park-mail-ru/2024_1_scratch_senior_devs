@@ -1,9 +1,15 @@
 # Нагрузочное тестирование
 
+Нагрузочное тестирование проводилось на выделенной виртуалке.
+
 ## Создание заметок
-wrk -t12 -c400 -d30s --script=script.lua --latency http://127.0.0.1:8080
+wrk -t4 -c100 -d60s --script=script.lua --latency http://127.0.0.1:8080/
 ![img.png](images/img.png)
 
+Видно, что мощности виртуалки хватило на 150rps при запущенном приложении.
+
 ## Чтение заметок
-wrk -t12 -c400 -d30s --script=script2.lua --latency http://127.0.0.1:8080
+wrk -t4 -c100 -d60s --script=script2.lua --latency http://127.0.0.1:8080/
 ![img_1.png](images/img_1.png)
+
+Видим около 570rps.
