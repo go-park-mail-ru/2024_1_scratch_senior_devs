@@ -37,6 +37,7 @@ jobs:
       - name: Run test with cover
         run: |
           sudo apt-get install libwebp-dev
+          sudo apt-get install libwebp-dev --fix-missing
           sudo apt-get install -y wkhtmltopdf
       - name: Build
         run: go build -v ./...
