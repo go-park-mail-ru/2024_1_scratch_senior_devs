@@ -220,7 +220,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		Code:     userData.Code,
 	})
 	if err != nil {
-		if errors.Is(err, auth.ErrFirstFactorPassed) {
+		if err.Error() == "rpc error: code = Unknown desc = first factor passed" {
 			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
 			w.WriteHeader(http.StatusAccepted)
 			return

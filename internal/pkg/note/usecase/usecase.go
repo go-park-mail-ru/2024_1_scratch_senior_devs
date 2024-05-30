@@ -136,14 +136,11 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, userId uuid.UUID, noteDat
 		return models.Note{}, err
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.CreateNote(ctx, newNote); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return newNote, nil
@@ -176,14 +173,11 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, noteId uuid.UUID, userId 
 		return models.Note{}, err
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.UpdateNote(ctx, updatedNote.Note); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return updatedNote.Note, nil
@@ -211,9 +205,7 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId
 		}
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 
 		if err := uc.searchRepo.DeleteNote(ctx, noteId); err != nil {
 			logger.Error(err.Error())
@@ -225,7 +217,6 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, noteId uuid.UUID, ownerId
 			}
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return nil
@@ -300,14 +291,11 @@ func (uc *NoteUsecase) CreateSubNote(ctx context.Context, userId uuid.UUID, note
 		return models.Note{}, err
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.AddSubNote(ctx, parentID, newNote.Id); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return newNote, nil
@@ -375,15 +363,11 @@ func (uc *NoteUsecase) AddCollaborator(ctx context.Context, noteID uuid.UUID, us
 			return "", err
 		}
 	}
-
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.AddCollaborator(ctx, noteID, guestID); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return title, nil
@@ -415,9 +399,7 @@ func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.U
 
 	updatedNote.Tags = append(updatedNote.Tags, tagName)
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 
 		if err := uc.searchRepo.AddTag(ctx, tagName, noteId); err != nil {
 			logger.Error(err.Error())
@@ -427,7 +409,6 @@ func (uc *NoteUsecase) AddTag(ctx context.Context, tagName string, noteId uuid.U
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return updatedNote.Note, nil
@@ -460,14 +441,11 @@ func (uc *NoteUsecase) DeleteTag(ctx context.Context, tagName string, noteId uui
 	}
 	updatedNote.Tags = newTags
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.DeleteTag(ctx, tagName, noteId); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return updatedNote.Note, nil
@@ -498,14 +476,11 @@ func (uc *NoteUsecase) ForgetTag(ctx context.Context, tagName string, userID uui
 		return err
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.DeleteTagFromAllNotes(ctx, tagName, userID); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return nil
@@ -522,14 +497,11 @@ func (uc *NoteUsecase) UpdateTag(ctx context.Context, oldTag string, newTag stri
 		return err
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.UpdateTagOnAllNotes(ctx, oldTag, newTag, userID); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return nil
@@ -568,14 +540,11 @@ func (uc *NoteUsecase) SetIcon(ctx context.Context, noteID uuid.UUID, icon strin
 	}
 	resultNote.Icon = icon
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.SetIcon(ctx, noteID, icon); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return resultNote.Note, nil
@@ -601,14 +570,11 @@ func (uc *NoteUsecase) SetHeader(ctx context.Context, noteID uuid.UUID, header s
 	}
 	resultNote.Header = header
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.SetHeader(ctx, noteID, header); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return resultNote.Note, nil
@@ -635,14 +601,11 @@ func (uc *NoteUsecase) AddFav(ctx context.Context, noteID uuid.UUID, userID uuid
 	}
 	resultNote.Favorite = true
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.ChangeFlag(ctx, noteID, true); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return resultNote.Note, nil
@@ -670,14 +633,11 @@ func (uc *NoteUsecase) DelFav(ctx context.Context, noteID uuid.UUID, userID uuid
 	}
 	resultNote.Favorite = false
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.ChangeFlag(ctx, noteID, false); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return resultNote.Note, nil
@@ -735,14 +695,11 @@ func (uc *NoteUsecase) SetPublic(ctx context.Context, noteID uuid.UUID, userID u
 		}
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.SetPublic(ctx, noteID); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return resultNote.Note, nil
@@ -775,14 +732,11 @@ func (uc *NoteUsecase) SetPrivate(ctx context.Context, noteID uuid.UUID, userID 
 		}
 	}
 
-	uc.wg.Add(1)
 	go func() {
-		defer uc.wg.Done()
 		if err := uc.searchRepo.SetPrivate(ctx, noteID); err != nil {
 			logger.Error(err.Error())
 		}
 	}()
-	uc.wg.Wait()
 
 	logger.Info("success")
 	return resultNote.Note, nil

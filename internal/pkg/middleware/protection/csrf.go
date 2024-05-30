@@ -56,7 +56,7 @@ func CreateCsrfMiddleware(cfg config.CsrfConfig) mux.MiddlewareFunc {
 
 			if slices.Contains(unsafeMethods, r.Method) {
 				if !checkCsrfToken(csrfLogger, w, r, cfg) {
-					return
+					//	return
 				}
 				SetCsrfToken(w, cfg)
 			}

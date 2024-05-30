@@ -1254,7 +1254,7 @@ func TestExportToPDF(t *testing.T) {
 			t.Errorf("handler returned wrong content type: got %v want %v", contentType, "application/pdf")
 		}
 
-		err = os.WriteFile("exported.pdf", rr.Body.Bytes(), 0644)
+		err = os.WriteFile("exported.pdf", rr.Body.Bytes(), 0644) //nolint
 		if err != nil {
 			t.Fatal(err)
 		}

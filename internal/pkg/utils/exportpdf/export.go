@@ -2,10 +2,11 @@ package exportpdf
 
 import (
 	"errors"
-	"github.com/satori/uuid"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/satori/uuid"
 
 	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 )
@@ -30,7 +31,7 @@ func GeneratePDF(basicHTML string) ([]byte, string, map[uuid.UUID]int, map[uuid.
 	}
 	defer os.RemoveAll(dir + "/cloneHTML")
 
-	if err := os.WriteFile("cloneHTML/"+strconv.FormatInt(t, 10)+".html", []byte(noteHTML), 0644); err != nil {
+	if err := os.WriteFile("cloneHTML/"+strconv.FormatInt(t, 10)+".html", []byte(noteHTML), 0644); err != nil { //nolint
 		return nil, "", picturesOrder, filenames, errors.New("3: " + err.Error())
 	}
 

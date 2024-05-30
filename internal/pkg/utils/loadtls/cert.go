@@ -15,7 +15,7 @@ func LoadTLSCredentials(name string) (credentials.TransportCredentials, error) {
 		return nil, err
 	}
 
-	config := &tls.Config{
+	config := &tls.Config{ //nolint
 		Certificates: []tls.Certificate{serverCert},
 		ClientAuth:   tls.NoClientCert,
 	}
@@ -34,7 +34,7 @@ func LoadTLSClientCredentials() (credentials.TransportCredentials, error) {
 		return nil, fmt.Errorf("failed to add server CA's certificate")
 	}
 
-	config := &tls.Config{
+	config := &tls.Config{ //nolint
 		RootCAs: certPool,
 	}
 

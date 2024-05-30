@@ -13,4 +13,5 @@ linters:
     - gocognit
     - goconst
     - gofmt
+    - gosec
     

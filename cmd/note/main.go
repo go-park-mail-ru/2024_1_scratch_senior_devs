@@ -108,7 +108,7 @@ func run() (err error) {
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 	r.PathPrefix("/metrics").Handler(promhttp.Handler())
 	http.Handle("/", r)
-	httpSrv := http.Server{Handler: r, Addr: fmt.Sprintf(":%s", cfg.Grpc.NoteMetricsPort)}
+	httpSrv := http.Server{Handler: r, Addr: fmt.Sprintf(":%s", cfg.Grpc.NoteMetricsPort)} //nolint
 	go func() {
 		if err := httpSrv.ListenAndServe(); err != nil {
 			logger.Error("fail httpSrv.ListenAndServe")

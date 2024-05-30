@@ -202,7 +202,26 @@ services:
       - "8085:9100"
     networks:
        - YouNote-network
-       
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    command: --config.file=/etc/promtail/docker-config.yaml
+    volumes:
+      # folder for promtail config
+      - ./promtail:/etc/promtail
+      # accesses fail2ban shared folder
+      - /var/log/fail2ban:/var/log/fail2ban:ro
+    user: "root"
+  loki:
+    image: grafana/loki:main
+    container_name: loki
+    restart: always
+    ports:
+      - "8071:3100"
+    volumes:
+      - ./loki:/loki
+    user: "root"
 networks:
   YouNote-network:
     name: YouNote-network
