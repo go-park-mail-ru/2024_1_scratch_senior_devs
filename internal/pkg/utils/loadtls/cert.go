@@ -23,6 +23,30 @@ func LoadTLSCredentials(name string) (credentials.TransportCredentials, error) {
 	return credentials.NewTLS(config), nil
 }
 
+// func LoadTlSCredentials(name string) (credentials.TransportCredentials, error) {
+// 	certificate, err := tls.LoadX509KeyPair(fmt.Sprintf("cert/techno_%s.crt", name), "cert/techno.key")
+// 	if err != nil {
+// 	  return nil, fmt.Errorf("failed to load server certification: %w", err)
+// 	}
+
+// 	data, err := os.ReadFile("cert/CA.pem")
+// 	if err != nil {
+// 	  return nil, fmt.Errorf("faild to read CA certificate: %w", err)
+// 	}
+
+// 	capool := x509.NewCertPool()
+// 	if !capool.AppendCertsFromPEM(data) {
+// 	  return nil, fmt.Errorf("unable to append the CA certificate to CA pool")
+// 	}
+
+// 	tlsConfig := &tls.Config{//nolint
+// 	  ClientAuth:   tls.RequireAndVerifyClientCert,
+// 	  Certificates: []tls.Certificate{certificate},
+// 	  ClientCAs:    capool,
+// 	}
+// 	return credentials.NewTLS(tlsConfig), nil
+//    }
+
 func LoadTLSClientCredentials() (credentials.TransportCredentials, error) {
 	pemServerCA, err := os.ReadFile("cert/CA.pem")
 	if err != nil {
@@ -40,3 +64,27 @@ func LoadTLSClientCredentials() (credentials.TransportCredentials, error) {
 
 	return credentials.NewTLS(config), nil
 }
+
+// func LoadTLSClientCredentials() (credentials.TransportCredentials, error) {
+// 	certificate, err := tls.LoadX509KeyPair("cert/techno.pem", "cert/techno.key")
+// 	if err != nil {
+// 	  return nil, fmt.Errorf("failed to load client certification: %w", err)
+// 	}
+
+// 	ca, err := os.ReadFile("cert/CA.pem")
+// 	if err != nil {
+// 	  return nil, fmt.Errorf("faild to read CA certificate: %w", err)
+// 	}
+
+// 	capool := x509.NewCertPool()
+// 	if !capool.AppendCertsFromPEM(ca) {
+// 	  return nil, fmt.Errorf("faild to append the CA certificate to CA pool")
+// 	}
+
+// 	tlsConfig := &tls.Config{
+// 	  Certificates: []tls.Certificate{certificate},
+// 	  RootCAs:      capool,
+// 	}
+
+// 	return credentials.NewTLS(tlsConfig), nil
+//    }
