@@ -26,7 +26,10 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-const TimeLayout = "2006-01-02 15:04:05 -0700 UTC"
+const (
+	RpcErrorPrefix = "rpc error: code = Unknown desc = "
+	TimeLayout     = "2006-01-02 15:04:05 -0700 UTC"
+)
 
 type AuthHandler struct {
 	client        gen.AuthClient
@@ -220,7 +223,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		Code:     userData.Code,
 	})
 	if err != nil {
-		if err.Error() == "rpc error: code = Unknown desc = first factor passed" {
+		if err.Error()[len(RpcErrorPrefix):] == auth.ErrFirstFactorPassed.Error() {
 			log.LogHandlerError(logger, http.StatusAccepted, err.Error())
 			w.WriteHeader(http.StatusAccepted)
 			return
