@@ -194,7 +194,7 @@ func TestAuthHandler_SignIn(t *testing.T) {
 			requestBody:    `{"username":"testuser2","password":"12345678a"}`,
 			username:       "testuser2",
 			password:       "12345678a",
-			usecaseErr:     errors.New("registration failed"),
+			usecaseErr:     errors.New(RpcErrorPrefix + "registration failed"),
 			expectedStatus: http.StatusUnauthorized,
 		},
 	}
