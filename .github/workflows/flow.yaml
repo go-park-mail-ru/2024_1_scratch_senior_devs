@@ -48,8 +48,14 @@ jobs:
   govulncheck_job:
     needs: you-note-tests
     runs-on: ubuntu-latest
-    name: Run govulncheck
+    name: govulncheck
     steps:
+      - name: Run test with cover
+        run: |
+          sudo apt-get update
+          sudo apt-get upgrade
+          sudo apt-get install libwebp-dev
+          sudo apt-get install -y wkhtmltopdf
       - id: govulncheck
         uses: golang/govulncheck-action@v1
         with:
