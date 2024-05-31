@@ -81,7 +81,7 @@ func LoadTLSClientCredentials() (credentials.TransportCredentials, error) {
 		return nil, fmt.Errorf("faild to append the CA certificate to CA pool")
 	}
 
-	tlsConfig := &tls.Config{
+	tlsConfig := &tls.Config{ //nolint
 		Certificates: []tls.Certificate{certificate},
 		RootCAs:      capool,
 	}
