@@ -63,7 +63,7 @@ jobs:
 #           go-package: ./...
   you-note-deploy:
     name: deploy YouNote
-    needs: govulncheck_job
+    needs: you-note-tests
     runs-on: ubuntu-latest
     steps:
       - name: Pull code
