@@ -52,7 +52,7 @@ func init() {
 
 // @title 			YouNote API
 // @version 		1.0
-// @description 	API for YouNote service
+// @description 	best API for YouNote service
 // @host 			you-note.ru
 func main() {
 	logFile, err := os.OpenFile(os.Getenv("MAIN_LOG_FILE"), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
